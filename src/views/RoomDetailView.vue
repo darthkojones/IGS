@@ -1,0 +1,201 @@
+<template>
+  <div class="room-detail-view">
+    <div v-if="loading" class="loading">Loading...</div>
+    <div v-else-if="!room" class="error">Room not found</div>
+    
+    <div v-else class="room-detail">
+      <header class="room-header">
+        <h1>{{ room.name }}</h1>
+        <RoomStatusDisplay
+          :room-id="room.roomId"
+          :current-booking="room.currentBooking"
+        />
+      </header>
+
+      <div class="room-content">
+        <section class="room-info">
+          <h2>Room Information</h2>
+          <dl>
+            <dt>Floor:</dt>
+            <dd>{{ room.floor }}</dd>
+            <dt>Capacity:</dt>
+            <dd>{{ room.capacity }} people</dd>
+            <dt>Building:</dt>
+            <dd>{{ getBuildingName(room.buildingId) }}</dd>
+          </dl>
+        </section>
+
+        <section class="room-equipment">
+          <h2>Available Equipment</h2>
+          <ul v-if="room.equipment && room.equipment.length">
+            <li v-for="item in room.equipment" :key="item.equipmentId">
+              <span class="equipment-icon">🔧</span>
+              {{ item.name }} ({{ item.type }})
+            </li>
+          </ul>
+          <p v-else>No equipment listed</p>
+        </section>
+
+        <section class="room-schedule">
+          <h2>Today's Schedule</h2>
+          <!-- Schedule would be implemented here -->
+          <p class="placeholder">Schedule view coming soon</p>
+        </section>
+      </div>
+
+      <div class="room-actions">
+        <button
+          v-if="room.status === 'free'"
+          class="btn btn--primary btn--large"
+          @click="bookRoom"
+        >
+          Book This Room
+        </button>
+        <button class="btn btn--secondary" @click="$router.back()">
+          Back to Rooms
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useRoomsStore } from '@/stores/rooms';
+import RoomStatusDisplay from '@/components/RoomStatusDisplay.vue';
+
+const router = useRouter();
+const route = useRoute();
+const roomsStore = useRoomsStore();
+
+const roomId = computed(() => route.params.id as string);
+const room = computed(() => roomsStore.getRoomById(roomId.value));
+const loading = computed(() => roomsStore.loading);
+
+const getBuildingName = (buildingId: string) => {
+  const building = roomsStore.buildings.find(b => b.buildingId === buildingId);
+  return building?.name || 'Unknown';
+};
+
+const bookRoom = () => {
+  if (room.value) {
+    roomsStore.selectRoom(room.value);
+    router.push({ name: 'new-booking' });
+  }
+};
+
+onMounted(() => {
+  if (roomsStore.rooms.length === 0) {
+    roomsStore.fetchRooms();
+  }
+  if (roomsStore.buildings.length === 0) {
+    roomsStore.fetchBuildings();
+  }
+});
+</script>
+
+<style scoped>
+.room-detail-view {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.room-header h1 {
+  font-size: 2.5rem;
+  margin: 0;
+}
+
+.room-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+section h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+}
+
+dt {
+  font-weight: 600;
+  color: #666;
+}
+
+dd {
+  margin: 0;
+  color: #333;
+}
+
+.room-equipment ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.room-equipment li {
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: #f5f5f5;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.room-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn--large {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+}
+
+.btn--primary {
+  background: #1976d2;
+  color: white;
+}
+
+.btn--secondary {
+  background: transparent;
+  color: #1976d2;
+  border: 1px solid #1976d2;
+}
+</style>

@@ -1,17 +1,17 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import type { RoomStatus } from '@/types';
+import { RoomStatus } from '@/types';
 
 export function useRoomStatus(roomId: string) {
-  const status = ref<RoomStatus>('free');
+  const status = ref<RoomStatus>(RoomStatus.FREE);
   const lastUpdated = ref<Date>(new Date());
 
   const statusColor = computed(() => {
     switch (status.value) {
-      case 'free':
+      case RoomStatus.FREE:
         return 'green';
-      case 'reserved':
+      case RoomStatus.RESERVED:
         return 'yellow';
-      case 'occupied':
+      case RoomStatus.OCCUPIED:
         return 'red';
       default:
         return 'gray';
@@ -20,11 +20,11 @@ export function useRoomStatus(roomId: string) {
 
   const statusText = computed(() => {
     switch (status.value) {
-      case 'free':
+      case RoomStatus.FREE:
         return 'Available';
-      case 'reserved':
+      case RoomStatus.RESERVED:
         return 'Reserved';
-      case 'occupied':
+      case RoomStatus.OCCUPIED:
         return 'Occupied';
       default:
         return 'Unknown';

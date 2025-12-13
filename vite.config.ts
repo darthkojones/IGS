@@ -18,4 +18,19 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+
+  // Vite dev server settings, This runs onyl in Tinsae's server
+  // accessible from outside network at dev.tinsae.net (https)
+  // if it gives you probems, please tell me before changing it and pushing.
+  // I may forget the settings later on. and it may break the dev server.
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort:true,
+    hmr: {
+      protocol: 'ws',
+      host: 'dev.tinsae.net',
+      clientPort: 443
+    }
+  }
 })

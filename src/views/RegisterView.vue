@@ -2,7 +2,7 @@
   <div class="register-view">
     <div class="register-container">
       <h1>Create Account</h1>
-      
+
       <form @submit.prevent="handleSubmit" class="register-form">
         <div class="form-row">
           <div class="form-group">
@@ -128,12 +128,14 @@ const handleSubmit = async () => {
 
   loading.value = true;
 
-  try {
+    try {
     await authStore.register({
       firstName: form.firstName,
       lastName: form.lastName,
       name: `${form.firstName} ${form.lastName}`,
       role: form.role,
+      email: form.email,
+      password: form.password,
     });
     router.push('/');
   } catch (err) {

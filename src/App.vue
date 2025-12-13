@@ -1,11 +1,19 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+
 
 const authStore = useAuthStore()
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const currentUser = computed(() => authStore.currentUser)
+
+onMounted(async () => {
+  // Attempt to populate current user from the API/local storage on app start
+  // Only call fetchCurrentUser when we have a token saved — avoids clearing
+  // local user state if the test API doesn't implement `/auth/me`.
+  if (authStore.token) await authStore.fetchCurrentUser();
+})
 </script>
 
 <template>
@@ -29,7 +37,7 @@ const currentUser = computed(() => authStore.currentUser)
           <template v-if="isAuthenticated">
             <RouterLink to="/profile" class="user-info">
               <span class="user-icon">👤</span>
-              <span class="user-name">{{ currentUser?.name || 'User' }}</span>
+              <span class="user-name">{{ currentUser?.firstName || 'User' }}</span>
             </RouterLink>
           </template>
           <template v-else>

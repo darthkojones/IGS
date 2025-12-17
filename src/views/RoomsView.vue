@@ -21,7 +21,7 @@
 
     <div v-if="loading" class="loading">Loading rooms...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    
+
     <div v-else class="rooms-grid">
       <RoomCard
         v-for="room in filteredRooms"
@@ -39,6 +39,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useRoomsStore } from '@/stores/rooms';
 import RoomCard from '@/components/RoomCard.vue';
+import type { Room } from '@/types';
 
 const router = useRouter();
 const roomsStore = useRoomsStore();
@@ -54,10 +55,12 @@ const buildings = computed(() => roomsStore.buildings);
 const filteredRooms = computed(() => {
   let filtered = rooms.value;
 
+  // Filter by building
   if (filterBuilding.value) {
     filtered = filtered.filter(room => room.buildingId === filterBuilding.value);
   }
 
+  // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(room =>
@@ -68,12 +71,12 @@ const filteredRooms = computed(() => {
   return filtered;
 });
 
-const handleBook = (room: any) => {
+const handleBook = (room: Room) => {
   roomsStore.selectRoom(room);
   router.push({ name: 'new-booking' });
 };
 
-const handleViewDetails = (room: any) => {
+const handleViewDetails = (room: Room) => {
   router.push({ name: 'room-detail', params: { id: room.roomId } });
 };
 

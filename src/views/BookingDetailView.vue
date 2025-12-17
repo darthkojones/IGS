@@ -2,7 +2,7 @@
   <div class="booking-detail-view">
     <div v-if="loading" class="loading">Loading booking...</div>
     <div v-else-if="!booking" class="error">Booking not found</div>
-    
+
     <div v-else class="booking-detail">
       <header class="booking-header">
         <h1>{{ booking.title }}</h1>
@@ -16,9 +16,9 @@
           <h2>Booking Information</h2>
           <dl>
             <dt>Date:</dt>
-            <dd>{{ formatDate(booking.startTime) }}</dd>
+            <dd>{{ formatLocalDate(booking.startTime) }}</dd>
             <dt>Time:</dt>
-            <dd>{{ formatTime(booking.startTime) }} - {{ formatTime(booking.endTime) }}</dd>
+            <dd>{{ formatLocalTime(booking.startTime) }} - {{ formatLocalTime(booking.endTime) }}</dd>
             <dt>Duration:</dt>
             <dd>{{ calculateDuration(booking.startTime, booking.endTime) }}</dd>
             <dt>Status:</dt>
@@ -26,33 +26,60 @@
           </dl>
         </section>
 
-        <section v-if="booking.status === 'reserved' && !isExpired" class="entry-section">
-          <h2>Entry Confirmation</h2>
-          <p>Please enter the room within:</p>
-          <div class="timer">
-            <span class="timer-value">{{ formattedTime }}</span>
+        <section v-if="booking.room" class="room-info">
+          <h2>Room Information</h2>
+          <dl>
+            <dt>Room:</dt>
+            <dd>
+              <router-link :to="{ name: 'room-detail', params: { id: booking.room.roomId } }" class="room-link">
+                {{ booking.room.name }}
+              </router-link>
+            </dd>
+            <dt>Floor:</dt>
+            <dd>{{ booking.room.floor }}</dd>
+            <dt>Building:</dt>
+            <dd v-if="booking.room.building">
+              {{ booking.room.building.name }}
+            </dd>
+            <dd v-else>Unknown Building</dd>
+          </dl>
+        </section>
+
+        <section v-if="(booking.status === 'reserved' || booking.status === 'confirmed') && !isExpiredFromTimer" class="entry-section">
+          <div v-if="!isWithinWindow" class="window-closed">
+            <h2>⏰ Entry Window Not Open</h2>
+            <p>You can confirm entry within 10 minutes of the booking start time.</p>
+            <p class="time-info">Booking starts: {{ formatLocalTime(booking.startTime) }}</p>
           </div>
-          
-          <div class="entry-methods">
-            <button @click="confirmEntry('qr_code')" class="btn btn--primary">
-              📱 Scan QR Code
-            </button>
-            <button @click="confirmEntry('nfc')" class="btn btn--primary">
-              💳 Tap NFC Card
-            </button>
+
+          <div v-else class="entry-ready">
+            <h2>Entry Confirmation</h2>
+            <p>Please enter the room within:</p>
+            <div class="timer">
+              <span class="timer-value">{{ formattedTime }}</span>
+            </div>
+
+            <div class="entry-methods">
+              <button @click="confirmEntry('qr_code')" class="btn btn--primary">
+                📱 Scan QR Code
+              </button>
+              <button @click="confirmEntry('nfc')" class="btn btn--primary">
+                💳 Tap NFC Card
+              </button>
+            </div>
           </div>
         </section>
 
         <section v-if="booking.enteredAt" class="entry-confirmed">
           <h2>✅ Entry Confirmed</h2>
-          <p>Entered at: {{ formatTime(booking.enteredAt) }}</p>
+          <p>Entered at: {{ formatLocalTime(booking.enteredAt) }}</p>
           <p>Entry method: {{ booking.entryMethod }}</p>
         </section>
       </div>
 
       <div class="booking-actions">
         <button
-          v-if="booking.status === 'reserved'"
+          v-if="booking.status === 'reserved' || booking.status === 'confirmed'"
           @click="handleCancel"
           class="btn btn--danger"
         >
@@ -67,41 +94,140 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import { useBookingsStore } from '@/stores/bookings';
+import { bookingService } from '@/services/bookingService';
 import { useBookingTimer } from '@/composables/useBookingTimer';
+import { useBookingRealtime } from '@/composables/useBookingRealtime';
+import { formatLocalDate, formatLocalTime } from '@/utils/timezoneUtils';
+import type { Booking, BookingStatus } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 const bookingsStore = useBookingsStore();
 
 const bookingId = computed(() => route.params.id as string);
-const booking = computed(() => 
-  bookingsStore.bookings.find(b => b.bookingId === bookingId.value) ||
-  bookingsStore.userBookings.find(b => b.bookingId === bookingId.value)
+const booking = ref<Booking | null>(null);
+const loading = computed(() => bookingsStore.loading || !booking.value);
+
+// Helper to load building data if needed
+const loadBuildingData = async (foundBooking: Booking) => {
+  if (foundBooking.room?.buildingId && !foundBooking.room.building) {
+    try {
+      const building = await bookingService.getBuildingById(foundBooking.room.buildingId);
+      if (building && foundBooking.room) {
+        foundBooking.room.building = {
+          buildingId: building.id,
+          name: building.name,
+          address: '',
+          institutionId: '',
+        };
+      }
+    } catch (error) {
+      console.error('Failed to fetch building details:', error);
+    }
+  }
+};
+
+// Load booking from database or store
+const loadBooking = async () => {
+  const userId = authStore.currentUser?.userId;
+  if (userId) {
+    try {
+      const bookings = await bookingService.getBookingsByUser(userId);
+      const foundBooking = bookings.find(b => b.bookingId === bookingId.value);
+      if (foundBooking) {
+        await loadBuildingData(foundBooking);
+        booking.value = foundBooking;
+        return;
+      }
+    } catch (error) {
+      console.error('Failed to fetch booking details:', error);
+    }
+  }
+
+  // Fallback: try to find in store
+  const foundBooking =
+    bookingsStore.bookings.find(b => b.bookingId === bookingId.value) ||
+    bookingsStore.userBookings.find(b => b.bookingId === bookingId.value);
+
+  if (foundBooking) {
+    await loadBuildingData(foundBooking);
+    booking.value = foundBooking;
+  }
+};
+
+onMounted(() => {
+  loadBooking();
+});
+
+// Refresh booking data from realtime updates
+const refreshBooking = async () => {
+  await loadBooking();
+};
+
+// Subscribe to realtime updates for this booking
+if (authStore.currentUser) {
+  useBookingRealtime(authStore.currentUser.userId, refreshBooking);
+}// Check if booking start time is within next 10 minutes
+const isWithinWindow = computed(() => {
+  if (!booking.value) return false;
+  const now = new Date();
+  const startTime = new Date(booking.value.startTime);
+  const timeDiff = startTime.getTime() - now.getTime();
+  const minutesDiff = timeDiff / (1000 * 60);
+
+  // Must be within 10 minutes before start and before it has started
+  return minutesDiff <= 10 && minutesDiff >= 0;
+});
+
+// Only use the timer if we're within the window and in entry-ready state
+const timerComposable = ref<ReturnType<typeof useBookingTimer> | null>(null);
+const formattedTime = computed(() => timerComposable.value?.formattedTime || '');
+const isExpiredFromTimer = computed(() => timerComposable.value?.isExpired || false);
+
+// Watch for changes in window/status to manage timer lifecycle
+watch(
+  () => ({
+    isWithinWindow: isWithinWindow.value,
+    status: booking.value?.status,
+    startTime: booking.value?.startTime,
+  }),
+  (newVal) => {
+    // Stop existing timer
+    if (timerComposable.value) {
+      timerComposable.value.stopTimer();
+      timerComposable.value = null;
+    }
+
+    // Start new timer if conditions are met
+    if (
+      newVal.isWithinWindow &&
+      newVal.status &&
+      (newVal.status === 'reserved' || newVal.status === 'confirmed') &&
+      newVal.startTime
+    ) {
+      timerComposable.value = useBookingTimer(new Date(newVal.startTime));
+      timerComposable.value?.startTimer();
+    }
+  },
+  { deep: false }
 );
-const loading = computed(() => bookingsStore.loading);
 
-const { formattedTime, isExpired } = booking.value && booking.value.status === 'reserved'
-  ? useBookingTimer(booking.value.startTime)
-  : { formattedTime: computed(() => ''), isExpired: computed(() => false) };
-
-const formatDate = (date: Date) => {
-  return new Date(date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-};
-
-const formatTime = (date: Date) => {
-  return new Date(date).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+// Watch for timer expiration and update booking status
+watch(isExpiredFromTimer, async (expired) => {
+  if (expired && booking.value && booking.value.status === 'reserved') {
+    try {
+      await bookingService.updateBooking(booking.value.bookingId, { status: 'expired' as BookingStatus });
+      booking.value.status = 'expired' as BookingStatus;
+    } catch (error) {
+      console.error('Failed to update booking status on timer expiration:', error);
+    }
+  }
+});
 
 const calculateDuration = (start: Date, end: Date) => {
   const diff = new Date(end).getTime() - new Date(start).getTime();
@@ -114,28 +240,24 @@ const calculateDuration = (start: Date, end: Date) => {
 
 const confirmEntry = async (method: string) => {
   if (!booking.value) return;
-  try {
-    await bookingsStore.confirmEntry(booking.value.bookingId, method);
-    alert('Entry confirmed! Welcome to your room.');
-  } catch (error) {
-    alert('Failed to confirm entry. Please try again.');
-  }
+  await bookingsStore.confirmEntry(booking.value.bookingId, method);
+  alert('Entry confirmed! Welcome to your room.');
 };
 
 const handleCancel = async () => {
   if (!booking.value) return;
   if (confirm('Are you sure you want to cancel this booking?')) {
-    try {
-      await bookingsStore.cancelBooking(booking.value.bookingId);
-      router.push('/bookings');
-    } catch (error) {
-      alert('Failed to cancel booking. Please try again.');
-    }
+    await bookingsStore.cancelBooking(booking.value.bookingId);
+    router.push('/bookings');
   }
 };
 
-onMounted(() => {
-  // Fetch booking if needed
+// Cleanup timer when component unmounts
+onUnmounted(() => {
+  if (timerComposable.value) {
+    timerComposable.value.stopTimer();
+    timerComposable.value = null;
+  }
 });
 </script>
 
@@ -242,6 +364,52 @@ dd {
 .entry-confirmed {
   text-align: center;
   background: #e8f5e9;
+}
+
+.window-closed {
+  background: #fff3e0;
+  border-left: 4px solid #ff9800;
+  padding: 1.5rem;
+  border-radius: 4px;
+}
+
+.window-closed h2 {
+  color: #e65100;
+  margin-top: 0;
+}
+
+.window-closed p {
+  color: #bf360c;
+  margin: 0.5rem 0;
+}
+
+.time-info {
+  font-weight: 600;
+  color: #ff6f00;
+}
+
+.location-check {
+  background: #f3e5f5;
+  border-left: 4px solid #9c27b0;
+  padding: 1.5rem;
+  border-radius: 4px;
+}
+
+.location-check h2 {
+  color: #6a1b9a;
+  margin-top: 0;
+}
+
+.location-check p {
+  color: #4a148c;
+  margin: 0.5rem 0;
+}
+
+.entry-ready {
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  padding: 1.5rem;
+  border-radius: 4px;
 }
 
 .booking-actions {

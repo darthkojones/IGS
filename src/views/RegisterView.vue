@@ -71,6 +71,20 @@
           </select>
         </div>
 
+        <div class="form-group">
+          <label for="institution">Institution</label>
+          <select id="institution" v-model="form.institutionId" required>
+            <option value="" disabled>Select an institution</option>
+            <option
+              v-for="institution in institutions"
+              :key="institution.institutionId"
+              :value="institution.institutionId"
+            >
+              {{ institution.name }}
+            </option>
+          </select>
+        </div>
+
         <div v-if="error" class="error-message" role="alert">
           {{ error }}
         </div>
@@ -93,10 +107,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import { UserRole } from '@/types';
+import { UserRole, type Institution } from '@/types';
+import { institutionService } from '@/services/institutionService';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -108,10 +123,20 @@ const form = reactive({
   password: '',
   confirmPassword: '',
   role: UserRole.STUDENT,
+  institutionId: '',
 });
 
 const loading = ref(false);
 const error = ref<string | null>(null);
+const institutions = ref<Institution[]>([]);
+
+onMounted(async () => {
+  try {
+    institutions.value = await institutionService.getAllInstitutions();
+  } catch {
+    error.value = 'Failed to load institutions. Please refresh the page.';
+  }
+});
 
 const handleSubmit = async () => {
   error.value = null;
@@ -132,8 +157,9 @@ const handleSubmit = async () => {
     await authStore.register({
       firstName: form.firstName,
       lastName: form.lastName,
-      name: `${form.firstName} ${form.lastName}`,
+      //name: `${form.firstName} ${form.lastName}`,
       role: form.role,
+      institutionId: form.institutionId,
       email: form.email,
       password: form.password,
     });

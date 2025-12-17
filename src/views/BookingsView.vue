@@ -15,6 +15,12 @@
         Upcoming
       </button>
       <button
+        :class="{ active: activeTab === 'ongoing' }"
+        @click="activeTab = 'ongoing'"
+      >
+        Ongoing
+      </button>
+      <button
         :class="{ active: activeTab === 'past' }"
         @click="activeTab = 'past'"
       >
@@ -24,7 +30,10 @@
 
     <div v-if="loading" class="loading">Loading bookings...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    
+    <div v-else-if="bookingsStore.userBookings.length === 0" class="no-bookings">
+      <p>No bookings found. <router-link to="/bookings/new">Create one now</router-link></p>
+    </div>
+
     <div v-else class="bookings-list">
       <div
         v-for="booking in displayedBookings"
@@ -38,8 +47,8 @@
           </span>
         </div>
         <div class="booking-details">
-          <p><strong>Date:</strong> {{ formatDate(booking.startTime) }}</p>
-          <p><strong>Time:</strong> {{ formatTime(booking.startTime) }} - {{ formatTime(booking.endTime) }}</p>
+          <p><strong>Date:</strong> {{ formatLocalDate(booking.startTime, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) }}</p>
+          <p><strong>Time:</strong> {{ formatLocalTime(booking.startTime) }} - {{ formatLocalTime(booking.endTime) }}</p>
         </div>
         <div class="booking-actions">
           <router-link
@@ -69,36 +78,41 @@
 import { ref, computed, onMounted } from 'vue';
 import { useBookingsStore } from '@/stores/bookings';
 import { useAuthStore } from '@/stores/auth';
+import { bookingService } from '@/services/bookingService';
+import { useBookingRealtime } from '@/composables/useBookingRealtime';
+import { formatLocalDate, formatLocalTime } from '@/utils/timezoneUtils';
+import type { Booking } from '@/types';
 
 const bookingsStore = useBookingsStore();
 const authStore = useAuthStore();
 
-const activeTab = ref<'upcoming' | 'past'>('upcoming');
+const activeTab = ref<'upcoming' | 'ongoing' | 'past'>('upcoming');
 
 const loading = computed(() => bookingsStore.loading);
 const error = computed(() => bookingsStore.error);
 
 const displayedBookings = computed(() => {
-  return activeTab.value === 'upcoming'
-    ? bookingsStore.upcomingBookings
-    : bookingsStore.pastBookings;
+  const now = new Date();
+  if (activeTab.value === 'upcoming') {
+    // Show reserved/confirmed bookings with future start times
+    return bookingsStore.userBookings.filter((booking: Booking) => {
+      const startTime = new Date(booking.startTime);
+      return (booking.status === 'reserved' || booking.status === 'confirmed') && startTime > now;
+    });
+  } else if (activeTab.value === 'ongoing') {
+    // Show active bookings (currently happening)
+    return bookingsStore.userBookings.filter((booking: Booking) => {
+      return booking.status === 'active';
+    });
+  } else {
+    // Show past and completed bookings (any that are not upcoming)
+    return bookingsStore.userBookings.filter((booking: Booking) => {
+      const endTime = new Date(booking.endTime);
+      const isFinalState = ['completed', 'expired', 'cancelled'].includes(booking.status);
+      return isFinalState || endTime < now;
+    });
+  }
 });
-
-const formatDate = (date: Date) => {
-  return new Date(date).toLocaleDateString('en-US', {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
-
-const formatTime = (date: Date) => {
-  return new Date(date).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 
 const cancelBooking = async (bookingId: string) => {
   if (confirm('Are you sure you want to cancel this booking?')) {
@@ -106,9 +120,39 @@ const cancelBooking = async (bookingId: string) => {
   }
 };
 
-onMounted(() => {
+// Update expired bookings when bookings are loaded
+const updateExpiredBookings = async () => {
+  try {
+    if (bookingsStore.userBookings.length > 0) {
+      await bookingService.updateExpiredBookings(bookingsStore.userBookings);
+      // Refresh the bookings to reflect the updated statuses
+      if (authStore.currentUser) {
+        await bookingsStore.fetchUserBookings(authStore.currentUser.userId);
+      }
+    }
+  } catch (err) {
+    console.error('Error updating expired bookings:', err);
+  }
+};
+
+// Setup realtime subscription for live updates
+const refreshBookings = async () => {
   if (authStore.currentUser) {
-    bookingsStore.fetchUserBookings(authStore.currentUser.userId);
+    await bookingsStore.fetchUserBookings(authStore.currentUser.userId);
+    await updateExpiredBookings();
+  }
+};
+
+// Subscribe to realtime changes on bookings table
+if (authStore.currentUser) {
+  useBookingRealtime(authStore.currentUser.userId, refreshBookings);
+}
+
+onMounted(async () => {
+  // If user is already loaded, fetch bookings immediately
+  if (authStore.currentUser) {
+    await bookingsStore.fetchUserBookings(authStore.currentUser.userId);
+    await updateExpiredBookings();
   }
 });
 </script>

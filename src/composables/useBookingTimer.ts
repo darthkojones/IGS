@@ -1,6 +1,6 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 
-export function useBookingTimer(startTime: Date, durationMinutes: number = 5) {
+export function useBookingTimer(startTime: Date) {
   const timeRemaining = ref(0);
   const isExpired = ref(false);
   let intervalId: number | null = null;
@@ -8,16 +8,15 @@ export function useBookingTimer(startTime: Date, durationMinutes: number = 5) {
   const calculateTimeRemaining = () => {
     const now = new Date();
     const start = new Date(startTime);
-    const expiryTime = new Date(start.getTime() + durationMinutes * 60000);
-    const diff = expiryTime.getTime() - now.getTime();
-    
+    const diff = start.getTime() - now.getTime();
+
     if (diff <= 0) {
       timeRemaining.value = 0;
       isExpired.value = true;
       if (intervalId) clearInterval(intervalId);
       return;
     }
-    
+
     timeRemaining.value = Math.floor(diff / 1000);
   };
 
@@ -38,14 +37,6 @@ export function useBookingTimer(startTime: Date, durationMinutes: number = 5) {
       intervalId = null;
     }
   };
-
-  onMounted(() => {
-    startTimer();
-  });
-
-  onUnmounted(() => {
-    stopTimer();
-  });
 
   return {
     timeRemaining,

@@ -28,7 +28,7 @@ export default defineConfig({
     port: 5173,
     strictPort:true,
     hmr: {
-      protocol: 'ws',
+      protocol: 'wss',
       host: 'dev.tinsae.net',
       clientPort: 443
     }

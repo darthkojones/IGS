@@ -1,14 +1,14 @@
 <template>
-  <div 
-    class="room-card" 
+  <div
+    class="room-card"
     :class="{ 'room-card--available': isAvailable }"
     role="article"
     :aria-label="`Room ${room.name}, ${statusText}`"
   >
     <div class="room-card__header">
       <h3 class="room-card__title">{{ room.name }}</h3>
-      <div 
-        class="room-card__status" 
+      <div
+        class="room-card__status"
         :class="`room-card__status--${statusColor}`"
         :aria-label="`Status: ${statusText}`"
       >
@@ -45,7 +45,7 @@
     </div>
 
     <div class="room-card__footer">
-      <button 
+      <button
         v-if="isAvailable"
         class="btn btn--primary"
         @click="$emit('book', room)"
@@ -53,7 +53,7 @@
       >
         Book Now
       </button>
-      <button 
+      <button
         class="btn btn--secondary"
         @click="$emit('view-details', room)"
         :aria-label="`View details for ${room.name}`"
@@ -80,14 +80,9 @@ const props = withDefaults(defineProps<Props>(), {
   travelTime: 0,
 });
 
-const emit = defineEmits<{
-  book: [room: Room];
-  'view-details': [room: Room];
-}>();
-
 const { statusColor, statusText } = useRoomStatus(props.room.roomId);
 
-const isAvailable = computed(() => props.room.status === 'free');
+const isAvailable = computed(() => statusText.value === 'Available');
 </script>
 
 <style scoped>

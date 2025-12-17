@@ -2,7 +2,7 @@
   <div class="room-detail-view">
     <div v-if="loading" class="loading">Loading...</div>
     <div v-else-if="!room" class="error">Room not found</div>
-    
+
     <div v-else class="room-detail">
       <header class="room-header">
         <h1>{{ room.name }}</h1>
@@ -38,14 +38,29 @@
 
         <section class="room-schedule">
           <h2>Today's Schedule</h2>
-          <!-- Schedule would be implemented here -->
-          <p class="placeholder">Schedule view coming soon</p>
+          <div v-if="roomBookings.length > 0" class="schedule-timeline">
+            <div
+              v-for="booking in roomBookings"
+              :key="booking.bookingId"
+              class="schedule-item"
+            >
+              <div class="schedule-time">
+                {{ formatLocalTime(booking.startTime) }} - {{ formatLocalTime(booking.endTime) }}
+              </div>
+              <div class="schedule-details">
+                <strong>{{ booking.title }}</strong>
+                <div class="schedule-status" :class="`status-${booking.status}`">
+                  {{ booking.status }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <p v-else class="no-bookings">No bookings for today</p>
         </section>
       </div>
 
       <div class="room-actions">
         <button
-          v-if="room.status === 'free'"
           class="btn btn--primary btn--large"
           @click="bookRoom"
         >
@@ -63,15 +78,37 @@
 import { computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useRoomsStore } from '@/stores/rooms';
+import { useBookingsStore } from '@/stores/bookings';
+import { formatLocalTime } from '@/utils/timezoneUtils';
 import RoomStatusDisplay from '@/components/RoomStatusDisplay.vue';
 
 const router = useRouter();
 const route = useRoute();
 const roomsStore = useRoomsStore();
+const bookingsStore = useBookingsStore();
 
 const roomId = computed(() => route.params.id as string);
 const room = computed(() => roomsStore.getRoomById(roomId.value));
 const loading = computed(() => roomsStore.loading);
+
+// Get today's bookings for this specific room
+const roomBookings = computed(() => {
+  const now = new Date();
+
+  // Get today's date boundaries in UTC
+  // Adjust for local timezone offset to get correct UTC day boundaries
+  const tzOffset = now.getTimezoneOffset() * 60000;
+  const localMidnight = new Date(now.getTime() - (now.getTime() % 86400000) - tzOffset);
+  const startOfDayUTC = new Date(localMidnight.getTime());
+  const endOfDayUTC = new Date(startOfDayUTC.getTime() + 86400000);
+
+  return bookingsStore.bookings
+    .filter(booking => {
+      const bookingStart = new Date(booking.startTime);
+      return booking.roomId === roomId.value && bookingStart >= startOfDayUTC && bookingStart < endOfDayUTC;
+    })
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+});
 
 const getBuildingName = (buildingId: string) => {
   const building = roomsStore.buildings.find(b => b.buildingId === buildingId);
@@ -92,6 +129,8 @@ onMounted(() => {
   if (roomsStore.buildings.length === 0) {
     roomsStore.fetchBuildings();
   }
+  // Fetch bookings to show today's schedule
+  bookingsStore.fetchAllBookings?.();
 });
 </script>
 
@@ -197,5 +236,74 @@ dd {
   background: transparent;
   color: #1976d2;
   border: 1px solid #1976d2;
+}
+
+/* Schedule Styles */
+.schedule-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.schedule-item {
+  background: #f9f9f9;
+  border-left: 4px solid #2563eb;
+  border-radius: 4px;
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.schedule-time {
+  font-weight: 600;
+  color: #2563eb;
+  min-width: 100px;
+  padding-top: 0.25rem;
+  font-size: 0.95rem;
+}
+
+.schedule-details {
+  flex: 1;
+}
+
+.schedule-details strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+.schedule-status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-reserved {
+  background-color: #fef08a;
+  color: #854d0e;
+}
+
+.status-active {
+  background-color: #dbeafe;
+  color: #0c4a6e;
+}
+
+.status-completed {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-cancelled {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.no-bookings {
+  color: #999;
+  font-style: italic;
+  margin: 0;
 }
 </style>

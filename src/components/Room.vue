@@ -33,24 +33,24 @@ const bookRoom = () => {
       <span class="back-arrow">←</span>
       <span class="header-title">Room A.2.10</span>
     </div>
-    
+
     <div class="main-content">
       <div class="left-section">
         <div class="room-image">
           📸
         </div>
-        
+
         <div class="status">
           <span class="status-dot"></span>
           <span class="status-text">Available Now</span>
         </div>
-        
+
         <div class="location">📍 Building A, Floor 2</div>
-        
+
         <div class="divider"></div>
-        
+
         <div class="section-title">Room Information</div>
-        
+
         <div class="info-grid">
           <div class="info-item">
             <span class="info-icon">👥</span>
@@ -61,11 +61,11 @@ const bookRoom = () => {
             <span>20m²</span>
           </div>
         </div>
-        
+
         <div class="divider"></div>
-        
+
         <div class="section-title">Equipment</div>
-        
+
         <div class="equipment-list">
           <div class="equipment-item">
             <span>✓</span>
@@ -76,11 +76,11 @@ const bookRoom = () => {
             <span>Whiteboard</span>
           </div>
         </div>
-        
+
         <div class="divider"></div>
-        
+
         <div class="section-title">Today's Schedule</div>
-        
+
         <div class="schedule-section">
           <div v-for="item in schedule" :key="item.time" class="schedule-item">
             <span class="time">{{ item.time }}</span>
@@ -88,11 +88,11 @@ const bookRoom = () => {
           </div>
         </div>
       </div>
-      
+
       <div class="right-section">
         <div class="booking-panel">
           <div class="booking-title">Book this room</div>
-          
+
           <div class="form-group">
             <label class="form-label">Date</label>
             <select v-model="selectedDate" class="form-select">
@@ -102,7 +102,7 @@ const bookRoom = () => {
               <option>Tuesday, 26.11.2025</option>
             </select>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">Start</label>
             <select v-model="startTime" class="form-select">
@@ -114,7 +114,7 @@ const bookRoom = () => {
               <option>16:30</option>
             </select>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">End</label>
             <select v-model="endTime" class="form-select">
@@ -125,13 +125,13 @@ const bookRoom = () => {
               <option>17:30</option>
             </select>
           </div>
-          
+
           <div class="duration">
             Duration: 1h 30min
           </div>
-          
+
           <button @click="bookRoom" class="book-button">Book Room</button>
-          
+
           <div class="booking-info">
             ⚠️ Remember to check in within 5 minutes of your booking start time, or the booking will be automatically cancelled.
           </div>
@@ -198,17 +198,17 @@ const bookRoom = () => {
   .main-content {
     flex-direction: column;
   }
-  
+
   .left-section {
     border-right: none;
     border-bottom: 1px solid #e0e0e0;
     width: 100%;
   }
-  
+
   .right-section {
     width: 100%;
   }
-  
+
   .booking-panel {
     position: static;
     max-width: 600px;
@@ -221,26 +221,26 @@ const bookRoom = () => {
   .right-section {
     padding: 20px;
   }
-  
+
   .room-image {
     height: 200px;
     font-size: 48px;
   }
-  
+
   .info-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .schedule-item {
     gap: 10px;
   }
-  
+
   .time {
     width: 50px;
     min-width: 50px;
     font-size: 13px;
   }
-  
+
   .timeline-bar {
     font-size: 12px;
     padding: 0 10px;
@@ -251,37 +251,37 @@ const bookRoom = () => {
   .container {
     box-shadow: none;
   }
-  
+
   .header {
     padding: 12px 15px;
   }
-  
+
   .header-title {
     font-size: 16px;
   }
-  
+
   .left-section,
   .right-section {
     padding: 15px;
   }
-  
+
   .room-image {
     height: 150px;
     font-size: 36px;
   }
-  
+
   .status-text {
     font-size: 16px;
   }
-  
+
   .location {
     font-size: 14px;
   }
-  
+
   .section-title {
     font-size: 15px;
   }
-  
+
   .info-item,
   .equipment-item {
     font-size: 14px;

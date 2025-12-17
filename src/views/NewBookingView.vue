@@ -1,12 +1,12 @@
 <template>
   <div class="new-booking-view">
     <h1>New Booking</h1>
-    
+
     <div v-if="!selectedRoom" class="room-selection">
       <h2>Select a Room</h2>
-      
+
       <div v-if="roomsLoading" class="loading">Loading rooms...</div>
-      
+
       <div v-else class="rooms-grid">
         <div
           v-for="room in availableRooms"
@@ -16,9 +16,6 @@
         >
           <div class="room-header">
             <h3>{{ room.name }}</h3>
-            <span class="room-status" :class="`status--${room.status}`">
-              {{ room.status }}
-            </span>
           </div>
           <div class="room-details">
             <p><strong>Capacity:</strong> {{ room.capacity }} people</p>
@@ -38,7 +35,7 @@
       <button @click="clearRoomSelection" class="btn btn--secondary back-btn">
         ← Change Room
       </button>
-      
+
       <BookingForm
         :selected-room="selectedRoom"
         :loading="loading"
@@ -84,18 +81,14 @@ const handleSubmit = async (bookingData: Partial<Booking>) => {
     return;
   }
 
-  try {
-    const completeBookingData = {
-      ...bookingData,
-      userId: authStore.currentUser.userId,
-    };
+  const completeBookingData = {
+    ...bookingData,
+    userId: authStore.currentUser.userId,
+  };
 
-    await bookingsStore.createBooking(completeBookingData as Omit<Booking, 'bookingId' | 'createdAt' | 'status'>);
-    alert('Booking created successfully!');
-    router.push({ name: 'bookings' });
-  } catch (err) {
-    console.error('Failed to create booking:', err);
-  }
+  await bookingsStore.createBooking(completeBookingData as Omit<Booking, 'bookingId' | 'createdAt'>);
+  alert('Booking created successfully!');
+  await router.push({ name: 'bookings' });
 };
 
 const handleCancel = () => {

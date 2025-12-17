@@ -71,6 +71,10 @@
       {{ error }}
     </div>
 
+    <div v-if="availabilityError" class="error-message availability-error" role="alert">
+      {{ availabilityError }}
+    </div>
+
     <div class="form-actions">
       <button
         type="button"
@@ -95,6 +99,8 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue';
 import type { Room, Booking } from '@/types';
+import { bookingService } from '@/services/bookingService';
+import { localTimeToUTC } from '@/utils/timezoneUtils';
 
 interface Props {
   selectedRoom?: Room | null;
@@ -120,29 +126,53 @@ const form = reactive({
   duration: 60,
 });
 
+const availabilityError = ref('');
+
 const minDate = computed(() => {
+  // Get today's date in the user's local timezone
   const today = new Date();
-  return today.toISOString().split('T')[0];
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 });
 
 const isFormValid = computed(() => {
   return form.title && form.date && form.startTime && form.duration > 0;
 });
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!isFormValid.value || !props.selectedRoom) return;
 
-  const startDateTime = new Date(`${form.date}T${form.startTime}`);
+  // Convert local time from form to UTC
+  const startDateTime = localTimeToUTC(form.date, form.startTime);
   const endDateTime = new Date(startDateTime.getTime() + form.duration * 60000);
 
-  const bookingData: Partial<Booking> = {
-    roomId: props.selectedRoom.roomId,
-    title: form.title,
-    startTime: startDateTime,
-    endTime: endDateTime,
-  };
+  // Check room availability with 5-minute buffer
+  try {
+    availabilityError.value = '';
+    const hasConflict = await bookingService.hasBookingConflict(
+      props.selectedRoom.roomId,
+      startDateTime,
+      endDateTime
+    );
 
-  emit('submit', bookingData);
+    if (hasConflict) {
+      availabilityError.value = 'This room is not available for the selected time. Please choose a different time or room.';
+      return;
+    }
+
+    const bookingData: Partial<Booking> = {
+      roomId: props.selectedRoom.roomId,
+      title: form.title,
+      startTime: startDateTime,
+      endTime: endDateTime,
+    };
+
+    emit('submit', bookingData);
+  } catch {
+    availabilityError.value = 'Failed to check availability. Please try again.';
+  }
 };
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-  <div 
+  <div
     class="room-status-display"
     :class="`room-status-display--${statusColor}`"
     role="status"
@@ -13,9 +13,9 @@
     <div v-if="currentBooking" class="booking-info">
       <h3>{{ currentBooking.title }}</h3>
       <div class="booking-time">
-        <span>{{ formatTime(currentBooking.startTime) }}</span>
+        <span>{{ formatLocalTime(currentBooking.startTime) }}</span>
         <span> - </span>
-        <span>{{ formatTime(currentBooking.endTime) }}</span>
+        <span>{{ formatLocalTime(currentBooking.endTime) }}</span>
       </div>
       <div v-if="showTimer && timeRemaining > 0" class="timer">
         <span class="timer-label">Time remaining:</span>
@@ -25,7 +25,7 @@
 
     <div v-else-if="nextBooking" class="next-booking">
       <p>Next booking:</p>
-      <p class="next-booking-time">{{ formatTime(nextBooking.startTime) }}</p>
+      <p class="next-booking-time">{{ formatLocalTime(nextBooking.startTime) }}</p>
     </div>
   </div>
 </template>
@@ -35,6 +35,7 @@ import { computed } from 'vue';
 import type { Booking } from '@/types';
 import { useRoomStatus } from '@/composables/useRoomStatus';
 import { useBookingTimer } from '@/composables/useBookingTimer';
+import { formatLocalTime } from '@/utils/timezoneUtils';
 
 interface Props {
   roomId: string;
@@ -67,13 +68,6 @@ const lightColor = computed(() => {
       return '#9e9e9e';
   }
 });
-
-const formatTime = (date: Date): string => {
-  return new Date(date).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 </script>
 
 <style scoped>

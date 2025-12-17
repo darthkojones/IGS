@@ -6,16 +6,14 @@
       <section class="profile-info">
         <h2>Personal Information</h2>
         <dl>
-          <dt>Name:</dt>
-          <dd>{{ user.name }}</dd>
           <dt>First Name:</dt>
           <dd>{{ user.firstName }}</dd>
           <dt>Last Name:</dt>
           <dd>{{ user.lastName }}</dd>
           <dt>Role:</dt>
           <dd class="role-badge">{{ user.role }}</dd>
-          <dt>User ID:</dt>
-          <dd>{{ user.userId }}</dd>
+          <dt>Institution:</dt>
+          <dd>{{ user.institution?.fullName + ' (' + user.institution?.name + ')' || 'Not specified' }}</dd>
         </dl>
       </section>
 

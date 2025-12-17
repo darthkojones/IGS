@@ -1,9 +1,9 @@
 import type { User } from '@/types';
-import { UserRole } from '@/types'
 
 // Supabase
 // NOTE: no reactive imports needed in this service
 import { supabase } from '@/lib/supabaseClient'
+import { mapSupabaseUserToUser } from '@/mappers/userMapper'
 
 export type AuthLoginResponse = {
   user?: User | null;
@@ -11,30 +11,10 @@ export type AuthLoginResponse = {
   [key: string]: unknown;
 };
 
-/**
- * Map a user row from the `users` table to the application's `User` type.
- */
-function mapSupabaseUserToUser(userData: Record<string, unknown>): User | null {
-  if (!userData || !userData.id) return null
-
-  const firstName = (userData.first_name ?? '') as string
-  const lastName = (userData.last_name ?? '') as string
-  const email = (userData.email ?? '') as string
-  const name = (`${firstName} ${lastName}`.trim() || email || '')
-
-  return {
-    userId: String(userData.id),
-    firstName,
-    lastName,
-    name,
-    role: (userData.role as UserRole) ?? UserRole.STUDENT,
-    institutionId: userData.institution_id != null ? String(userData.institution_id) : undefined,
-  }
-}
-
 
 export const authService = {
-
+  // login method uses supabase auth to sign in
+  // and fetch user profile based on the authenticated user
   async login(email: string, password: string): Promise<AuthLoginResponse> {
     try {
       // Use Supabase Auth to sign in
@@ -49,7 +29,7 @@ export const authService = {
       // Fetch the user profile from the users table
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('*')
+        .select('*, Institution(*)')
         .eq('id', authUser.id)
         .single()
 
@@ -73,19 +53,17 @@ export const authService = {
 
   async register(userData: Partial<User> & { email: string; password: string }): Promise<{ user: User; token: string }> {
     try {
-      const { email, password, firstName = '', lastName = '', name = '' } = userData
+      const { email, password, firstName = '', lastName = '',  role, institutionId } = userData
 
-      // Sign up with Supabase Auth
+      if (!institutionId) {
+        throw new Error('Institution is required')
+      }
+
+      // Sign up with Supabase Auth — no metadata,
+      // let public.users upsert handle profile one of the perks of supabase
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            user_name: name || email,
-          },
-        },
       })
 
       if (error) throw error
@@ -98,10 +76,31 @@ export const authService = {
       // Wait a moment for the trigger to create the user profile
       await new Promise((resolve) => setTimeout(resolve, 500))
 
+      // Update the user profile in the users table with institution_id
+      // Explicitly insert (or upsert) into users table
+      // this does adding auth.user data to users table
+      // and does adding all profile fields to public.users table
+      const { error: upsertError } = await supabase
+        .from('users')
+        .upsert({
+          id: authUser.id,
+          email,
+          first_name: firstName,
+          last_name: lastName,
+          institution_id: institutionId || null,
+          role: role ?? 'student',
+        }, { onConflict: 'id' })
+        .select()
+
+      if (upsertError) {
+        console.error('Failed to upsert user profile:', upsertError)
+        throw upsertError
+      }
+
       // Fetch the user profile from the users table
       const { data: profileData, error: userError } = await supabase
         .from('users')
-        .select('*')
+        .select('*, Institution(*)')
         .eq('id', authUser.id)
         .single()
 
@@ -134,7 +133,7 @@ export const authService = {
       // Fetch the user profile from the users table
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('*')
+        .select('*, Institution(*)')
         .eq('id', authUser.id)
         .single()
 

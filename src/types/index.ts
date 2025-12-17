@@ -3,6 +3,7 @@
 export interface Institution {
   institutionId: string;
   name: string;
+  fullName: string;
   address?: string;
 }
 
@@ -21,8 +22,8 @@ export interface Room {
   floor: number;
   capacity: number;
   buildingId: string;
+  building?: Building; // Optional building data
   equipment: Equipment[];
-  status: RoomStatus;
   currentBooking?: Booking;
   description?: string;
   hasProjector?: boolean;
@@ -52,9 +53,10 @@ export interface User {
   userId: string;
   firstName: string;
   lastName: string;
-  name: string;
+  //name: string;
   role: UserRole;
   institutionId?: string;
+  institution?: Institution;
 }
 
 export enum UserRole {
@@ -75,26 +77,22 @@ export interface Booking {
   entryMethod?: EntryMethod;
   enteredAt?: Date;
   createdAt: Date;
+  room?: Room; // Optional room data
 }
 
 export enum BookingStatus {
-  RESERVED = 'reserved',
-  ACTIVE = 'active',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  NO_SHOW = 'no_show'
+  RESERVED = 'reserved',      // Initial state when booking is created
+  CONFIRMED = 'confirmed',    // User confirmed they will attend
+  ACTIVE = 'active',          // Meeting is currently ongoing
+  EXPIRED = 'expired',        // Start time passed without confirmation
+  CANCELLED = 'cancelled',    // User or admin cancelled the booking
+  COMPLETED = 'completed'     // Meeting ended (only if was active)
 }
 
 export enum EntryMethod {
   QR_CODE = 'qr_code',
   NFC = 'nfc',
   MOTION_SENSOR = 'motion_sensor'
-}
-
-export enum RoomStatus {
-  FREE = 'free',
-  RESERVED = 'reserved',
-  OCCUPIED = 'occupied'
 }
 
 export interface RoomControl {

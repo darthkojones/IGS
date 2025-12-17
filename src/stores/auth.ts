@@ -32,19 +32,6 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     async login(email: string, password: string) {
-      // TODO: Implement API call
-      // For now, mock authentication
-      /*this.user = {
-        userId: '1',
-        firstName: 'John',
-        lastName: 'Doe',
-        name: 'John Doe',
-        role: 'student' as UserRole,
-      };
-      this.isAuthenticated = true;
-      this.token = 'mock-token';*/
-      // the logic here shoukld be handled in authService
-      console.log('Login authentication called with credentials', email, password);
       // Call authService.login once and use its returned shape
       const res: AuthLoginResponse = await authServices.login(email, password);
       // Expecting res to contain { user, token }
@@ -53,8 +40,6 @@ export const useAuthStore = defineStore('auth', {
       // Consider the user authenticated when a valid token is present. Some test APIs
       // return minimal user data or none at all, so token is a more reliable signal.
       this.isAuthenticated = !!this.token;
-
-      console.log('Login esults:', this.user, this.token);
 
       // Persist login for page reloads
       try {
@@ -66,7 +51,6 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async logout() {
-
       // logout logic should be handled in authService
       authServices.logout();
       this.user = null;
@@ -82,7 +66,6 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async register(userData: Partial<User> & { email: string; password: string }) {
-      console.log('Register:', userData);
       // Call authService to register and store returned user/token
       const res = await authServices.register(userData)
       this.user = res.user

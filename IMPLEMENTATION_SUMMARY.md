@@ -1,13 +1,5 @@
-# Implementation Summary: Time-Based Room Availability
-
-## Problem Statement
-Rooms previously showed availability based on a static `status` field. In reality, meeting rooms can be occupied at certain times but free at others. Availability should be determined by checking the bookings table for time-based conflicts.
-
-## Solution Implemented
-Replace static status-based filtering with dynamic time-based availability checking using the bookings table.
-
-
-3. **Booking service unctions**
+## Booking methods
+1. **Booking service unctions**
      - `getBookingsByRoom(roomId)` - Get all bookings for a room
      - `getBookingsByUser(userId)` - Get all bookings for a user
      - `hasBookingConflict(roomId, startTime, endTime)` - Check availability
@@ -19,7 +11,7 @@ Replace static status-based filtering with dynamic time-based availability check
      - `confirmEntry(bookingId, entryMethod)` - Confirm user entry
 
 
-4. **`ookings store functions`**
+2. **Bookings store functions**
    - Migrated from localStorage to Supabase
    - New state uses `bookingService` for all operations
    - New methods:
@@ -32,31 +24,30 @@ Replace static status-based filtering with dynamic time-based availability check
      - `confirmEntry()`
 
 
+3. **User registration and authentication**: User registers for a profile, adds a password and other personal data, Authentication is handled by Supabase (authentication is managed by supabase) and profile info is stored in users table.pasword is hidden from dashboard.
+user can then login with email and password. for now, email verification is disabled. pasword check as well. 
 
----
+4. **Authentication service** makes use of supabase's
+```ts 
+// import supabase
+import { supabase } from '@/lib/supabaseClient'
+
+// sign in authentication
+await supabase.auth.signInWithPassword({ email, password }).
+
+// sign up
+await supabase.auth.signUp({ email, password })
+
+// Authentication service also includes functions to fetch current user and logout.
+``` 
+
+5. **Autrhentication store**
+ then makes use of the authentication service to fetch user data, and maintain user state.
 
 ## Key Architecture Changes
 
 ### Before: Status-Based Availability
 ```
-Room Table
-├── room_id
-├── name
-├── status ('free' | 'occupied' | 'reserved') ← Single source of truth
-└── ...
-
-Frontend Logic:
-- Display all rooms with status === 'free'
-- No consideration for actual bookings
-```
-
-### After: Time-Based Availability
-```
-Room Table
-├── room_id
-├── name
-├── status (maintenance indicator) ← Separate concern
-└── ...
 
 Bookings Table
 ├── booking_id
@@ -66,6 +57,11 @@ Bookings Table
 ├── end_time    ← Time-based availability
 ├── status ('reserved' | 'active' | ...)
 └── ...
+
+### Database rules
+- Users can only add a booking that is related t thir id.
+- users can `SELECT *` from books but only if authoirised (logged in). 
+- users can only update bookings with (booking.user_id == auth.user_id)
 
 Frontend Logic:
 - Query rooms: roomService.getAvailableRooms(startTime, endTime)

@@ -1,28 +1,20 @@
-import cron from 'node-cron'
+// src/jobs/roomSyncJob.ts
+import cron from 'node-cron';
+import { roomService } from '@/services/roomService';
+import type { Room } from '@/types/index';
 
-import { roomService } from '@/services/roomService'   // @ = src/
-import type { Room } from '@/types/index'
-
-async function syncRooms(): Promise<void> {
+export async function syncRooms(): Promise<void> {
   try {
-    const rooms: Room[] = await roomService.getAllRooms()
-
-
-
-
-
-
+    const rooms: Room[] = await roomService.getAllRooms();
+    // … mache hier etwas mit den Räumen …
+    console.log(`[roomSyncJob] ${rooms.length} Räume synchronisiert`);
   } catch (err: unknown) {
-    console.error('[roomSyncJob] Error:', err)
+    console.error('[roomSyncJob] Error:', err);
   }
 }
 
-/**
- * Cron‑expression, runs every 5 minutes
- */
-cron.schedule('*/5 * * * *', syncRooms, {
-  timezone: 'Europe/Berlin',
-})
+/* Cron‑Job – wird beim Laden der Datei automatisch registriert */
+cron.schedule('*/5 * * * *', syncRooms, { timezone: 'Europe/Berlin' });
 
-// Runs at server start
-syncRooms()
+/* Sofort beim Start ausführen (wie du es bereits machst) */
+syncRooms();

@@ -10,8 +10,8 @@
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
-    "start": "node server.js",
-    "start:prod": "npm run build && node server.js",
+    "start": "node ./src/server.js",
+    "start:prod": "npm run build && node ./src/server.js",
     "test:unit": "vitest",
     "test:e2e": "playwright test",
     "build-only": "vite build",
@@ -25,6 +25,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.87.1",
     "bcryptjs": "^3.0.3",
+    "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "pinia": "^3.0.3",
     "vue": "^3.5.22",

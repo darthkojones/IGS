@@ -9,10 +9,13 @@ export async function syncRooms(): Promise<void> {
 
     rooms.forEach(r => console.log(r.name))
     // … mache hier etwas mit den Räumen …
-    console.log(`[roomSyncJob] ${rooms.length} Räume synchronisiert`);
+
+
+
   } catch (err: unknown) {
     console.error('[roomSyncJob] Error:', err);
   }
 }
+
 // Register cron job when file is loaded
 cron.schedule('*/5 * * * *', syncRooms, { timezone: 'Europe/Berlin' });

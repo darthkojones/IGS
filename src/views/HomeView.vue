@@ -22,16 +22,16 @@
 
     <!-- My Bookings Section -->
     <section class="my-bookings">
-      <div class="section-header" @click="toggleBookingsExpanded">
-        <h2>My Bookings</h2>
-        <span class="toggle-icon">{{ bookingsExpanded ? '▼' : '▶' }}</span>
-      </div>
-      <div v-show="bookingsExpanded" class="bookings-container">
-        
+      <h2>My Bookings</h2>
+      <div class="bookings-container">
+
         <!-- Today's Bookings Group -->
         <div v-if="todayBookings.length > 0" class="booking-group">
-          <h3 class="group-title">Today</h3>
-          <div class="bookings-list">
+          <div class="group-header" @click="toggleTodayExpanded">
+            <h3 class="group-title">Today</h3>
+            <span class="group-toggle-icon">{{ todayExpanded ? '▼' : '▶' }}</span>
+          </div>
+          <div v-show="todayExpanded" class="bookings-list">
             <router-link
               v-for="booking in todayBookings"
               :key="booking.bookingId"
@@ -50,8 +50,11 @@
 
         <!-- Upcoming Bookings Group (Future Days) -->
         <div v-if="upcomingBookings.length > 0" class="booking-group">
-          <h3 class="group-title">Upcoming</h3>
-          <div class="bookings-list">
+          <div class="group-header" @click="toggleUpcomingExpanded">
+            <h3 class="group-title">Upcoming</h3>
+            <span class="group-toggle-icon">{{ upcomingExpanded ? '▼' : '▶' }}</span>
+          </div>
+          <div v-show="upcomingExpanded" class="bookings-list">
             <router-link
               v-for="booking in upcomingBookings"
               :key="booking.bookingId"
@@ -106,26 +109,28 @@ const roomsStore = useRoomsStore();
 const allBookings = ref<Booking[]>([]);
 const activeBooking = ref<Booking | null>(null);
 const showActiveBooking = ref(false);
-const bookingsExpanded = ref(true);
+const todayExpanded = ref(true);
+const upcomingExpanded = ref(true);
 
 // Group bookings by time period
 const todayBookings = computed(() => {
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  
+
   return allBookings.value
     .filter(booking => {
       const bookingDate = new Date(booking.startTime);
       return bookingDate >= startOfDay && bookingDate < endOfDay;
     })
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()) // Sort descending (latest first)
+    .slice(0, 5); // Limit to 5 latest bookings for today
 });
 
 const upcomingBookings = computed(() => {
   const now = new Date();
   const startOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  
+
   return allBookings.value
     .filter(booking => {
       const bookingDate = new Date(booking.startTime);
@@ -179,9 +184,14 @@ const visibleTiles = computed(() => {
   });
 });
 
-// Toggle bookings section
-const toggleBookingsExpanded = () => {
-  bookingsExpanded.value = !bookingsExpanded.value;
+// Toggle today's bookings group
+const toggleTodayExpanded = () => {
+  todayExpanded.value = !todayExpanded.value;
+};
+
+// Toggle upcoming bookings group
+const toggleUpcomingExpanded = () => {
+  upcomingExpanded.value = !upcomingExpanded.value;
 };
 
 // Helper function to get room name from room ID
@@ -462,6 +472,12 @@ onUnmounted(() => {
   margin-bottom: 3rem;
 }
 
+.my-bookings h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
 .bookings-container {
   display: flex;
   flex-direction: column;
@@ -474,6 +490,25 @@ onUnmounted(() => {
   gap: 0.75rem;
 }
 
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.group-header:hover {
+  background-color: #f5f5f5;
+}
+
+.group-header:hover .group-title {
+  color: #1976d2;
+}
+
 .group-title {
   font-size: 1.25rem;
   font-weight: 600;
@@ -481,6 +516,18 @@ onUnmounted(() => {
   margin: 0;
   padding-left: 0.5rem;
   border-left: 4px solid #1976d2;
+  transition: color 0.2s ease;
+}
+
+.group-toggle-icon {
+  font-size: 1.125rem;
+  color: #666;
+  margin-right: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.group-header:hover .group-toggle-icon {
+  color: #1976d2;
 }
 
 .section-header {

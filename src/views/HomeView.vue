@@ -1,26 +1,31 @@
 <template>
   <div class="home-view">
     <!-- Active Booking Banner (shows when booking is within entry window) -->
-    <div v-if="showActiveBooking" class="active-booking-banner">
+    <router-link 
+      v-if="showActiveBooking" 
+      :to="`/bookings/${activeBooking?.bookingId}`"
+      class="active-booking-banner"
+    >
       <p class="active-booking-text">
         ✓ Room {{ activeBooking?.roomId }} - Ready to Enter
       </p>
       <p class="active-booking-time">
         {{ formatBookingTime(activeBooking!) }}
       </p>
-    </div>
+    </router-link>
 
     <!-- Today's Bookings Section -->
     <section class="todays-bookings">
       <h2>Todays bookings</h2>
       <div class="bookings-list">
-        <div
+        <router-link
           v-for="booking in todaysBookings"
           :key="booking.bookingId"
+          :to="`/bookings/${booking.bookingId}`"
           class="booking-item"
         >
           <p>{{ formatBookingDisplay(booking) }}</p>
-        </div>
+        </router-link>
         <div v-if="todaysBookings.length === 0" class="booking-item">
           <p>No bookings today</p>
         </div>
@@ -93,6 +98,30 @@ const checkActiveBooking = () => {
   const tenMinutesBefore = 10 * 60 * 1000;
   const nineMinutesAfter = 9 * 60 * 1000;
 
+  console.log('=== Checking Active Booking ===');
+  console.log('Current time:', now.toLocaleString());
+  console.log('Total bookings to check:', todaysBookings.value.length);
+
+  todaysBookings.value.forEach((booking, index) => {
+    const startTime = new Date(booking.startTime);
+    const endTime = new Date(booking.endTime);
+    const timeDiff = startTime.getTime() - now.getTime();
+    const minutesDiff = Math.round(timeDiff / 60000);
+
+    console.log(`\nBooking ${index + 1}:`, {
+      roomId: booking.roomId,
+      status: booking.status,
+      startTime: startTime.toLocaleString(),
+      endTime: endTime.toLocaleString(),
+      minutesUntilStart: minutesDiff,
+      isInWindow: timeDiff <= tenMinutesBefore && timeDiff >= -nineMinutesAfter,
+      isReserved: booking.status === 'reserved',
+      isPast: now > endTime,
+      isOngoing: now >= startTime && now <= endTime,
+      isUpcoming: now < startTime
+    });
+  });
+
   const nearbyBooking = todaysBookings.value.find(booking => {
     const startTime = new Date(booking.startTime);
     const timeDiff = startTime.getTime() - now.getTime();
@@ -101,12 +130,15 @@ const checkActiveBooking = () => {
   });
 
   if (nearbyBooking) {
+    console.log('✓ Active booking found:', nearbyBooking.roomId);
     activeBooking.value = nearbyBooking;
     showActiveBooking.value = true;
   } else {
+    console.log('✗ No active booking in window');
     showActiveBooking.value = false;
     activeBooking.value = null;
   }
+  console.log('=========================\n');
 };
 
 // Fetch today's bookings for the current user
@@ -121,10 +153,18 @@ const fetchTodaysBookings = async () => {
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
 
+    console.log('=== Fetching Today\'s Bookings ===');
+    console.log('Start of day:', startOfDay.toLocaleString());
+    console.log('End of day:', endOfDay.toLocaleString());
+    console.log('Total user bookings:', bookingsStore.userBookings.length);
+
     todaysBookings.value = bookingsStore.userBookings.filter(booking => {
       const bookingDate = new Date(booking.startTime);
       return bookingDate >= startOfDay && bookingDate < endOfDay;
     });
+
+    console.log('Filtered today\'s bookings:', todaysBookings.value.length);
+    console.log('=================================\n');
 
     checkActiveBooking();
   } catch (error) {
@@ -158,6 +198,7 @@ onUnmounted(() => {
 
 /* Active Booking Banner */
 .active-booking-banner {
+  display: block;
   background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
   color: white;
   padding: 1.5rem;
@@ -165,6 +206,14 @@ onUnmounted(() => {
   margin-bottom: 2rem;
   text-align: center;
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.active-booking-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
 }
 
 .active-booking-text {
@@ -198,16 +247,21 @@ onUnmounted(() => {
 }
 
 .booking-item {
+  display: block;
   background: white;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   padding: 1.5rem;
   transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .booking-item:hover {
   border-color: #1976d2;
   box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  transform: translateY(-1px);
 }
 
 .booking-item p {
@@ -284,7 +338,7 @@ onUnmounted(() => {
   .active-booking-text {
     font-size: 1.125rem;
   }
-  
+
   .active-booking-time {
     font-size: 0.95rem;
   }

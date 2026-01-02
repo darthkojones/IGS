@@ -2,6 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import BurgerMenu from '@/components/BurgerMenu.vue'
 
 
 const authStore = useAuthStore()
@@ -25,19 +26,14 @@ onMounted(async () => {
           <span class="logo-text">IGS</span>
         </RouterLink>
 
-        <nav class="nav-menu">
-          <RouterLink to="/" class="nav-link">Home</RouterLink>
-          <RouterLink to="/rooms" class="nav-link">Rooms</RouterLink>
-          <RouterLink to="/bookings" class="nav-link" v-if="isAuthenticated">Bookings</RouterLink>
-          <RouterLink to="/statistics" class="nav-link" v-if="isAuthenticated">Statistics</RouterLink>
-          <RouterLink to="/accessibility" class="nav-link">Accessibility</RouterLink>
-        </nav>
+        <div class="header-spacer"></div>
 
         <div class="header-actions">
+          <BurgerMenu />
           <template v-if="isAuthenticated">
             <RouterLink to="/profile" class="user-info">
               <span class="user-icon">👤</span>
-              <span class="user-name">{{ currentUser?.firstName || 'User' }}</span>
+              <span class="user-name">{{ currentUser?.firstName || 'User' }}-{{ currentUser?.lastName || '' }}</span>
             </RouterLink>
           </template>
           <template v-else>
@@ -104,7 +100,11 @@ body {
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
+}
+
+.header-spacer {
+  flex: 1;
 }
 
 .logo {
@@ -119,27 +119,6 @@ body {
 
 .logo-icon {
   font-size: 2rem;
-}
-
-.nav-menu {
-  display: flex;
-  gap: 1.5rem;
-  flex: 1;
-}
-
-.nav-link {
-  text-decoration: none;
-  color: #666;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.nav-link:hover,
-.nav-link.router-link-active {
-  color: #1976d2;
-  background: #e3f2fd;
 }
 
 .header-actions {
@@ -237,19 +216,11 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
   .header-content {
-    flex-direction: column;
-    gap: 1rem;
+    padding: 1rem;
   }
 
-  .nav-menu {
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .header-actions {
-    width: 100%;
-    justify-content: center;
+  .user-name {
+    display: none;
   }
 
   .footer-content {

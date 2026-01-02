@@ -20,28 +20,57 @@
       </div>
     </div>
 
-    <!-- Today's Bookings Section -->
-    <section class="todays-bookings">
+    <!-- My Bookings Section -->
+    <section class="my-bookings">
       <div class="section-header" @click="toggleBookingsExpanded">
-        <h2>Todays bookings</h2>
+        <h2>My Bookings</h2>
         <span class="toggle-icon">{{ bookingsExpanded ? '▼' : '▶' }}</span>
       </div>
-      <div v-show="bookingsExpanded" class="bookings-list">
-        <router-link
-          v-for="booking in todaysBookings"
-          :key="booking.bookingId"
-          :to="`/bookings/${booking.bookingId}`"
-          :class="['booking-item', getBookingStatusClass(booking)]"
-        >
-          <div class="booking-content">
-            <p class="booking-text">{{ formatBookingDisplay(booking) }}</p>
-            <span :class="['booking-status-badge', getBookingStatusClass(booking)]">
-              {{ getBookingStatusText(booking) }}
-            </span>
+      <div v-show="bookingsExpanded" class="bookings-container">
+        
+        <!-- Today's Bookings Group -->
+        <div v-if="todayBookings.length > 0" class="booking-group">
+          <h3 class="group-title">Today</h3>
+          <div class="bookings-list">
+            <router-link
+              v-for="booking in todayBookings"
+              :key="booking.bookingId"
+              :to="`/bookings/${booking.bookingId}`"
+              :class="['booking-item', getBookingStatusClass(booking)]"
+            >
+              <div class="booking-content">
+                <p class="booking-text">{{ formatBookingDisplay(booking) }}</p>
+                <span :class="['booking-status-badge', getBookingStatusClass(booking)]">
+                  {{ getBookingStatusText(booking) }}
+                </span>
+              </div>
+            </router-link>
           </div>
-        </router-link>
-        <div v-if="todaysBookings.length === 0" class="booking-item">
-          <p>No bookings today</p>
+        </div>
+
+        <!-- Upcoming Bookings Group (Future Days) -->
+        <div v-if="upcomingBookings.length > 0" class="booking-group">
+          <h3 class="group-title">Upcoming</h3>
+          <div class="bookings-list">
+            <router-link
+              v-for="booking in upcomingBookings"
+              :key="booking.bookingId"
+              :to="`/bookings/${booking.bookingId}`"
+              :class="['booking-item', getBookingStatusClass(booking)]"
+            >
+              <div class="booking-content">
+                <p class="booking-text">{{ formatBookingDisplayWithDate(booking) }}</p>
+                <span :class="['booking-status-badge', getBookingStatusClass(booking)]">
+                  {{ getBookingStatusText(booking) }}
+                </span>
+              </div>
+            </router-link>
+          </div>
+        </div>
+
+        <!-- No Bookings Message -->
+        <div v-if="todayBookings.length === 0 && upcomingBookings.length === 0" class="booking-item">
+          <p>No upcoming bookings</p>
         </div>
       </div>
     </section>
@@ -74,10 +103,37 @@ const authStore = useAuthStore();
 const bookingsStore = useBookingsStore();
 const roomsStore = useRoomsStore();
 
-const todaysBookings = ref<Booking[]>([]);
+const allBookings = ref<Booking[]>([]);
 const activeBooking = ref<Booking | null>(null);
 const showActiveBooking = ref(false);
 const bookingsExpanded = ref(true);
+
+// Group bookings by time period
+const todayBookings = computed(() => {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  
+  return allBookings.value
+    .filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate >= startOfDay && bookingDate < endOfDay;
+    })
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+});
+
+const upcomingBookings = computed(() => {
+  const now = new Date();
+  const startOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  
+  return allBookings.value
+    .filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate >= startOfTomorrow;
+    })
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+    .slice(0, 5); // Limit to next 5 upcoming bookings
+});
 
 // Define available tiles
 interface QuickAccessTileData {
@@ -154,7 +210,7 @@ const handleCancelBooking = () => {
   }
 };
 
-// Format booking for display
+// Format booking for display (today's bookings)
 const formatBookingDisplay = (booking: Booking) => {
   const start = new Date(booking.startTime);
   const end = new Date(booking.endTime);
@@ -162,6 +218,19 @@ const formatBookingDisplay = (booking: Booking) => {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   };
   return `${getRoomName(booking.roomId)} - ${formatTime(start)} to ${formatTime(end)}`;
+};
+
+// Format booking for display with date (upcoming bookings)
+const formatBookingDisplayWithDate = (booking: Booking) => {
+  const start = new Date(booking.startTime);
+  const end = new Date(booking.endTime);
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+  return `${getRoomName(booking.roomId)} - ${formatDate(start)} ${formatTime(start)} to ${formatTime(end)}`;
 };
 
 // Get booking status class for styling
@@ -233,9 +302,9 @@ const checkActiveBooking = () => {
 
   console.log('=== Checking Active Booking ===');
   console.log('Current time:', now.toLocaleString());
-  console.log('Total bookings to check:', todaysBookings.value.length);
+  console.log('Total bookings to check:', todayBookings.value.length);
 
-  todaysBookings.value.forEach((booking, index) => {
+  todayBookings.value.forEach((booking, index) => {
     const startTime = new Date(booking.startTime);
     const endTime = new Date(booking.endTime);
     const timeDiff = startTime.getTime() - now.getTime();
@@ -255,7 +324,7 @@ const checkActiveBooking = () => {
     });
   });
 
-  const nearbyBooking = todaysBookings.value.find(booking => {
+  const nearbyBooking = todayBookings.value.find(booking => {
     const startTime = new Date(booking.startTime);
     const timeDiff = startTime.getTime() - now.getTime();
     // Show if current time is between -10 minutes and +9 minutes from booking start
@@ -281,23 +350,14 @@ const fetchTodaysBookings = async () => {
   try {
     await bookingsStore.fetchUserBookings(authStore.user.userId);
 
-    // Filter for today's bookings
-    const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    // Store all bookings (computed properties will filter them)
+    allBookings.value = bookingsStore.userBookings;
 
-    console.log('=== Fetching Today\'s Bookings ===');
-    console.log('Start of day:', startOfDay.toLocaleString());
-    console.log('End of day:', endOfDay.toLocaleString());
-    console.log('Total user bookings:', bookingsStore.userBookings.length);
-
-    todaysBookings.value = bookingsStore.userBookings.filter(booking => {
-      const bookingDate = new Date(booking.startTime);
-      return bookingDate >= startOfDay && bookingDate < endOfDay;
-    });
-
-    console.log('Filtered today\'s bookings:', todaysBookings.value.length);
-    console.log('=================================\n');
+    console.log('=== Fetching User Bookings ===');
+    console.log('Total user bookings:', allBookings.value.length);
+    console.log('Today\'s bookings:', todayBookings.value.length);
+    console.log('Upcoming bookings:', upcomingBookings.value.length);
+    console.log('===============================\n');
 
     checkActiveBooking();
   } catch (error) {
@@ -397,9 +457,30 @@ onUnmounted(() => {
   transform: translateY(-1px);
 }
 
-/* Today's Bookings Section */
-.todays-bookings {
+/* My Bookings Section */
+.my-bookings {
   margin-bottom: 3rem;
+}
+
+.bookings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.booking-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.group-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #555;
+  margin: 0;
+  padding-left: 0.5rem;
+  border-left: 4px solid #1976d2;
 }
 
 .section-header {
@@ -538,8 +619,12 @@ onUnmounted(() => {
     padding: 1rem;
   }
 
-  .todays-bookings h2 {
+  .my-bookings h2 {
     font-size: 1.5rem;
+  }
+
+  .group-title {
+    font-size: 1.125rem;
   }
 
   .quick-links {

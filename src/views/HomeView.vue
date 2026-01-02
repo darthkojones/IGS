@@ -205,10 +205,6 @@ const getUserName = (booking: Booking): string => {
   if (booking.user) {
     return `${booking.user.firstName} ${booking.user.lastName}`;
   }
-  // Fallback to current user if booking.user is not populated
-  if (authStore.user) {
-    return `${authStore.user.firstName} ${authStore.user.lastName}`;
-  }
   return 'Unknown User';
 };
 

@@ -22,9 +22,14 @@
           v-for="booking in todaysBookings"
           :key="booking.bookingId"
           :to="`/bookings/${booking.bookingId}`"
-          class="booking-item"
+          :class="['booking-item', getBookingStatusClass(booking)]"
         >
-          <p>{{ formatBookingDisplay(booking) }}</p>
+          <div class="booking-content">
+            <p class="booking-text">{{ formatBookingDisplay(booking) }}</p>
+            <span :class="['booking-status-badge', getBookingStatusClass(booking)]">
+              {{ getBookingStatusText(booking) }}
+            </span>
+          </div>
         </router-link>
         <div v-if="todaysBookings.length === 0" class="booking-item">
           <p>No bookings today</p>
@@ -78,6 +83,55 @@ const formatBookingDisplay = (booking: Booking) => {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   };
   return `Booking ${booking.roomId ? `Room ${booking.roomId}` : ''} Today - ${formatTime(start)} to ${formatTime(end)}`;
+};
+
+// Get booking status class for styling
+const getBookingStatusClass = (booking: Booking) => {
+  const now = new Date();
+  const startTime = new Date(booking.startTime);
+  const endTime = new Date(booking.endTime);
+
+  // Expired: past end time or status is expired
+  if (now > endTime || booking.status === 'expired' || booking.status === 'cancelled') {
+    return 'status-expired';
+  }
+
+  // Confirmed/Active: status is confirmed or active (user has entered)
+  if (booking.status === 'confirmed' || booking.status === 'active') {
+    return 'status-confirmed';
+  }
+
+  // Pending: reserved but not yet confirmed (even if in time slot)
+  if (booking.status === 'reserved') {
+    return 'status-pending';
+  }
+
+  return 'status-pending'; // Default to pending
+};
+
+// Get booking status text for badge
+const getBookingStatusText = (booking: Booking) => {
+  const now = new Date();
+  const startTime = new Date(booking.startTime);
+  const endTime = new Date(booking.endTime);
+
+  if (now > endTime || booking.status === 'expired') {
+    return 'Expired';
+  }
+
+  if (booking.status === 'cancelled') {
+    return 'Cancelled';
+  }
+
+  if (booking.status === 'confirmed' || booking.status === 'active') {
+    return 'Confirmed';
+  }
+
+  if (booking.status === 'reserved') {
+    return 'Pending';
+  }
+
+  return 'Pending';
 };
 
 // Format booking time for active banner
@@ -176,8 +230,10 @@ let intervalId: number | null = null;
 
 onMounted(() => {
   fetchTodaysBookings();
-  // Check active booking window every 30 seconds
-  intervalId = window.setInterval(checkActiveBooking, 30000);
+  // Refresh bookings and check active booking window every 30 seconds
+  intervalId = window.setInterval(() => {
+    fetchTodaysBookings();
+  }, 30000);
 });
 
 onUnmounted(() => {
@@ -258,16 +314,75 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
-.booking-item:hover {
-  border-color: #1976d2;
-  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
-  transform: translateY(-1px);
+/* Status-based styling */
+.booking-item.status-expired {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border-color: #ef5350;
 }
 
-.booking-item p {
+.booking-item.status-pending {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+  border-color: #ffa726;
+}
+
+.booking-item.status-confirmed {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-color: #66bb6a;
+}
+
+.booking-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.booking-item.status-expired:hover {
+  border-color: #e53935;
+}
+
+.booking-item.status-pending:hover {
+  border-color: #ff9800;
+}
+
+.booking-item.status-confirmed:hover {
+  border-color: #4caf50;
+}
+
+.booking-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.booking-text {
   margin: 0;
   font-size: 1.125rem;
   color: #333;
+  flex: 1;
+}
+
+.booking-status-badge {
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.booking-status-badge.status-expired {
+  background: #ef5350;
+  color: white;
+}
+
+.booking-status-badge.status-pending {
+  background: #ffa726;
+  color: white;
+}
+
+.booking-status-badge.status-confirmed {
+  background: #66bb6a;
+  color: white;
 }
 
 /* Quick Access Section */

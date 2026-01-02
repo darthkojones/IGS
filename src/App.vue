@@ -23,7 +23,7 @@ onMounted(async () => {
       <div class="header-content">
         <RouterLink to="/" class="logo">
           <span class="logo-icon">🏢</span>
-          <span class="logo-text">IGS</span>
+          <span class="logo-text">Home</span>
         </RouterLink>
 
         <div class="header-spacer"></div>

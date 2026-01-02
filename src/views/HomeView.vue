@@ -4,7 +4,7 @@
     <div v-if="showActiveBooking" class="confirm-booking-section">
       <div class="confirm-booking-info">
         <p class="confirm-booking-text">
-          ✓ Room {{ activeBooking?.roomId }} - Ready to Enter
+          ✓ {{ getRoomName(activeBooking?.roomId || '') }} - Ready to Enter
         </p>
         <p class="confirm-booking-time">
           {{ formatBookingTime(activeBooking!) }}
@@ -66,11 +66,13 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useBookingsStore } from '@/stores/bookings';
+import { useRoomsStore } from '@/stores/rooms';
 import QuickAccessTile from '@/components/QuickAccessTile.vue';
 import type { Booking } from '@/types';
 
 const authStore = useAuthStore();
 const bookingsStore = useBookingsStore();
+const roomsStore = useRoomsStore();
 
 const todaysBookings = ref<Booking[]>([]);
 const activeBooking = ref<Booking | null>(null);
@@ -126,6 +128,12 @@ const toggleBookingsExpanded = () => {
   bookingsExpanded.value = !bookingsExpanded.value;
 };
 
+// Helper function to get room name from room ID
+const getRoomName = (roomId: string): string => {
+  const room = roomsStore.getRoomById(roomId);
+  return room?.name || `Room ${roomId}`;
+};
+
 // Handle check-in (no functionality yet)
 const handleCheckIn = () => {
   console.log('Check-in clicked for booking:', activeBooking.value?.bookingId);
@@ -137,7 +145,7 @@ const handleCancelBooking = () => {
   if (!activeBooking.value) return;
 
   const confirmed = confirm(
-    `Are you sure you want to cancel your booking for Room ${activeBooking.value.roomId}?`
+    `Are you sure you want to cancel your booking for ${getRoomName(activeBooking.value.roomId)}?`
   );
 
   if (confirmed) {
@@ -153,7 +161,7 @@ const formatBookingDisplay = (booking: Booking) => {
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   };
-  return `Booking ${booking.roomId ? `Room ${booking.roomId}` : ''} Today - ${formatTime(start)} to ${formatTime(end)}`;
+  return `${getRoomName(booking.roomId)} - ${formatTime(start)} to ${formatTime(end)}`;
 };
 
 // Get booking status class for styling
@@ -300,6 +308,7 @@ const fetchTodaysBookings = async () => {
 let intervalId: number | null = null;
 
 onMounted(() => {
+  roomsStore.fetchRooms();
   fetchTodaysBookings();
   // Refresh bookings and check active booking window every 30 seconds
   intervalId = window.setInterval(() => {

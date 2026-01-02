@@ -1,23 +1,32 @@
 <template>
   <div class="home-view">
-    <!-- Active Booking Banner (shows when booking is within entry window) -->
-    <router-link
-      v-if="showActiveBooking"
-      :to="`/bookings/${activeBooking?.bookingId}`"
-      class="active-booking-banner"
-    >
-      <p class="active-booking-text">
-        ✓ Room {{ activeBooking?.roomId }} - Ready to Enter
-      </p>
-      <p class="active-booking-time">
-        {{ formatBookingTime(activeBooking!) }}
-      </p>
-    </router-link>
+    <!-- Confirm Booking Section (shows when booking is within entry window) -->
+    <div v-if="showActiveBooking" class="confirm-booking-section">
+      <div class="confirm-booking-info">
+        <p class="confirm-booking-text">
+          ✓ Room {{ activeBooking?.roomId }} - Ready to Enter
+        </p>
+        <p class="confirm-booking-time">
+          {{ formatBookingTime(activeBooking!) }}
+        </p>
+      </div>
+      <div class="confirm-booking-actions">
+        <button class="btn-check-in" @click="handleCheckIn">
+          Check-In
+        </button>
+        <button class="btn-cancel" @click="handleCancelBooking">
+          Cancel
+        </button>
+      </div>
+    </div>
 
     <!-- Today's Bookings Section -->
     <section class="todays-bookings">
-      <h2>Todays bookings</h2>
-      <div class="bookings-list">
+      <div class="section-header" @click="toggleBookingsExpanded">
+        <h2>Todays bookings</h2>
+        <span class="toggle-icon">{{ bookingsExpanded ? '▼' : '▶' }}</span>
+      </div>
+      <div v-show="bookingsExpanded" class="bookings-list">
         <router-link
           v-for="booking in todaysBookings"
           :key="booking.bookingId"
@@ -40,23 +49,14 @@
     <!-- Quick Access Section -->
     <section class="quick-access">
       <div class="quick-links">
-        <router-link to="/rooms" class="quick-link">
-          <div class="quick-link-icon">🔍</div>
-          <div class="quick-link-text">Find a Room</div>
-        </router-link>
-        <router-link to="/bookings" class="quick-link">
-          <div class="quick-link-icon">📋</div>
-          <div class="quick-link-text">My Bookings</div>
-        </router-link>
-        <router-link to="/accessibility" class="quick-link">
-          <div class="quick-link-icon">⚙️</div>
-          <div class="quick-link-text">Accessibility</div>
-        </router-link>
-        <router-link to="/statistics" class="quick-link">
-          <div class="quick-link-icon">📊</div>
-          <div class="quick-link-text">Statistics</div>
-          <p class="quick-link-description">Track room usage, peak hours, and booking patterns with comprehensive analytics</p>
-        </router-link>
+        <QuickAccessTile
+          v-for="tile in visibleTiles"
+          :key="tile.to"
+          :to="tile.to"
+          :icon="tile.icon"
+          :title="tile.title"
+          :description="tile.description"
+        />
       </div>
     </section>
   </div>
@@ -66,6 +66,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useBookingsStore } from '@/stores/bookings';
+import QuickAccessTile from '@/components/QuickAccessTile.vue';
 import type { Booking } from '@/types';
 
 const authStore = useAuthStore();
@@ -74,6 +75,76 @@ const bookingsStore = useBookingsStore();
 const todaysBookings = ref<Booking[]>([]);
 const activeBooking = ref<Booking | null>(null);
 const showActiveBooking = ref(false);
+const bookingsExpanded = ref(true);
+
+// Define available tiles
+interface QuickAccessTileData {
+  to: string;
+  icon: string;
+  title: string;
+  description?: string;
+  requiresAdmin?: boolean;
+}
+
+const allTiles: QuickAccessTileData[] = [
+  {
+    to: '/rooms',
+    icon: '🔍',
+    title: 'Find a Room'
+  },
+  {
+    to: '/bookings',
+    icon: '📋',
+    title: 'My Bookings'
+  },
+  {
+    to: '/accessibility',
+    icon: '⚙️',
+    title: 'Accessibility'
+  },
+  {
+    to: '/statistics',
+    icon: '📊',
+    title: 'Statistics',
+    description: 'Track room usage, peak hours, and booking patterns with comprehensive analytics',
+    requiresAdmin: true
+  }
+];
+
+// Filter tiles based on user role
+const visibleTiles = computed(() => {
+  return allTiles.filter(tile => {
+    if (tile.requiresAdmin) {
+      return authStore.isAdmin;
+    }
+    return true;
+  });
+});
+
+// Toggle bookings section
+const toggleBookingsExpanded = () => {
+  bookingsExpanded.value = !bookingsExpanded.value;
+};
+
+// Handle check-in (no functionality yet)
+const handleCheckIn = () => {
+  console.log('Check-in clicked for booking:', activeBooking.value?.bookingId);
+  // Placeholder for future check-in functionality
+};
+
+// Handle cancel booking with confirmation
+const handleCancelBooking = () => {
+  if (!activeBooking.value) return;
+
+  const confirmed = confirm(
+    `Are you sure you want to cancel your booking for Room ${activeBooking.value.roomId}?`
+  );
+
+  if (confirmed) {
+    console.log('Booking cancelled:', activeBooking.value.bookingId);
+    // Placeholder for future cancel functionality
+  }
+};
 
 // Format booking for display
 const formatBookingDisplay = (booking: Booking) => {
@@ -252,37 +323,69 @@ onUnmounted(() => {
   margin: 0 auto;
 }
 
-/* Active Booking Banner */
-.active-booking-banner {
-  display: block;
+/* Confirm Booking Section */
+.confirm-booking-section {
   background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
   color: white;
   padding: 1.5rem;
   border-radius: 8px;
   margin-bottom: 2rem;
-  text-align: center;
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
 
-.active-booking-banner:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+.confirm-booking-info {
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
 
-.active-booking-text {
+.confirm-booking-text {
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
 }
 
-.active-booking-time {
+.confirm-booking-time {
   font-size: 1.1rem;
   margin: 0;
   opacity: 0.95;
   font-weight: 500;
+}
+
+.confirm-booking-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.confirm-booking-actions button {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-check-in {
+  background: white;
+  color: #4caf50;
+}
+
+.btn-check-in:hover {
+  background: #f1f1f1;
+  transform: translateY(-1px);
+}
+
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
 }
 
 /* Today's Bookings Section */
@@ -290,10 +393,34 @@ onUnmounted(() => {
   margin-bottom: 3rem;
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 1.5rem;
+}
+
+.section-header:hover h2 {
+  color: #1976d2;
+}
+
 .todays-bookings h2 {
   font-size: 2rem;
-  margin-bottom: 1.5rem;
+  margin: 0;
   color: #333;
+  transition: color 0.2s ease;
+}
+
+.toggle-icon {
+  font-size: 1.5rem;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.section-header:hover .toggle-icon {
+  color: #1976d2;
 }
 
 .bookings-list {
@@ -396,46 +523,6 @@ onUnmounted(() => {
   gap: 1.5rem;
 }
 
-.quick-link {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  text-decoration: none;
-  color: #333;
-  transition: all 0.3s ease;
-  min-height: 180px;
-}
-
-.quick-link:hover {
-  border-color: #1976d2;
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
-}
-
-.quick-link-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.quick-link-text {
-  font-size: 1.125rem;
-  font-weight: 600;
-  text-align: center;
-}
-
-.quick-link-description {
-  font-size: 0.875rem;
-  color: #666;
-  text-align: center;
-  margin-top: 0.75rem;
-  line-height: 1.4;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
   .home-view {
@@ -450,12 +537,20 @@ onUnmounted(() => {
     grid-template-columns: 1fr;
   }
 
-  .active-booking-text {
+  .confirm-booking-text {
     font-size: 1.125rem;
   }
 
-  .active-booking-time {
+  .confirm-booking-time {
     font-size: 0.95rem;
+  }
+
+  .confirm-booking-actions {
+    flex-direction: column;
+  }
+
+  .confirm-booking-actions button {
+    width: 100%;
   }
 }
 </style>

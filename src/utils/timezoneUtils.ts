@@ -13,15 +13,13 @@
 export function localTimeToUTC(localDateString: string, localTimeString: string): Date {
   // Create a date string in local time
   const localDateTimeString = `${localDateString}T${localTimeString}:00`;
+
+  // Parse as local time - the Date constructor interprets this as local timezone
   const localDate = new Date(localDateTimeString);
 
-  // Get the timezone offset in milliseconds
-  const offsetMs = localDate.getTimezoneOffset() * 60000;
-
-  // Convert to UTC by adding the offset
-  const utcDate = new Date(localDate.getTime() + offsetMs);
-
-  return utcDate;
+  // The Date object is already in UTC internally, we just return it
+  // No conversion needed - JavaScript Date already stores timestamps in UTC
+  return localDate;
 }
 
 /**
@@ -30,15 +28,16 @@ export function localTimeToUTC(localDateString: string, localTimeString: string)
  * @returns Object with date and time strings in local timezone
  */
 export function utcToLocalTime(utcDate: Date): { date: string; time: string } {
-  // Adjust for timezone offset
-  const offsetMs = utcDate.getTimezoneOffset() * 60000;
-  const localDate = new Date(utcDate.getTime() - offsetMs);
+  // The Date object already handles timezone conversion automatically
+  // when we extract date/time components
+  const year = utcDate.getFullYear();
+  const month = String(utcDate.getMonth() + 1).padStart(2, '0');
+  const day = String(utcDate.getDate()).padStart(2, '0');
+  const hours = String(utcDate.getHours()).padStart(2, '0');
+  const minutes = String(utcDate.getMinutes()).padStart(2, '0');
 
-  // Extract date and time from ISO string
-  const isoString = localDate.toISOString();
-  const parts = isoString.split('T');
-  const date: string = parts[0] || '2025-01-01';
-  const time: string = (parts[1] || '00:00:00').slice(0, 5);
+  const date = `${year}-${month}-${day}`;
+  const time = `${hours}:${minutes}`;
 
   return { date, time };
 }
@@ -58,10 +57,9 @@ export function getNowUTC(): Date {
  */
 export function formatLocalTime(utcDate: Date | string): string {
   const d = new Date(utcDate);
-  const offsetMs = d.getTimezoneOffset() * 60000;
-  const localDate = new Date(d.getTime() - offsetMs);
 
-  return localDate.toLocaleTimeString('en-US', {
+  // Use toLocaleTimeString which automatically handles timezone conversion
+  return d.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -78,8 +76,6 @@ export function formatLocalDate(
   options?: Intl.DateTimeFormatOptions
 ): string {
   const d = new Date(utcDate);
-  const offsetMs = d.getTimezoneOffset() * 60000;
-  const localDate = new Date(d.getTime() - offsetMs);
 
   const defaultOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
@@ -87,7 +83,8 @@ export function formatLocalDate(
     day: 'numeric',
   };
 
-  return localDate.toLocaleDateString('en-US', options || defaultOptions);
+  // toLocaleDateString automatically handles timezone conversion
+  return d.toLocaleDateString('en-US', options || defaultOptions);
 }
 
 /**

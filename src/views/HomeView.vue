@@ -370,10 +370,10 @@ const fetchTodaysBookings = async () => {
   if (!authStore.user) return;
 
   try {
-    await bookingsStore.fetchUserBookings(authStore.user.userId);
+    await bookingsStore.fetchAllBookings();
 
     // Store all bookings (computed properties will filter them)
-    allBookings.value = bookingsStore.userBookings;
+    allBookings.value = bookingsStore.bookings;
 
     console.log('=== Fetching User Bookings ===');
     console.log('Total user bookings:', allBookings.value.length);

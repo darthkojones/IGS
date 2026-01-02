@@ -1,8 +1,8 @@
 <template>
   <div class="home-view">
     <!-- Active Booking Banner (shows when booking is within entry window) -->
-    <router-link 
-      v-if="showActiveBooking" 
+    <router-link
+      v-if="showActiveBooking"
       :to="`/bookings/${activeBooking?.bookingId}`"
       class="active-booking-banner"
     >

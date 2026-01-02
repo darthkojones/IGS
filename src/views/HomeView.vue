@@ -1,80 +1,51 @@
 <template>
   <div class="home-view">
-    <section class="hero">
-      <div class="hero-content">
-        <h1>Meeting Room Booking System</h1>
-        <p class="hero-subtitle">
-          Reserve meeting rooms at MCI with ease. Real-time availability, instant booking, and smart room management.
-        </p>
-        <div class="hero-actions">
-          <router-link to="/rooms" class="btn btn--primary btn--large">
-            Browse Rooms
-          </router-link>
-          <router-link to="/bookings" class="btn btn--secondary btn--large">
-            My Bookings
-          </router-link>
+    <!-- Active Booking Banner (shows when booking is within entry window) -->
+    <div v-if="showActiveBooking" class="active-booking-banner">
+      <p class="active-booking-text">
+        ✓ Room {{ activeBooking?.roomId }} - Ready to Enter
+      </p>
+      <p class="active-booking-time">
+        {{ formatBookingTime(activeBooking!) }}
+      </p>
+    </div>
+
+    <!-- Today's Bookings Section -->
+    <section class="todays-bookings">
+      <h2>Todays bookings</h2>
+      <div class="bookings-list">
+        <div
+          v-for="booking in todaysBookings"
+          :key="booking.bookingId"
+          class="booking-item"
+        >
+          <p>{{ formatBookingDisplay(booking) }}</p>
+        </div>
+        <div v-if="todaysBookings.length === 0" class="booking-item">
+          <p>No bookings today</p>
         </div>
       </div>
     </section>
 
-    <section class="features">
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">🏢</div>
-          <h3>Browse Rooms</h3>
-          <p>View available meeting rooms across all campus buildings with real-time availability.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">📅</div>
-          <h3>Quick Booking</h3>
-          <p>Reserve rooms instantly with our simple booking process. Get confirmation in seconds.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">🎨</div>
-          <h3>Visual Status</h3>
-          <p>Color-coded room status: Green (available), Yellow (reserved), Red (occupied).</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">⏱️</div>
-          <h3>Smart Entry</h3>
-          <p>5-minute window to enter your booked room via QR code, NFC, or motion sensor.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">♿</div>
-          <h3>Accessible</h3>
-          <p>WCAG compliant with high contrast, screen reader support, and keyboard navigation.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">📊</div>
-          <h3>Statistics</h3>
-          <p>Track room usage, peak hours, and booking patterns with comprehensive analytics.</p>
-        </div>
-      </div>
-    </section>
-
+    <!-- Quick Access Section -->
     <section class="quick-access">
-      <h2>Quick Access</h2>
       <div class="quick-links">
         <router-link to="/rooms" class="quick-link">
-          <span class="quick-link-icon">🔍</span>
-          <span class="quick-link-text">Find a Room</span>
-        </router-link>
-        <router-link to="/bookings/new" class="quick-link">
-          <span class="quick-link-icon">➕</span>
-          <span class="quick-link-text">New Booking</span>
+          <div class="quick-link-icon">🔍</div>
+          <div class="quick-link-text">Find a Room</div>
         </router-link>
         <router-link to="/bookings" class="quick-link">
-          <span class="quick-link-icon">📋</span>
-          <span class="quick-link-text">My Bookings</span>
+          <div class="quick-link-icon">📋</div>
+          <div class="quick-link-text">My Bookings</div>
         </router-link>
         <router-link to="/accessibility" class="quick-link">
-          <span class="quick-link-icon">⚙️</span>
-          <span class="quick-link-text">Accessibility</span>
+          <div class="quick-link-icon">⚙️</div>
+          <div class="quick-link-text">Accessibility</div>
+        </router-link>
+        <router-link to="/statistics" class="quick-link">
+          <div class="quick-link-icon">📊</div>
+          <div class="quick-link-text">Statistics</div>
+          <p class="quick-link-description">Track room usage, peak hours, and booking patterns with comprehensive analytics</p>
         </router-link>
       </div>
     </section>
@@ -82,106 +53,172 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { useBookingsStore } from '@/stores/bookings';
+import type { Booking } from '@/types';
 
 const authStore = useAuthStore();
+const bookingsStore = useBookingsStore();
+
+const todaysBookings = ref<Booking[]>([]);
+const activeBooking = ref<Booking | null>(null);
+const showActiveBooking = ref(false);
+
+// Format booking for display
+const formatBookingDisplay = (booking: Booking) => {
+  const start = new Date(booking.startTime);
+  const end = new Date(booking.endTime);
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
+  return `Booking ${booking.roomId ? `Room ${booking.roomId}` : ''} Today - ${formatTime(start)} to ${formatTime(end)}`;
+};
+
+// Format booking time for active banner
+const formatBookingTime = (booking: Booking) => {
+  const start = new Date(booking.startTime);
+  const end = new Date(booking.endTime);
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
+  return `${formatTime(start)} - ${formatTime(end)}`;
+};
+
+// Check if booking is within active window (-10 minutes to +9 minutes from start)
+const checkActiveBooking = () => {
+  if (!authStore.user) return;
+
+  const now = new Date();
+  const tenMinutesBefore = 10 * 60 * 1000;
+  const nineMinutesAfter = 9 * 60 * 1000;
+
+  const nearbyBooking = todaysBookings.value.find(booking => {
+    const startTime = new Date(booking.startTime);
+    const timeDiff = startTime.getTime() - now.getTime();
+    // Show if current time is between -10 minutes and +9 minutes from booking start
+    return timeDiff <= tenMinutesBefore && timeDiff >= -nineMinutesAfter && booking.status === 'reserved';
+  });
+
+  if (nearbyBooking) {
+    activeBooking.value = nearbyBooking;
+    showActiveBooking.value = true;
+  } else {
+    showActiveBooking.value = false;
+    activeBooking.value = null;
+  }
+};
+
+// Fetch today's bookings for the current user
+const fetchTodaysBookings = async () => {
+  if (!authStore.user) return;
+
+  try {
+    await bookingsStore.fetchUserBookings(authStore.user.userId);
+
+    // Filter for today's bookings
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+    todaysBookings.value = bookingsStore.userBookings.filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate >= startOfDay && bookingDate < endOfDay;
+    });
+
+    checkActiveBooking();
+  } catch (error) {
+    console.error('Failed to fetch bookings:', error);
+  }
+};
+
+let intervalId: number | null = null;
 
 onMounted(() => {
-  // You can add any initialization logic here
+  fetchTodaysBookings();
+  // Check active booking window every 30 seconds
+  intervalId = window.setInterval(checkActiveBooking, 30000);
+});
+
+onUnmounted(() => {
+  if (intervalId) {
+    clearInterval(intervalId);
+  }
 });
 </script>
+
 
 <style scoped>
 .home-view {
   min-height: 100vh;
-}
-
-.hero {
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-  color: white;
-  padding: 4rem 2rem;
-  text-align: center;
-}
-
-.hero-content {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.hero h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  font-weight: 700;
-}
-
-.hero-subtitle {
-  font-size: 1.25rem;
-  margin-bottom: 2rem;
-  opacity: 0.95;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.features {
-  padding: 4rem 2rem;
-  background: #f5f5f5;
-}
-
-.features-grid {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-}
-
-.feature-card {
-  background: white;
   padding: 2rem;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.feature-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.feature-card h3 {
-  font-size: 1.5rem;
-  margin-bottom: 0.75rem;
-  color: #333;
-}
-
-.feature-card p {
-  color: #666;
-  line-height: 1.6;
-}
-
-.quick-access {
-  padding: 4rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.quick-access h2 {
-  text-align: center;
-  font-size: 2rem;
+/* Active Booking Banner */
+.active-booking-banner {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
   margin-bottom: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.active-booking-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.active-booking-time {
+  font-size: 1.1rem;
+  margin: 0;
+  opacity: 0.95;
+  font-weight: 500;
+}
+
+/* Today's Bookings Section */
+.todays-bookings {
+  margin-bottom: 3rem;
+}
+
+.todays-bookings h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
   color: #333;
+}
+
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.booking-item {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.booking-item:hover {
+  border-color: #1976d2;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+}
+
+.booking-item p {
+  margin: 0;
+  font-size: 1.125rem;
+  color: #333;
+}
+
+/* Quick Access Section */
+.quick-access {
+  margin-top: 3rem;
 }
 
 .quick-links {
@@ -194,6 +231,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   padding: 2rem;
   background: white;
   border: 2px solid #e0e0e0;
@@ -201,71 +239,54 @@ onMounted(() => {
   text-decoration: none;
   color: #333;
   transition: all 0.3s ease;
+  min-height: 180px;
 }
 
 .quick-link:hover {
   border-color: #1976d2;
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
 }
 
 .quick-link-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.75rem;
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
 
 .quick-link-text {
   font-size: 1.125rem;
-  font-weight: 500;
+  font-weight: 600;
+  text-align: center;
 }
 
-.btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  border: none;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-  transition: all 0.2s ease;
+.quick-link-description {
+  font-size: 0.875rem;
+  color: #666;
+  text-align: center;
+  margin-top: 0.75rem;
+  line-height: 1.4;
 }
 
-.btn--large {
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
-}
-
-.btn--primary {
-  background: white;
-  color: #1976d2;
-}
-
-.btn--primary:hover {
-  background: #f5f5f5;
-}
-
-.btn--secondary {
-  background: transparent;
-  color: white;
-  border: 2px solid white;
-}
-
-.btn--secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
+/* Responsive Design */
 @media (max-width: 768px) {
-  .hero h1 {
-    font-size: 2rem;
+  .home-view {
+    padding: 1rem;
   }
 
-  .hero-subtitle {
-    font-size: 1rem;
+  .todays-bookings h2 {
+    font-size: 1.5rem;
   }
 
-  .features-grid {
+  .quick-links {
     grid-template-columns: 1fr;
+  }
+
+  .active-booking-text {
+    font-size: 1.125rem;
+  }
+  
+  .active-booking-time {
+    font-size: 0.95rem;
   }
 }
 </style>

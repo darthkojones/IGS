@@ -1,38 +1,79 @@
 <template>
   <div class="home-view">
-    <!-- Active Booking Banner (shows when booking is within entry window) -->
-    <router-link
-      v-if="showActiveBooking"
-      :to="`/bookings/${activeBooking?.bookingId}`"
-      class="active-booking-banner"
-    >
-      <p class="active-booking-text">
-        ✓ Room {{ activeBooking?.roomId }} - Ready to Enter
-      </p>
-      <p class="active-booking-time">
-        {{ formatBookingTime(activeBooking!) }}
-      </p>
-    </router-link>
+    <!-- Confirm Booking Section (shows when booking is within entry window) -->
+    <div v-if="showActiveBooking" class="confirm-booking-section">
+      <div class="confirm-booking-info">
+        <p class="confirm-booking-text">
+          ✓ {{ getRoomName(activeBooking?.roomId || '') }} - Ready to Enter
+        </p>
+        <p class="confirm-booking-time">
+          {{ formatBookingTime(activeBooking!) }}
+        </p>
+      </div>
+      <div class="confirm-booking-actions">
+        <button class="btn-check-in" @click="handleCheckIn">
+          Check-In
+        </button>
+        <button class="btn-cancel" @click="handleCancelBooking">
+          Cancel
+        </button>
+      </div>
+    </div>
 
-    <!-- Today's Bookings Section -->
-    <section class="todays-bookings">
-      <h2>Todays bookings</h2>
-      <div class="bookings-list">
-        <router-link
-          v-for="booking in todaysBookings"
-          :key="booking.bookingId"
-          :to="`/bookings/${booking.bookingId}`"
-          :class="['booking-item', getBookingStatusClass(booking)]"
-        >
-          <div class="booking-content">
-            <p class="booking-text">{{ formatBookingDisplay(booking) }}</p>
-            <span :class="['booking-status-badge', getBookingStatusClass(booking)]">
-              {{ getBookingStatusText(booking) }}
-            </span>
+    <!-- My Bookings Section -->
+    <section class="my-bookings">
+      <h2>My Bookings</h2>
+      <div class="bookings-container">
+
+        <!-- Today's Bookings Group -->
+        <div v-if="todayBookings.length > 0" class="booking-group">
+          <div class="group-header" @click="toggleTodayExpanded">
+            <h3 class="group-title">Today</h3>
+            <span class="group-toggle-icon">{{ todayExpanded ? '▼' : '▶' }}</span>
           </div>
-        </router-link>
-        <div v-if="todaysBookings.length === 0" class="booking-item">
-          <p>No bookings today</p>
+          <div v-show="todayExpanded" class="bookings-list">
+            <router-link
+              v-for="booking in todayBookings"
+              :key="booking.bookingId"
+              :to="`/bookings/${booking.bookingId}`"
+              :class="['booking-item', getBookingStatusClass(booking)]"
+            >
+              <div class="booking-content">
+                <p class="booking-text">{{ formatBookingDisplay(booking) }}</p>
+                <span :class="['booking-status-badge', getBookingStatusClass(booking)]">
+                  {{ getBookingStatusText(booking) }}
+                </span>
+              </div>
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Upcoming Bookings Group (Future Days) -->
+        <div v-if="upcomingBookings.length > 0" class="booking-group">
+          <div class="group-header" @click="toggleUpcomingExpanded">
+            <h3 class="group-title">Upcoming</h3>
+            <span class="group-toggle-icon">{{ upcomingExpanded ? '▼' : '▶' }}</span>
+          </div>
+          <div v-show="upcomingExpanded" class="bookings-list">
+            <router-link
+              v-for="booking in upcomingBookings"
+              :key="booking.bookingId"
+              :to="`/bookings/${booking.bookingId}`"
+              :class="['booking-item', getBookingStatusClass(booking)]"
+            >
+              <div class="booking-content">
+                <p class="booking-text">{{ formatBookingDisplayWithDate(booking) }}</p>
+                <span :class="['booking-status-badge', getBookingStatusClass(booking)]">
+                  {{ getBookingStatusText(booking) }}
+                </span>
+              </div>
+            </router-link>
+          </div>
+        </div>
+
+        <!-- No Bookings Message -->
+        <div v-if="todayBookings.length === 0 && upcomingBookings.length === 0" class="booking-item">
+          <p>No upcoming bookings</p>
         </div>
       </div>
     </section>
@@ -40,23 +81,14 @@
     <!-- Quick Access Section -->
     <section class="quick-access">
       <div class="quick-links">
-        <router-link to="/rooms" class="quick-link">
-          <div class="quick-link-icon">🔍</div>
-          <div class="quick-link-text">Find a Room</div>
-        </router-link>
-        <router-link to="/bookings" class="quick-link">
-          <div class="quick-link-icon">📋</div>
-          <div class="quick-link-text">My Bookings</div>
-        </router-link>
-        <router-link to="/accessibility" class="quick-link">
-          <div class="quick-link-icon">⚙️</div>
-          <div class="quick-link-text">Accessibility</div>
-        </router-link>
-        <router-link to="/statistics" class="quick-link">
-          <div class="quick-link-icon">📊</div>
-          <div class="quick-link-text">Statistics</div>
-          <p class="quick-link-description">Track room usage, peak hours, and booking patterns with comprehensive analytics</p>
-        </router-link>
+        <QuickAccessTile
+          v-for="tile in visibleTiles"
+          :key="tile.to"
+          :to="tile.to"
+          :icon="tile.icon"
+          :title="tile.title"
+          :description="tile.description"
+        />
       </div>
     </section>
   </div>
@@ -66,23 +98,157 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useBookingsStore } from '@/stores/bookings';
+import { useRoomsStore } from '@/stores/rooms';
+import QuickAccessTile from '@/components/QuickAccessTile.vue';
 import type { Booking } from '@/types';
 
 const authStore = useAuthStore();
 const bookingsStore = useBookingsStore();
+const roomsStore = useRoomsStore();
 
-const todaysBookings = ref<Booking[]>([]);
+const allBookings = ref<Booking[]>([]);
 const activeBooking = ref<Booking | null>(null);
 const showActiveBooking = ref(false);
+const todayExpanded = ref(true);
+const upcomingExpanded = ref(true);
 
-// Format booking for display
+// Group bookings by time period
+const todayBookings = computed(() => {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+  return allBookings.value
+    .filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate >= startOfDay && bookingDate < endOfDay;
+    })
+    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()) // Sort descending (latest first)
+    .slice(0, 5); // Limit to 5 latest bookings for today
+});
+
+const upcomingBookings = computed(() => {
+  const now = new Date();
+  const startOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+  return allBookings.value
+    .filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate >= startOfTomorrow;
+    })
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+    .slice(0, 5); // Limit to next 5 upcoming bookings
+});
+
+// Define available tiles
+interface QuickAccessTileData {
+  to: string;
+  icon: string;
+  title: string;
+  description?: string;
+  requiresAdmin?: boolean;
+}
+
+const allTiles: QuickAccessTileData[] = [
+  {
+    to: '/rooms',
+    icon: '🔍',
+    title: 'Find a Room'
+  },
+  {
+    to: '/bookings',
+    icon: '📋',
+    title: 'My Bookings'
+  },
+  {
+    to: '/accessibility',
+    icon: '⚙️',
+    title: 'Accessibility'
+  },
+  {
+    to: '/statistics',
+    icon: '📊',
+    title: 'Statistics',
+    description: 'Track room usage, peak hours, and booking patterns with comprehensive analytics',
+    requiresAdmin: true
+  }
+];
+
+// Filter tiles based on user role
+const visibleTiles = computed(() => {
+  return allTiles.filter(tile => {
+    if (tile.requiresAdmin) {
+      return authStore.isAdmin;
+    }
+    return true;
+  });
+});
+
+// Toggle today's bookings group
+const toggleTodayExpanded = () => {
+  todayExpanded.value = !todayExpanded.value;
+};
+
+// Toggle upcoming bookings group
+const toggleUpcomingExpanded = () => {
+  upcomingExpanded.value = !upcomingExpanded.value;
+};
+
+// Helper function to get room name from room ID
+const getRoomName = (roomId: string): string => {
+  const room = roomsStore.getRoomById(roomId);
+  return room?.name || `Room ${roomId}`;
+};
+
+// Helper function to get user name from booking
+const getUserName = (booking: Booking): string => {
+  if (booking.user) {
+    return `${booking.user.firstName} ${booking.user.lastName}`;
+  }
+  return 'Unknown User';
+};
+
+// Handle check-in (no functionality yet)
+const handleCheckIn = () => {
+  console.log('Check-in clicked for booking:', activeBooking.value?.bookingId);
+  // Placeholder for future check-in functionality
+};
+
+// Handle cancel booking with confirmation
+const handleCancelBooking = () => {
+  if (!activeBooking.value) return;
+
+  const confirmed = confirm(
+    `Are you sure you want to cancel your booking for ${getRoomName(activeBooking.value.roomId)}?`
+  );
+
+  if (confirmed) {
+    console.log('Booking cancelled:', activeBooking.value.bookingId);
+    // Placeholder for future cancel functionality
+  }
+};
+
+// Format booking for display (today's bookings)
 const formatBookingDisplay = (booking: Booking) => {
   const start = new Date(booking.startTime);
   const end = new Date(booking.endTime);
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   };
-  return `Booking ${booking.roomId ? `Room ${booking.roomId}` : ''} Today - ${formatTime(start)} to ${formatTime(end)}`;
+  return `${getRoomName(booking.roomId)} - Made by ${getUserName(booking)} - ${formatTime(start)} to ${formatTime(end)}`;
+};
+
+// Format booking for display with date (upcoming bookings)
+const formatBookingDisplayWithDate = (booking: Booking) => {
+  const start = new Date(booking.startTime);
+  const end = new Date(booking.endTime);
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+  return `${getRoomName(booking.roomId)} - Made by ${getUserName(booking)} - ${formatDate(start)} ${formatTime(start)} to ${formatTime(end)}`;
 };
 
 // Get booking status class for styling
@@ -154,9 +320,9 @@ const checkActiveBooking = () => {
 
   console.log('=== Checking Active Booking ===');
   console.log('Current time:', now.toLocaleString());
-  console.log('Total bookings to check:', todaysBookings.value.length);
+  console.log('Total bookings to check:', todayBookings.value.length);
 
-  todaysBookings.value.forEach((booking, index) => {
+  todayBookings.value.forEach((booking, index) => {
     const startTime = new Date(booking.startTime);
     const endTime = new Date(booking.endTime);
     const timeDiff = startTime.getTime() - now.getTime();
@@ -176,7 +342,7 @@ const checkActiveBooking = () => {
     });
   });
 
-  const nearbyBooking = todaysBookings.value.find(booking => {
+  const nearbyBooking = todayBookings.value.find(booking => {
     const startTime = new Date(booking.startTime);
     const timeDiff = startTime.getTime() - now.getTime();
     // Show if current time is between -10 minutes and +9 minutes from booking start
@@ -200,25 +366,16 @@ const fetchTodaysBookings = async () => {
   if (!authStore.user) return;
 
   try {
-    await bookingsStore.fetchUserBookings(authStore.user.userId);
+    await bookingsStore.fetchAllBookings();
 
-    // Filter for today's bookings
-    const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    // Store all bookings (computed properties will filter them)
+    allBookings.value = bookingsStore.bookings;
 
-    console.log('=== Fetching Today\'s Bookings ===');
-    console.log('Start of day:', startOfDay.toLocaleString());
-    console.log('End of day:', endOfDay.toLocaleString());
-    console.log('Total user bookings:', bookingsStore.userBookings.length);
-
-    todaysBookings.value = bookingsStore.userBookings.filter(booking => {
-      const bookingDate = new Date(booking.startTime);
-      return bookingDate >= startOfDay && bookingDate < endOfDay;
-    });
-
-    console.log('Filtered today\'s bookings:', todaysBookings.value.length);
-    console.log('=================================\n');
+    console.log('=== Fetching User Bookings ===');
+    console.log('Total user bookings:', allBookings.value.length);
+    console.log('Today\'s bookings:', todayBookings.value.length);
+    console.log('Upcoming bookings:', upcomingBookings.value.length);
+    console.log('===============================\n');
 
     checkActiveBooking();
   } catch (error) {
@@ -229,6 +386,7 @@ const fetchTodaysBookings = async () => {
 let intervalId: number | null = null;
 
 onMounted(() => {
+  roomsStore.fetchRooms();
   fetchTodaysBookings();
   // Refresh bookings and check active booking window every 30 seconds
   intervalId = window.setInterval(() => {
@@ -252,48 +410,162 @@ onUnmounted(() => {
   margin: 0 auto;
 }
 
-/* Active Booking Banner */
-.active-booking-banner {
-  display: block;
+/* Confirm Booking Section */
+.confirm-booking-section {
   background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
   color: white;
   padding: 1.5rem;
   border-radius: 8px;
   margin-bottom: 2rem;
-  text-align: center;
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
 
-.active-booking-banner:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+.confirm-booking-info {
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
 
-.active-booking-text {
+.confirm-booking-text {
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
 }
 
-.active-booking-time {
+.confirm-booking-time {
   font-size: 1.1rem;
   margin: 0;
   opacity: 0.95;
   font-weight: 500;
 }
 
-/* Today's Bookings Section */
-.todays-bookings {
+.confirm-booking-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.confirm-booking-actions button {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-check-in {
+  background: white;
+  color: #4caf50;
+}
+
+.btn-check-in:hover {
+  background: #f1f1f1;
+  transform: translateY(-1px);
+}
+
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* My Bookings Section */
+.my-bookings {
   margin-bottom: 3rem;
+}
+
+.my-bookings h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.bookings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.booking-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.group-header:hover {
+  background-color: #f5f5f5;
+}
+
+.group-header:hover .group-title {
+  color: #1976d2;
+}
+
+.group-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #555;
+  margin: 0;
+  padding-left: 0.5rem;
+  border-left: 4px solid #1976d2;
+  transition: color 0.2s ease;
+}
+
+.group-toggle-icon {
+  font-size: 1.125rem;
+  color: #666;
+  margin-right: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.group-header:hover .group-toggle-icon {
+  color: #1976d2;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 1.5rem;
+}
+
+.section-header:hover h2 {
+  color: #1976d2;
 }
 
 .todays-bookings h2 {
   font-size: 2rem;
-  margin-bottom: 1.5rem;
+  margin: 0;
   color: #333;
+  transition: color 0.2s ease;
+}
+
+.toggle-icon {
+  font-size: 1.5rem;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.section-header:hover .toggle-icon {
+  color: #1976d2;
 }
 
 .bookings-list {
@@ -396,66 +668,38 @@ onUnmounted(() => {
   gap: 1.5rem;
 }
 
-.quick-link {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  text-decoration: none;
-  color: #333;
-  transition: all 0.3s ease;
-  min-height: 180px;
-}
-
-.quick-link:hover {
-  border-color: #1976d2;
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
-}
-
-.quick-link-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.quick-link-text {
-  font-size: 1.125rem;
-  font-weight: 600;
-  text-align: center;
-}
-
-.quick-link-description {
-  font-size: 0.875rem;
-  color: #666;
-  text-align: center;
-  margin-top: 0.75rem;
-  line-height: 1.4;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
   .home-view {
     padding: 1rem;
   }
 
-  .todays-bookings h2 {
+  .my-bookings h2 {
     font-size: 1.5rem;
+  }
+
+  .group-title {
+    font-size: 1.125rem;
   }
 
   .quick-links {
     grid-template-columns: 1fr;
   }
 
-  .active-booking-text {
+  .confirm-booking-text {
     font-size: 1.125rem;
   }
 
-  .active-booking-time {
+  .confirm-booking-time {
     font-size: 0.95rem;
+  }
+
+  .confirm-booking-actions {
+    flex-direction: column;
+  }
+
+  .confirm-booking-actions button {
+    width: 100%;
   }
 }
 </style>

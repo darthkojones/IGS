@@ -95,15 +95,14 @@ export const useBookingsStore = defineStore('booking', {
       this.loading = true;
       this.error = null;
       try {
-        // Fetch bookings for a wide date range to get all bookings
-        // Convert to UTC-based day boundaries to account for timezone
+        // Fetch bookings for a wide date range to get all bookings (today + next 30 days)
         const now = new Date();
         const tzOffset = now.getTimezoneOffset() * 60000;
         const localMidnight = new Date(now.getTime() - (now.getTime() % 86400000) - tzOffset);
         const startOfDay = new Date(localMidnight.getTime());
-        const endOfDay = new Date(startOfDay.getTime() + 86400000);
+        const endDate = new Date(startOfDay.getTime() + (30 * 86400000)); // 30 days from now
 
-        const bookings = await bookingService.getBookingsByTimeRange(startOfDay, endOfDay);
+        const bookings = await bookingService.getBookingsByTimeRange(startOfDay, endDate);
         this.bookings = bookings;
       } catch (error) {
         this.error = error instanceof Error ? error.message : 'Failed to fetch bookings';

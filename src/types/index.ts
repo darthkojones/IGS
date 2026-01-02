@@ -78,6 +78,7 @@ export interface Booking {
   enteredAt?: Date;
   createdAt: Date;
   room?: Room; // Optional room data
+  user?: User; // Optional user data
 }
 
 export enum BookingStatus {

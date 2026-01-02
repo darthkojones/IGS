@@ -200,6 +200,18 @@ const getRoomName = (roomId: string): string => {
   return room?.name || `Room ${roomId}`;
 };
 
+// Helper function to get user name from booking
+const getUserName = (booking: Booking): string => {
+  if (booking.user) {
+    return `${booking.user.firstName} ${booking.user.lastName}`;
+  }
+  // Fallback to current user if booking.user is not populated
+  if (authStore.user) {
+    return `${authStore.user.firstName} ${authStore.user.lastName}`;
+  }
+  return 'Unknown User';
+};
+
 // Handle check-in (no functionality yet)
 const handleCheckIn = () => {
   console.log('Check-in clicked for booking:', activeBooking.value?.bookingId);
@@ -227,7 +239,7 @@ const formatBookingDisplay = (booking: Booking) => {
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   };
-  return `${getRoomName(booking.roomId)} - ${formatTime(start)} to ${formatTime(end)}`;
+  return `${getRoomName(booking.roomId)} - Made by ${getUserName(booking)} - ${formatTime(start)} to ${formatTime(end)}`;
 };
 
 // Format booking for display with date (upcoming bookings)
@@ -240,7 +252,7 @@ const formatBookingDisplayWithDate = (booking: Booking) => {
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   };
-  return `${getRoomName(booking.roomId)} - ${formatDate(start)} ${formatTime(start)} to ${formatTime(end)}`;
+  return `${getRoomName(booking.roomId)} - Made by ${getUserName(booking)} - ${formatDate(start)} ${formatTime(start)} to ${formatTime(end)}`;
 };
 
 // Get booking status class for styling

@@ -2,6 +2,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoomsStore } from '@/stores/rooms';
+import { roomService } from '@/services/roomService';
+
 
 type SortKey = 'name' | 'building' | 'floor' | 'capacity';
 
@@ -97,6 +99,67 @@ function yesNo(v?: boolean) {
   return v ? '✓' : '—';
 }
 
+const lastTestRoomId = ref<string | null>(null);
+
+async function createTestRoom() {
+  if (buildings.value.length === 0) await roomsStore.fetchBuildings();
+  if (rooms.value.length === 0) await roomsStore.fetchRooms();
+
+  // set buildingId
+  const buildingId =
+    buildings.value[0]?.buildingId ??
+    rooms.value[0]?.buildingId;
+
+  if (!buildingId) {
+    alert('No buildingId available (no buildings and no rooms). Cannot create room.');
+    return;
+  }
+
+  const created = await roomsStore.createRoom({
+    name: `TEST Room ${Date.now()}`,
+    floor: 0,
+    capacity: 1,
+    buildingId,
+    description: 'temporary test room',
+    hasProjector: false,
+    hasWhiteboard: false,
+    hasVideoConference: false,
+  });
+
+  lastTestRoomId.value = created.roomId;
+  alert(`Created test room: ${created.name}`);
+}
+
+
+async function updateTestRoom() {
+  if (!lastTestRoomId.value) {
+    alert('Create a test room first.');
+    return;
+  }
+
+  const updated = await roomsStore.updateRoom(lastTestRoomId.value, {
+    name: `UPDATED TEST ${Date.now()}`,
+  });
+
+  alert(`Updated room name to: ${updated.name}`);
+}
+
+async function deleteTestRoom() {
+  if (!lastTestRoomId.value) {
+    alert('Create a test room first.');
+    return;
+  }
+
+  const count = await roomService.countBookingsForRoom(lastTestRoomId.value);
+  const ok = confirm(`Delete test room? ${count} booking(s) will be removed.`);
+  if (!ok) return;
+
+  const { deletedBookings } = await roomsStore.deleteRoom(lastTestRoomId.value);
+  alert(`Deleted test room. Removed ${deletedBookings} booking(s).`);
+  lastTestRoomId.value = null;
+}
+
+
 onMounted(async () => {
   // building-name-by-id needs buildings to be loaded
   if (buildings.value.length === 0) await roomsStore.fetchBuildings();
@@ -109,6 +172,12 @@ onMounted(async () => {
     <h1>Room Editor</h1>
 
     <div v-if="error" class="error">{{ error }}</div>
+    <div class="actions">
+    <button @click="createTestRoom">Create test room</button>
+    <button @click="updateTestRoom" :disabled="!lastTestRoomId">Update test room</button>
+    <button @click="deleteTestRoom" :disabled="!lastTestRoomId">Delete test room</button>
+    </div>
+
 
     <div class="filters">
       <input v-model="search" type="text" placeholder="Search (name, building, description…)" />

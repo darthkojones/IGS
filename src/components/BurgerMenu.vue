@@ -62,6 +62,7 @@ interface MenuItem {
 const allMenuItems: MenuItem[] = [
   { path: '/', label: 'Home', icon: '🏠' },
   { path: '/rooms', label: 'Rooms', icon: '🚪' },
+   { path: '/room-editor', label: 'Room Editor', icon: '🗂️' },
   { path: '/bookings', label: 'Bookings', icon: '📋', requiresAuth: true },
   { path: '/statistics', label: 'Statistics', icon: '📊', requiresAuth: true },
   { path: '/accessibility', label: 'Accessibility', icon: '⚙️' },

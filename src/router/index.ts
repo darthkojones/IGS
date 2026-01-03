@@ -21,6 +21,11 @@ const router = createRouter({
       component: () => import('../views/RoomsView.vue'),
     },
     {
+    path: '/room-editor',
+    name: 'room-editor',
+    component: () => import('@/views/RoomEditorView.vue'),
+    },
+    {
       path: '/rooms/:id',
       name: 'room-detail',
       component: () => import('../views/RoomDetailView.vue'),

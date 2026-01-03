@@ -164,7 +164,7 @@ const buildings = computed(() => roomsStore.buildings);
 
 // Extended Room type with distance
 interface RoomWithDistance extends Room {
-  distance?: DistanceResult;
+  distance?: DistanceResult | null;
 }
 
 const filteredRooms = computed(() => {

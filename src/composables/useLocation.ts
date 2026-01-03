@@ -7,7 +7,7 @@ import { distanceService, type Coordinates, type DistanceResult } from '@/servic
 import type { Room } from '@/types';
 
 interface RoomWithDistance extends Room {
-  distance?: DistanceResult;
+  distance?: DistanceResult | null;
 }
 
 const userLocation = ref<Coordinates | null>(null);

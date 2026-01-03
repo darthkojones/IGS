@@ -11,6 +11,8 @@ export interface Building {
   buildingId: string;
   name: string;
   address: string;
+  latitude?: number;
+  longitude?: number;
   floorCount?: number;
   roomCount?: number;
   institutionId: string;

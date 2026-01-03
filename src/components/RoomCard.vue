@@ -13,7 +13,7 @@
         :aria-label="`Status: ${statusText}`"
       >
         <span class="room-card__status-indicator"></span>
-        <span class="room-card__status-text">{{ statusText }}</span>
+        <span class="room-card__status-text">{{ timeRemainingText || statusText }}</span>
       </div>
     </div>
 
@@ -66,23 +66,61 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Room } from '@/types';
+import type { Room, Booking } from '@/types';
 import { useRoomStatus } from '@/composables/useRoomStatus';
 
 interface Props {
   room: Room;
   showReachability?: boolean;
   travelTime?: number;
+  selectedDatetime?: string | null;
+  allBookings?: Booking[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showReachability: false,
   travelTime: 0,
+  selectedDatetime: null,
+  allBookings: () => [],
 });
 
-const { statusColor, statusText } = useRoomStatus(props.room.roomId);
+// Check if room is booked at the selected datetime
+const bookingAtSelectedTime = computed(() => {
+  if (!props.selectedDatetime) return null;
 
-const isAvailable = computed(() => statusText.value === 'Available');
+  const selectedTime = new Date(props.selectedDatetime);
+  const roomBookings = props.allBookings.filter(b => b.roomId === props.room.roomId);
+
+  return roomBookings.find(booking => {
+    const bookingStart = new Date(booking.startTime);
+    const bookingEnd = new Date(booking.endTime);
+    return selectedTime >= bookingStart && selectedTime < bookingEnd;
+  });
+});
+
+// Override status if room is booked at selected time
+const statusColor = computed(() => {
+  if (bookingAtSelectedTime.value) return 'yellow';
+  return useRoomStatus(props.room.roomId, props.room.currentBooking).statusColor.value;
+});
+
+const statusText = computed(() => {
+  if (bookingAtSelectedTime.value) return 'Reserved';
+  return useRoomStatus(props.room.roomId, props.room.currentBooking).statusText.value;
+});
+
+const timeRemainingText = computed(() => {
+  if (bookingAtSelectedTime.value) {
+    const endTime = new Date(bookingAtSelectedTime.value.endTime);
+    const hours = endTime.getHours();
+    const minutes = endTime.getMinutes();
+    const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    return `Occupied until ${formattedTime}`;
+  }
+  return useRoomStatus(props.room.roomId, props.room.currentBooking).timeRemainingText.value;
+});
+
+const isAvailable = computed(() => !bookingAtSelectedTime.value && statusText.value === 'Available');
 </script>
 
 <style scoped>

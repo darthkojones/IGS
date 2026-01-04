@@ -286,7 +286,7 @@ function formatHour(hour: number): string {
 
 <style scoped>
 .admin-panel {
-  padding: 2rem;
+  padding: 1rem;
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
@@ -605,9 +605,9 @@ function formatHour(hour: number): string {
     font-size: 0.8rem;
   }
 
-  .hours-container {
+  /*.hours-container {
     display: none;
-  }
+  }*/
 }
 
 /* Responsive - Mobile */

@@ -68,8 +68,10 @@ onMounted(async () => {
 }
 
 html, body {
+  height: 100%;
   width: 100%;
-  max-width: 100%;
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
 }
 
@@ -77,12 +79,15 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: #f5f5f5;
   color: #333;
+  display: flex;
+  flex-direction: column;
 }
 
 #app {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
 }
 
 /* Header */
@@ -91,16 +96,20 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
+  margin: 0%;
   z-index: 100;
+  width: 100%;
 }
 
 .header-content {
-  max-width: 1400px;
-  margin: 0 auto;
+  /* max-width: 1400px;*/
+  margin: 0;
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
   gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .header-spacer {
@@ -177,6 +186,7 @@ body {
 /* Main Content */
 .app-main {
   flex: 1;
+  width:100%;
 }
 
 /* Footer */
@@ -216,11 +226,14 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
   .header-content {
-    padding: 1rem;
+    width:100%
   }
 
   .user-name {
     display: none;
+  }
+  .header-content {
+    padding: 1% 3%;
   }
 
   .footer-content {

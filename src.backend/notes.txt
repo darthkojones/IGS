@@ -1,0 +1,26 @@
+{mci}/
+├── {building}
+│   ├── {floor}
+│   │   ├── {raum}
+│   │   │   ├── lights
+│   │   │   │   ├── status
+│   │   │   │   ├── command
+│   │   │   ├── dimmable
+│   │   │   │   ├── status
+│   │   │   │   ├── command
+│   │   │   ├── aircon
+│   │   │   │   ├── status
+│   │   │   │   ├── command  
+│   │   │   ├── blinds
+│   │   │   │   ├── status         
+│   │   │   │   ├── command     
+│   │   │   └── status            
+│   │   └── status                 
+│   └── status
+└── global                         
+    ├── command
+    └── status
+
+
+
+mci/building/floor/room/device_type/message_type

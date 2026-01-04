@@ -8,95 +8,79 @@
  * Convert a local time (from user input) to UTC Date
  * @param localDateString - Date in YYYY-MM-DD format
  * @param localTimeString - Time in HH:mm format (in user's local timezone)
- * @returns Date object in UTC
+ * @returns Date object
  */
 export function localTimeToUTC(localDateString: string, localTimeString: string): Date {
-  // Create a date string in local time
-  const localDateTimeString = `${localDateString}T${localTimeString}:00`;
-  const localDate = new Date(localDateTimeString);
-
-  // Get the timezone offset in milliseconds
-  const offsetMs = localDate.getTimezoneOffset() * 60000;
-
-  // Convert to UTC by adding the offset
-  const utcDate = new Date(localDate.getTime() + offsetMs);
-
-  return utcDate;
+  // Creating a Date from ISO string without 'Z' assumes local time
+  return new Date(`${localDateString}T${localTimeString}`);
 }
 
 /**
- * Convert UTC time to local time for display
- * @param utcDate - Date object in UTC
- * @returns Object with date and time strings in local timezone
+ * Convert UTC time to local time components for form inputs
+ * @param utcDate - Date object
+ * @returns Object with date and time strings in local timezone format
  */
 export function utcToLocalTime(utcDate: Date): { date: string; time: string } {
-  // Adjust for timezone offset
-  const offsetMs = utcDate.getTimezoneOffset() * 60000;
-  const localDate = new Date(utcDate.getTime() - offsetMs);
+  const d = new Date(utcDate);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
 
-  // Extract date and time from ISO string
-  const isoString = localDate.toISOString();
-  const parts = isoString.split('T');
-  const date: string = parts[0] || '2025-01-01';
-  const time: string = (parts[1] || '00:00:00').slice(0, 5);
-
-  return { date, time };
+  return {
+    date: `${year}-${month}-${day}`,
+    time: `${hours}:${minutes}`
+  };
 }
 
 /**
  * Get the current time as a UTC Date
- * @returns Current time in UTC
+ * @returns Current time
  */
 export function getNowUTC(): Date {
   return new Date();
 }
 
 /**
- * Convert UTC time to local and format as time string
- * @param utcDate - Date object in UTC
- * @returns Formatted time string (HH:mm) in local timezone
+ * Format UTC time for display in local timezone
+ * @param utcDate - Date object or ISO string
+ * @returns Formatted time string (HH:mm)
  */
 export function formatLocalTime(utcDate: Date | string): string {
   const d = new Date(utcDate);
-  const offsetMs = d.getTimezoneOffset() * 60000;
-  const localDate = new Date(d.getTime() - offsetMs);
-
-  return localDate.toLocaleTimeString('en-US', {
+  return d.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false
   });
 }
 
 /**
- * Convert UTC time to local and format as date string
- * @param utcDate - Date object in UTC
+ * Format UTC date for display in local timezone
+ * @param utcDate - Date object or ISO string
  * @param options - Optional formatting options
- * @returns Formatted date string in local timezone
+ * @returns Formatted date string
  */
 export function formatLocalDate(
   utcDate: Date | string,
   options?: Intl.DateTimeFormatOptions
 ): string {
   const d = new Date(utcDate);
-  const offsetMs = d.getTimezoneOffset() * 60000;
-  const localDate = new Date(d.getTime() - offsetMs);
-
   const defaultOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
   };
 
-  return localDate.toLocaleDateString('en-US', options || defaultOptions);
+  return d.toLocaleDateString([], options || defaultOptions);
 }
 
 /**
- * Convert UTC time to local and format as full datetime string
- * @param utcDate - Date object in UTC
- * @returns Formatted datetime string in local timezone
+ * Format UTC datetime for display in local timezone
+ * @param utcDate - Date object or ISO string
+ * @returns Formatted datetime string
  */
 export function formatLocalDateTime(utcDate: Date | string): string {
-  const date = formatLocalDate(utcDate);
-  const time = formatLocalTime(utcDate);
-  return `${date} ${time}`;
+  return `${formatLocalDate(utcDate)} ${formatLocalTime(utcDate)}`;
 }

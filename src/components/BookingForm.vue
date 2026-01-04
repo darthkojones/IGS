@@ -58,34 +58,23 @@
           required
           aria-required="true"
         >
-          <option value="30">30 minutes</option>
-          <option value="60">1 hour</option>
-          <option value="90">1.5 hours</option>
-          <option value="120">2 hours</option>
-          <option value="180">3 hours</option>
+          <option :value="30">30 minutes</option>
+          <option :value="60">1 hour</option>
+          <option :value="90">1.5 hours</option>
+          <option :value="120">2 hours</option>
+          <option :value="180">3 hours</option>
         </select>
       </div>
     </div>
 
-    <div v-if="error" class="error-message" role="alert">
-      {{ error }}
-    </div>
-
-    <div v-if="availabilityError" class="error-message availability-error" role="alert">
-      {{ availabilityError }}
+    <div v-if="error || availabilityError" class="error-message" role="alert">
+      {{ error || availabilityError }}
     </div>
 
     <div class="form-actions">
       <button
-        type="button"
-        class="btn btn--secondary"
-        @click="$emit('cancel')"
-      >
-        Cancel
-      </button>
-      <button
         type="submit"
-        class="btn btn--primary"
+        class="btn btn--primary btn--block"
         @click="handleSubmit"
         :disabled="loading || !isFormValid"
         :aria-busy="loading"
@@ -97,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue';
+import { ref, computed, reactive, watch } from 'vue';
 import type { Room, Booking } from '@/types';
 import { bookingService } from '@/services/bookingService';
 import { localTimeToUTC } from '@/utils/timezoneUtils';
@@ -106,12 +95,14 @@ interface Props {
   selectedRoom?: Room | null;
   loading?: boolean;
   error?: string | null;
+  initialDate?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   selectedRoom: null,
   loading: false,
   error: null,
+  initialDate: '',
 });
 
 const emit = defineEmits<{
@@ -174,110 +165,125 @@ const handleSubmit = async () => {
     availabilityError.value = 'Failed to check availability. Please try again.';
   }
 };
+
+watch(
+  () => props.initialDate,
+  (d) => {
+    if (d) form.date = d;
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped>
 .booking-form {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .booking-form h2 {
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  color: #0f172a;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr; /* Stacked by default for sidebar */
   gap: 1rem;
 }
 
+/* Wenn genug Platz da ist (z.B. in der Desktop-Ansicht außerhalb der Sidebar) */
+@media (min-width: 500px) {
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
 }
 
 .form-control {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.2s ease;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: #1e293b;
+  transition: all 0.2s ease;
+  background-color: #ffffff;
 }
 
 .form-control:focus {
   outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .selected-room {
-  padding: 1rem;
-  background: #f5f5f5;
-  border-radius: 4px;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 0.9rem;
+}
+
+.capacity {
+  color: #64748b;
+  font-size: 0.8rem;
 }
 
 .error-message {
   padding: 0.75rem;
-  background: #ffebee;
-  color: #c62828;
-  border-radius: 4px;
-  margin-bottom: 1rem;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fee2e2;
+  border-radius: 6px;
+  font-size: 0.85rem;
 }
 
 .form-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 2rem;
+  margin-top: 0.5rem;
 }
 
 .btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
   border: none;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
+.btn--block {
+  width: 100%;
+}
+
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .btn--primary {
-  background: #1976d2;
+  background: #2563eb;
   color: white;
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: #1565c0;
-}
-
-.btn--secondary {
-  background: transparent;
-  color: #1976d2;
-  border: 1px solid #1976d2;
-}
-
-.btn--secondary:hover {
-  background: #e3f2fd;
+  background: #1d4ed8;
 }
 </style>

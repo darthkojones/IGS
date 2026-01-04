@@ -71,7 +71,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.admin-view {git merge
+.admin-view {
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;

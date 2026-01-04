@@ -1,8 +1,8 @@
 const cron = require('node-cron');
 
-const redisClient = require('./redisClient');
-const mqttClient = require('./mqttClient')
-const supabaseClient = require('./supabaseClient');
+const redisClient = require('./clients/redisClient');
+const mqttClient = require('./clients/mqttClient')
+const supabaseClient = require('./clients/supabaseClient');
 
 /**
  * Here we are processing all updates sent to us

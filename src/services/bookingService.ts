@@ -190,7 +190,6 @@ export const bookingService = {
         .or(
           `and(start_time.lt.${endTime.toISOString()},end_time.gt.${startTime.toISOString()})`
         )
-        .in('status', ['reserved', 'active'])
         .order('start_time', { ascending: true });
 
       if (error) {

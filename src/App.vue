@@ -68,8 +68,10 @@ onMounted(async () => {
 }
 
 html, body {
+  height: 100%;
   width: 100%;
-  max-width: 100%;
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
 }
 
@@ -77,12 +79,15 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: #f5f5f5;
   color: #333;
+  display: flex;
+  flex-direction: column;
 }
 
 #app {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
 }
 
 /* Header */
@@ -92,6 +97,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  width: 100%;
 }
 
 .header-content {
@@ -101,6 +107,8 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .header-spacer {
@@ -216,7 +224,7 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
   .header-content {
-    padding: 1rem;
+    width:100%
   }
 
   .user-name {

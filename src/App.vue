@@ -96,13 +96,14 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
+  margin: 0%;
   z-index: 100;
   width: 100%;
 }
 
 .header-content {
-  max-width: 1400px;
-  margin: 0 auto;
+  /* max-width: 1400px;*/
+  margin: 0;
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
@@ -185,6 +186,7 @@ body {
 /* Main Content */
 .app-main {
   flex: 1;
+  width:100%;
 }
 
 /* Footer */
@@ -229,6 +231,9 @@ body {
 
   .user-name {
     display: none;
+  }
+  .header-content {
+    padding: 1% 3%;
   }
 
   .footer-content {

@@ -2,7 +2,6 @@ const cron = require('node-cron');
 
 const redisClient = require('./clients/redisClient');
 const mqttClient = require('./clients/mqttClient')
-const supabaseClient = require('./clients/supabaseClient');
 
 /**
  * Here we are processing all updates sent to us
@@ -79,33 +78,9 @@ cron.schedule('*/5 * * * * *', () => {
  */
 
 
-
-
-
-
-
-
-
-
-async function getAllBookings() {
-  const { data, error } = await supabaseClient
-    .from(`booking`)
-    .select(`*`)
-
-    console.log('Bookings: ', data)
-
-  if (error) {
-    console.error('Supabase error fetching bookings', error);
-    throw error;
-  }
-
-  return data || [];
-}
-
-async function test() {
-  const bookings = await getAllBookings();
-
-  console.log(bookings);
-}
-
-test();
+/**
+ * UND Folgendes:
+ * - Cron job der alle 5 minuten läuft
+ * - Der alle räume abfragt aus supabase
+ * - Räume, die gebucht wurden und jetzt 10 minuten nach start zeit immer noch nicht checked in ist, sollen expired werden
+ */

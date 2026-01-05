@@ -1,6 +1,6 @@
 <template>
   <div class="booking-form" role="form" aria-label="Room booking form">
-    <h2>Book a Room</h2>
+    <h2>Book this Room</h2>
 
     <div v-if="selectedRoom" class="form-group">
       <label class="form-label">Selected Room</label>

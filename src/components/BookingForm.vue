@@ -96,6 +96,7 @@ interface Props {
   loading?: boolean;
   error?: string | null;
   initialDate?: string;
+  initialTime?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -103,6 +104,7 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   error: null,
   initialDate: '',
+  initialTime: '',
 });
 
 const emit = defineEmits<{
@@ -173,6 +175,15 @@ watch(
   },
   { immediate: true }
 );
+
+watch(
+  () => props.initialTime,
+  (t) => {
+    if (t) form.startTime = t;
+  },
+  { immediate: true }
+);
+
 </script>
 
 <style scoped>

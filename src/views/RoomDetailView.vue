@@ -131,6 +131,7 @@
           <BookingForm
             :selected-room="room"
             :initial-date="formattedDate"
+            :initial-time="initialTime"
             :loading="bookingsStore.loading"
             :error="bookingsStore.error"
             @submit="onBookingSubmit"
@@ -196,6 +197,17 @@ const getInitialDate = () => {
 }
 
 const selectedDate = ref(getInitialDate())
+
+const initialTime = computed(() => {
+  const queryDate = route.query.date
+  if (typeof queryDate === 'string' && queryDate.includes('T')) {
+    const parts = queryDate.split('T')
+    if (parts.length > 1 && parts[1]) {
+      return parts[1].slice(0, 5)
+    }
+  }
+  return ''
+})
 
 const formattedDate = computed(() => {
   const d = selectedDate.value

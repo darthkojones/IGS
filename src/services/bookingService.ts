@@ -139,7 +139,8 @@ export const bookingService = {
   ): Promise<boolean> {
     try {
       // Add 5-minute buffer (300000 ms)
-      const BUFFER_MS = 5 * 60 * 1000;
+      //const BUFFER_MS = 5 * 60 * 1000;
+      const BUFFER_MS = 0;
       const bufferedStart = new Date(new Date(startTime).getTime() - BUFFER_MS);
       const bufferedEnd = new Date(new Date(endTime).getTime() + BUFFER_MS);
 

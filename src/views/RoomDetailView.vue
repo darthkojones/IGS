@@ -70,7 +70,13 @@
           <div class="schedule-header">
             <h2>Room Schedule</h2>
             <div class="day-picker">
-              <button class="icon-btn" @click="changeDay(-1)" aria-label="Previous day">◀</button>
+              <button
+                class="icon-btn"
+                @click="changeDay(-1)"
+                :disabled="isToday"
+                :class="{ 'is-disabled': isToday }"
+                aria-label="Previous day"
+              >◀</button>
               <span class="current-day">{{ displayDate }}</span>
               <button class="icon-btn" @click="changeDay(1)" aria-label="Next day">▶</button>
             </div>
@@ -198,6 +204,14 @@ const getInitialDate = () => {
 
 const selectedDate = ref(getInitialDate())
 
+const isToday = computed(() => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const current = new Date(selectedDate.value)
+  current.setHours(0, 0, 0, 0)
+  return current.getTime() <= today.getTime()
+})
+
 const initialTime = computed(() => {
   const queryDate = route.query.date
   if (typeof queryDate === 'string' && queryDate.includes('T')) {
@@ -225,6 +239,8 @@ const displayDate = computed(() => {
 })
 
 function changeDay(delta: number) {
+  if (delta < 0 && isToday.value) return // Verhindert das Blättern vor "Heute"
+
   const d = new Date(selectedDate.value)
   d.setDate(d.getDate() + delta)
   selectedDate.value = d
@@ -624,6 +640,12 @@ h2 {
 
 .icon-btn:hover {
   background: #e2e8f0;
+}
+
+.icon-btn.is-disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  filter: grayscale(1);
 }
 
 .timeline {

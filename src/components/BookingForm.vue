@@ -11,16 +11,21 @@
     </div>
 
     <div class="form-group">
-      <label for="booking-title" class="form-label">Title</label>
+      <label for="booking-title" class="form-label">
+        Title <span class="required-mark">*</span>
+      </label>
       <input
         id="booking-title"
         v-model="form.title"
         type="text"
         class="form-control"
-        placeholder="Meeting title"
+        :class="{ 'input--error': !form.title && form.touched }"
+        placeholder="Meeting Titel"
         required
         aria-required="true"
+        @blur="form.touched = true"
       />
+      <span v-if="!form.title && form.touched" class="field-error">Please enter a meeting title</span>
     </div>
 
     <div class="form-row">
@@ -62,7 +67,11 @@
           <option :value="60">1 hour</option>
           <option :value="90">1.5 hours</option>
           <option :value="120">2 hours</option>
+          <option :value="150">2.5 hours</option>
           <option :value="180">3 hours</option>
+          <option :value="210">3.5 hours</option>
+          <option :value="240">4 hours</option>
+          <option :value="480">8 hours</option>
         </select>
       </div>
     </div>
@@ -70,6 +79,15 @@
     <div v-if="error || availabilityError" class="error-message" role="alert">
       {{ error || availabilityError }}
     </div>
+
+    <div class="booking-policy">
+      <span class="policy-icon">ℹ️</span>
+      <p>
+        Please check in via this Website or QR code within 10 minutes of the start time.
+        Otherwise, your booking will be automatically cancelled.
+      </p>
+    </div>
+
 
     <div class="form-actions">
       <button
@@ -117,6 +135,7 @@ const form = reactive({
   date: '',
   startTime: '',
   duration: 60,
+  touched: false,
 });
 
 const availabilityError = ref('');
@@ -224,6 +243,10 @@ watch(
   color: #475569;
 }
 
+.required-mark {
+  color: #dc2626;
+}
+
 .form-control {
   width: 100%;
   padding: 0.6rem 0.75rem;
@@ -241,6 +264,27 @@ watch(
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+.form-control.input--error {
+  border-color: #dc2626;
+  background-color: #fffafb;
+}
+
+.booking-policy {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f0f9ff;
+  border: 1px solid #e0f2fe;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #0369a1;
+  line-height: 1.4;
+}
+
+.policy-icon {
+  font-size: 1.1rem;
+}
+
 .selected-room {
   padding: 0.75rem;
   background: #f8fafc;
@@ -250,6 +294,12 @@ watch(
   justify-content: space-between;
   align-items: center;
   font-size: 0.9rem;
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 0.25rem;
 }
 
 .capacity {

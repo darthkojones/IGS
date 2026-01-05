@@ -29,11 +29,9 @@
 
         <div class="header-right">
           <img
-            src="/images/rooms/Matthews_auditorium-1080x567.png"
+            :src="roomImage"
             :alt="room.name"
             class="room-image"
-            @click="showLightbox = true"
-            title="Click to enlarge"
           />
         </div>
       </header>
@@ -146,13 +144,7 @@
         </div>
       </aside>
     </div>
-    <div v-if="showLightbox" class="lightbox" @click="showLightbox = false">
-      <div class="lightbox-content">
-        <img src="/images/rooms/Matthews_auditorium-1080x567.png" :alt="room?.name" />
-        <button class="close-lightbox" @click="showLightbox = false">×</button>
-      </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -167,11 +159,21 @@ import { bookingService } from '@/services/bookingService'
 import { formatLocalTime, formatLocalDate } from '@/utils/timezoneUtils'
 import { type Booking, type User, type Room, BookingStatus } from '@/types'
 
+import meetingSmall from '@/assets/icons/meeting_small.png'
+import meetingMiddle from '@/assets/icons/meeting_midlle.png'
+import meetingBig from '@/assets/icons/meeting_big.png'
+
 const route = useRoute()
 const roomsStore = useRoomsStore()
 const bookingsStore = useBookingsStore()
 const authStore = useAuthStore()
-const showLightbox = ref(false)
+
+const roomImage = computed(() => {
+  if (!room.value) return meetingBig
+  if (room.value.capacity <= 10) return meetingSmall
+  if (room.value.capacity <= 20) return meetingMiddle
+  return meetingBig
+})
 
 // --- Room Data ---
 const roomId = computed(() => route.params.id as string)
@@ -391,7 +393,7 @@ watch(formattedDate, fetchBookings)
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 1rem;
+  gap: 0,75rem;
   flex: 1;
 }
 
@@ -476,16 +478,20 @@ watch(formattedDate, fetchBookings)
 }
 
 .header-right {
-  width: 320px;
-  background: #f1f5f9;
-  cursor: zoom-in;
+  width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  padding: 1rem;
 }
 
 .room-image {
-  width: 100%;
+  /* Passt sich dynamisch an die Höhe des Containers (und damit des Textes) an */
   height: 100%;
-  object-fit: cover;
-  transition: opacity 0.2s;
+  max-height: 60px; /* Begrenzt das Icon, damit es nicht größer als die Textgruppe wird */
+  width: auto;
+  object-fit: contain;
 }
 
 .room-image:hover {

@@ -319,7 +319,11 @@ const handleBook = (room: Room) => {
 };
 
 const handleViewDetails = (room: Room) => {
-  router.push({ name: 'room-detail', params: { id: room.roomId } });
+  router.push({
+    name: 'room-detail',
+    params: { id: room.roomId },
+    query: { date: filters.value.startDateTime }
+  });
 };
 
 onMounted(() => {

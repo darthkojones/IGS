@@ -186,8 +186,16 @@ const getBuildingName = (buildingId: string) => {
   return b?.name || 'Main Building'
 }
 
-// --- Date Management ---
-const selectedDate = ref(new Date())
+// --- Date Management, from RoomsView if available---
+const getInitialDate = () => {
+  const queryDate = route.query.date as string
+  if (queryDate) {
+    return new Date(queryDate)
+  }
+  return new Date()
+}
+
+const selectedDate = ref(getInitialDate())
 
 const formattedDate = computed(() => {
   const d = selectedDate.value

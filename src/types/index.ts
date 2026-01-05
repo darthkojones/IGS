@@ -11,6 +11,8 @@ export interface Building {
   buildingId: string;
   name: string;
   address: string;
+  latitude?: number;
+  longitude?: number;
   floorCount?: number;
   roomCount?: number;
   institutionId: string;
@@ -78,6 +80,7 @@ export interface Booking {
   enteredAt?: Date;
   createdAt: Date;
   room?: Room; // Optional room data
+  user?: User; // Optional user data
 }
 
 export enum BookingStatus {

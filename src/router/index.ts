@@ -21,6 +21,11 @@ const router = createRouter({
       component: () => import('../views/RoomsView.vue'),
     },
     {
+    path: '/room-editor',
+    name: 'room-editor',
+    component: () => import('@/views/RoomEditorView.vue'),
+    },
+    {
       path: '/rooms/:id',
       name: 'room-detail',
       component: () => import('../views/RoomDetailView.vue'),
@@ -56,6 +61,12 @@ const router = createRouter({
       name: 'admin',
       component: () => import('../views/AdminView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: '/admin/panel',
+      name: 'admin-panel',
+      component: () => import('../views/AdminPanelView.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/login',

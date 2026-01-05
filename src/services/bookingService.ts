@@ -180,11 +180,17 @@ export const bookingService = {
     try {
       const { data, error } = await supabase
         .from('booking')
-        .select('*')
+        .select(`${ROOM_SELECT},
+          user:user_id (
+            id,
+            first_name,
+            last_name,
+            email,
+            role
+          )`)
         .or(
           `and(start_time.lt.${endTime.toISOString()},end_time.gt.${startTime.toISOString()})`
         )
-        .in('status', ['reserved', 'active'])
         .order('start_time', { ascending: true });
 
       if (error) {

@@ -62,7 +62,7 @@ const statisticsStore = useStatisticsStore();
 
 const overallStats = computed(() => statisticsStore.overallStatistics);
 const popularRooms = computed(() => statisticsStore.getMostPopularRooms);
-const loading = computed(() => statisticsStore.loading);
+//const loading = computed(() => statisticsStore.loading);
 
 onMounted(() => {
   statisticsStore.fetchOverallStatistics();

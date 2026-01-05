@@ -2,6 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import BurgerMenu from '@/components/BurgerMenu.vue'
 
 
 const authStore = useAuthStore()
@@ -22,22 +23,17 @@ onMounted(async () => {
       <div class="header-content">
         <RouterLink to="/" class="logo">
           <span class="logo-icon">🏢</span>
-          <span class="logo-text">IGS</span>
+          <span class="logo-text">Home</span>
         </RouterLink>
 
-        <nav class="nav-menu">
-          <RouterLink to="/" class="nav-link">Home</RouterLink>
-          <RouterLink to="/rooms" class="nav-link">Rooms</RouterLink>
-          <RouterLink to="/bookings" class="nav-link" v-if="isAuthenticated">Bookings</RouterLink>
-          <RouterLink to="/statistics" class="nav-link" v-if="isAuthenticated">Statistics</RouterLink>
-          <RouterLink to="/accessibility" class="nav-link">Accessibility</RouterLink>
-        </nav>
+        <div class="header-spacer"></div>
 
         <div class="header-actions">
+          <BurgerMenu />
           <template v-if="isAuthenticated">
             <RouterLink to="/profile" class="user-info">
               <span class="user-icon">👤</span>
-              <span class="user-name">{{ currentUser?.firstName || 'User' }}</span>
+              <span class="user-name">{{ currentUser?.firstName || 'User' }}-{{ currentUser?.lastName || '' }}</span>
             </RouterLink>
           </template>
           <template v-else>
@@ -72,8 +68,10 @@ onMounted(async () => {
 }
 
 html, body {
+  height: 100%;
   width: 100%;
-  max-width: 100%;
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
 }
 
@@ -81,12 +79,15 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: #f5f5f5;
   color: #333;
+  display: flex;
+  flex-direction: column;
 }
 
 #app {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
 }
 
 /* Header */
@@ -95,16 +96,24 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
+  margin: 0%;
   z-index: 100;
+  width: 100%;
 }
 
 .header-content {
-  max-width: 1400px;
-  margin: 0 auto;
+  /* max-width: 1400px;*/
+  margin: 0;
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-spacer {
+  flex: 1;
 }
 
 .logo {
@@ -119,27 +128,6 @@ body {
 
 .logo-icon {
   font-size: 2rem;
-}
-
-.nav-menu {
-  display: flex;
-  gap: 1.5rem;
-  flex: 1;
-}
-
-.nav-link {
-  text-decoration: none;
-  color: #666;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.nav-link:hover,
-.nav-link.router-link-active {
-  color: #1976d2;
-  background: #e3f2fd;
 }
 
 .header-actions {
@@ -198,6 +186,7 @@ body {
 /* Main Content */
 .app-main {
   flex: 1;
+  width:100%;
 }
 
 /* Footer */
@@ -237,19 +226,14 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
   .header-content {
-    flex-direction: column;
-    gap: 1rem;
+    width:100%
   }
 
-  .nav-menu {
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
+  .user-name {
+    display: none;
   }
-
-  .header-actions {
-    width: 100%;
-    justify-content: center;
+  .header-content {
+    padding: 1% 3%;
   }
 
   .footer-content {

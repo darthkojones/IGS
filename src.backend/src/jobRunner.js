@@ -1,7 +1,8 @@
 const cron = require('node-cron');
 
 const redisClient = require('./clients/redisClient');
-const mqttClient = require('./clients/mqttClient')
+const mqttClient = require('./clients/mqttClient');
+const supabaseClient = require('./clients/supabaseClient');
 
 /**
  * Here we are processing all updates sent to us
@@ -67,6 +68,11 @@ cron.schedule('*/5 * * * * *', () => {
 });
 
 
+function main() {
+    supabaseClient.getAllBookings()
+}
+
+main()
 /**
  *
  * Hier muss folgendes rein:

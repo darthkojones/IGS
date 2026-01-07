@@ -20,11 +20,8 @@ mqttClient.on('message', async (topic, message) => {
      */
     if (parts.length == 6 && parts[5] == 'status') {
       const [, building, floor, room, device] = parts;
-
       const data = JSON.parse(message.toString());
-
       const deviceKey = `${building}:${floor}:${room}:${device}`;
-
       deviceStatusCache[deviceKey] = data.status;
 
       console.log(`DSC\tStatus Saved\tRoom:${room}/${device}\tStatus: ${data.status}`);
@@ -67,12 +64,23 @@ cron.schedule('*/5 * * * * *', () => {
   );
 });
 
+/**
+ * Here we query all expired rooms across all buildings
+ * Expired rooms are bumped
+ */
+cron.schedule('*/1 * * * * *', async () => {
+  const utcDate = new Date();
+  const nowMinusTenMinutes = new Date(utcDate.getTime() - 10 * 60 * 1000).toISOString();
 
-function main() {
-    supabaseClient.getAllBookings()
-}
+  try {
+    const bookingsToExpire = await supabaseClient.getExpiredBookings(nowMinusTenMinutes);
+    if (bookingsToExpire.length >= 1) supabaseClient.setBookingsToExpired(bookingsToExpire);
+  } catch(error) {
+    console.error('Supabase error', error)
+  }
+});
 
-main()
+
 /**
  *
  * Hier muss folgendes rein:
@@ -81,12 +89,4 @@ main()
  * - Der die letzten redis status erhält
  * 1. Beurteilung ob etwas zu unternehmen ist (licht ein obwohl aus gehört, licht aus obwohl ein gehört, etc)
  * 2. Commands an die betroffenen räume melden
- */
-
-
-/**
- * UND Folgendes:
- * - Cron job der alle 5 minuten läuft
- * - Der alle räume abfragt aus supabase
- * - Räume, die gebucht wurden und jetzt 10 minuten nach start zeit immer noch nicht checked in ist, sollen expired werden
  */

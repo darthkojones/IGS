@@ -1,11 +1,11 @@
-require('dotenv').config({ path: '../.env'});
+require('dotenv').config({ path: '../../.env.local'});
 
 const { createClient } = require('@supabase/supabase-js');
 
 // Supabase-Client erstellen
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY
 );
 
 async function getAllBookings() {

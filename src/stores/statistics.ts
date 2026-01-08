@@ -13,6 +13,7 @@ interface StatisticsState {
     noShowRate: number;
     cancellationRate: number;
     bookingsPerDay: Map<string, number>;
+    bookingsPerDayOfWeek: Array<{ day: string; count: number }>;
     peakHours: Array<{ hour: number; count: number }>;
     popularRooms: Array<{ roomId: string; roomName: string; usageFrequency: number }>;
   } | null;
@@ -80,6 +81,26 @@ export const useStatisticsStore = defineStore('statistics', {
     },
 
     /**
+     * Calculate bookings per day of week (0=Sunday, 6=Saturday)
+     */
+    calculateBookingsPerDayOfWeek(bookings: Booking[]): Array<{ day: string; count: number }> {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const dayCounts = new Map<number, number>();
+
+      bookings.forEach(booking => {
+        const date = new Date(booking.startTime);
+        const dayOfWeek = date.getDay(); // 0=Sunday, 6=Saturday
+        dayCounts.set(dayOfWeek, (dayCounts.get(dayOfWeek) || 0) + 1);
+      });
+
+      // Return all days of the week in order
+      return days.map((day, index) => ({
+        day,
+        count: dayCounts.get(index) || 0
+      }));
+    },
+
+    /**
      * Calculate peak booking hours
      */
     calculatePeakHours(bookings: Booking[]): Array<{ hour: number; count: number }> {
@@ -127,6 +148,7 @@ export const useStatisticsStore = defineStore('statistics', {
         const noShowRate = this.calculateNoShowRate(allBookings);
         const cancellationRate = this.calculateCancellationRate(allBookings);
         const bookingsPerDay = this.calculateBookingsPerDay(allBookings);
+        const bookingsPerDayOfWeek = this.calculateBookingsPerDayOfWeek(allBookings);
         const peakHours = this.calculatePeakHours(allBookings);
         const popularRooms = this.calculatePopularRooms(allBookings);
 
@@ -136,6 +158,7 @@ export const useStatisticsStore = defineStore('statistics', {
           noShowRate,
           cancellationRate,
           bookingsPerDay,
+          bookingsPerDayOfWeek,
           peakHours,
           popularRooms,
         };

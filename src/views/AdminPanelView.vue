@@ -75,13 +75,26 @@
         </div>
         <p v-else class="no-data">No daily booking data available</p>
       </div>
+
+      <!-- Bookings Per Day of Week Chart Section -->
+      <div class="section">
+        <h2>Bookings by Day of Week</h2>
+        <div v-if="statisticsStore.adminStatistics?.bookingsPerDayOfWeek && statisticsStore.adminStatistics.bookingsPerDayOfWeek.length > 0" class="chart-wrapper">
+          <LineChart
+            :data="bookingsPerDayOfWeekChartData"
+            :options="bookingsPerDayOfWeekOptions"
+          />
+        </div>
+        <p v-else class="no-data">No day of week booking data available</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useStatisticsStore } from '@/stores/statistics';
-import { onMounted, onUnmounted, computed } from 'vue';
+import { chartColors } from '@/assets/chartColors';
+import { onMounted, onUnmounted, computed, ref } from 'vue';
 import { Bar as BarChart, Line as LineChart } from 'vue-chartjs';
 import {
   Chart as ChartJS,
@@ -112,11 +125,21 @@ ChartJS.register(
 const statisticsStore = useStatisticsStore();
 
 /**
+ * Track window width for responsive labels
+ */
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 0);
+
+const handleResize = () => {
+  windowWidth.value = window.innerWidth;
+};
+
+/**
  * Subscribe to real-time updates on mount
  */
 onMounted(async () => {
   await statisticsStore.fetchAdminStatistics();
   await statisticsStore.subscribeToRealtimeAdminStatistics();
+  window.addEventListener('resize', handleResize);
 });
 
 /**
@@ -124,6 +147,7 @@ onMounted(async () => {
  */
 onUnmounted(async () => {
   await statisticsStore.unsubscribeFromRealtimeAdminStatistics();
+  window.removeEventListener('resize', handleResize);
 });
 
 /**
@@ -170,11 +194,11 @@ const peakHoursChartData = computed(() => {
       {
         label: 'Bookings',
         data: sortedPeakHours.map((h) => h.count),
-        backgroundColor: 'rgba(79, 172, 254, 0.7)',
-        borderColor: 'rgba(79, 172, 254, 1)',
+        backgroundColor: chartColors.peakHours.background,
+        borderColor: chartColors.peakHours.border,
         borderWidth: 2,
         borderRadius: 4,
-        hoverBackgroundColor: 'rgba(79, 172, 254, 0.9)'
+        hoverBackgroundColor: chartColors.peakHours.hover
       }
     ]
   };
@@ -191,11 +215,11 @@ const popularRoomsChartData = computed(() => {
       {
         label: 'Bookings',
         data: rooms.map((r) => r.usageFrequency),
-        backgroundColor: 'rgba(102, 126, 234, 0.7)',
-        borderColor: 'rgba(102, 126, 234, 1)',
+        backgroundColor: chartColors.popularRooms.background,
+        borderColor: chartColors.popularRooms.border,
         borderWidth: 2,
         borderRadius: 4,
-        hoverBackgroundColor: 'rgba(102, 126, 234, 0.9)',
+        hoverBackgroundColor: chartColors.popularRooms.hover,
         // Store room names for tooltip display
         roomNames: rooms.map((r) => r.roomName)
       }
@@ -217,17 +241,17 @@ const bookingsPerDayChartData = computed(() => {
       {
         label: 'Daily Bookings',
         data: recentBookingsPerDay.map((d) => d.count),
-        borderColor: 'rgba(79, 172, 254, 1)',
-        backgroundColor: 'rgba(79, 172, 254, 0.1)',
+        borderColor: chartColors.bookingsPerDay.border,
+        backgroundColor: chartColors.bookingsPerDay.background,
         borderWidth: 3,
         fill: true,
         tension: 0.4,
         pointRadius: 5,
-        pointBackgroundColor: 'rgba(79, 172, 254, 1)',
+        pointBackgroundColor: chartColors.bookingsPerDay.point,
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
         pointHoverRadius: 7,
-        hoverBackgroundColor: 'rgba(79, 172, 254, 0.9)'
+        hoverBackgroundColor: chartColors.bookingsPerDay.hover
       }
     ]
   };
@@ -334,6 +358,66 @@ const bookingsPerDayOptions = {
     }
   }
 };
+
+/**
+ * Bookings Per Day of Week Chart Data (computed)
+ */
+const bookingsPerDayOfWeekChartData = computed(() => {
+  const weekData = statisticsStore.adminStatistics?.bookingsPerDayOfWeek || [];
+  const dayAbbreviations = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const isSmallScreen = windowWidth.value < 768;
+
+  return {
+    labels: weekData.map((d, index) => isSmallScreen ? dayAbbreviations[index] : d.day),
+    datasets: [
+      {
+        label: 'Bookings',
+        data: weekData.map((d) => d.count),
+        borderColor: chartColors.bookingsPerDayOfWeek.border,
+        backgroundColor: chartColors.bookingsPerDayOfWeek.background,
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: chartColors.bookingsPerDayOfWeek.point,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointHoverRadius: 7,
+        hoverBackgroundColor: chartColors.bookingsPerDayOfWeek.hover
+      }
+    ]
+  };
+});
+
+/**
+ * Bookings Per Day of Week Chart Options
+ */
+const bookingsPerDayOfWeekOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top' as const
+    },
+    title: {
+      display: false
+    }
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        font: { size: 12 }
+      }
+    },
+    x: {
+      ticks: {
+        font: { size: 11 }
+      }
+    }
+  }
+};
 </script>
 
 <style scoped>
@@ -391,7 +475,7 @@ const bookingsPerDayOptions = {
 }
 
 .metric-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: v-bind('chartColors.cards.gradient');
   padding: 1.5rem;
   border-radius: 8px;
   color: white;

@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoomsStore } from '@/stores/rooms';
 import { roomService } from '@/services/roomService';
-
+import type { Room } from '@/types';
 
 type SortKey = 'name' | 'building' | 'floor' | 'capacity';
 
@@ -26,6 +26,16 @@ const buildingNameById = computed(() => {
   const map = new Map<string, string>();
   buildings.value.forEach(b => map.set(b.buildingId, b.name));
   return map;
+});
+
+// fallback: wenn buildings leer sind, nimm buildingIds aus rooms (damit man trotzdem auswählen kann)
+const buildingOptions = computed(() => {
+  if (buildings.value.length > 0) {
+    return buildings.value.map(b => ({ id: b.buildingId, label: b.name }));
+  }
+
+  const ids = Array.from(new Set(rooms.value.map(r => r.buildingId).filter(Boolean)));
+  return ids.map(id => ({ id, label: `Building ${id}` }));
 });
 
 const filteredRooms = computed(() => {
@@ -99,72 +109,170 @@ function yesNo(v?: boolean) {
   return v ? '✓' : '—';
 }
 
-const lastTestRoomId = ref<string | null>(null);
+// --- Form (Create + Edit) ---
+const formOpen = ref(false);
+const formMode = ref<'create' | 'edit'>('create');
+const editingRoomId = ref<string | null>(null);
+const saving = ref(false);
+const formError = ref<string | null>(null);
 
-async function createTestRoom() {
-  if (buildings.value.length === 0) await roomsStore.fetchBuildings();
-  if (rooms.value.length === 0) await roomsStore.fetchRooms();
+const form = ref({
+  buildingId: '',
+  name: '',
+  floor: 0,
+  capacity: 1,
+  description: '',
+  hasProjector: false,
+  hasWhiteboard: false,
+  hasVideoConference: false,
+});
 
-  // set buildingId
-  const buildingId =
-    buildings.value[0]?.buildingId ??
-    rooms.value[0]?.buildingId;
+function openCreateForm() {
+  formMode.value = 'create';
+  editingRoomId.value = null;
+  formError.value = null;
 
-  if (!buildingId) {
-    alert('No buildingId available (no buildings and no rooms). Cannot create room.');
-    return;
-  }
+  const defaultBuildingId =
+    buildingFilter.value ||
+    buildingOptions.value[0]?.id ||
+    '';
 
-  const created = await roomsStore.createRoom({
-    name: `TEST Room ${Date.now()}`,
+  form.value = {
+    buildingId: defaultBuildingId,
+    name: '',
     floor: 0,
     capacity: 1,
-    buildingId,
-    description: 'temporary test room',
+    description: '',
     hasProjector: false,
     hasWhiteboard: false,
     hasVideoConference: false,
-  });
+  };
 
-  lastTestRoomId.value = created.roomId;
-  alert(`Created test room: ${created.name}`);
+  formOpen.value = true;
 }
 
+function openEditForm(room: Room) {
+  formMode.value = 'edit';
+  editingRoomId.value = room.roomId;
+  formError.value = null;
 
-async function updateTestRoom() {
-  if (!lastTestRoomId.value) {
-    alert('Create a test room first.');
+  form.value = {
+    buildingId: room.buildingId ?? '',
+    name: room.name ?? '',
+    floor: room.floor ?? 0,
+    capacity: room.capacity ?? 0,
+    description: room.description ?? '',
+    hasProjector: !!room.hasProjector,
+    hasWhiteboard: !!room.hasWhiteboard,
+    hasVideoConference: !!room.hasVideoConference,
+  };
+
+  formOpen.value = true;
+}
+
+function closeForm() {
+  formOpen.value = false;
+  formError.value = null;
+}
+
+function getErrMsg(e: unknown, fallback: string) {
+  if (e instanceof Error) return e.message;
+  if (e && typeof e === 'object' && 'message' in e) return String((e as { message: unknown }).message);
+  return fallback;
+}
+
+async function saveForm() {
+  formError.value = null;
+
+  const name = form.value.name.trim();
+  if (!name) {
+    formError.value = 'Name is required.';
     return;
   }
 
-  const updated = await roomsStore.updateRoom(lastTestRoomId.value, {
-    name: `UPDATED TEST ${Date.now()}`,
-  });
-
-  alert(`Updated room name to: ${updated.name}`);
-}
-
-async function deleteTestRoom() {
-  if (!lastTestRoomId.value) {
-    alert('Create a test room first.');
+  if (!form.value.buildingId) {
+    formError.value = 'Building is required.';
     return;
   }
 
-  const count = await roomService.countBookingsForRoom(lastTestRoomId.value);
-  const ok = confirm(`Delete test room? ${count} booking(s) will be removed.`);
-  if (!ok) return;
+  if (!Number.isFinite(form.value.capacity) || form.value.capacity < 0) {
+    formError.value = 'Capacity must be a valid number (>= 0).';
+    return;
+  }
 
-  const { deletedBookings } = await roomsStore.deleteRoom(lastTestRoomId.value);
-  alert(`Deleted test room. Removed ${deletedBookings} booking(s).`);
-  lastTestRoomId.value = null;
+  if (!Number.isFinite(form.value.floor)) {
+    formError.value = 'Floor must be a valid number.';
+    return;
+  }
+
+  saving.value = true;
+  try {
+    const payload = {
+      name,
+      buildingId: form.value.buildingId,
+      floor: form.value.floor,
+      capacity: form.value.capacity,
+      description: form.value.description.trim() ? form.value.description.trim() : undefined,
+      hasProjector: form.value.hasProjector,
+      hasWhiteboard: form.value.hasWhiteboard,
+      hasVideoConference: form.value.hasVideoConference,
+    };
+
+    if (formMode.value === 'create') {
+      await roomsStore.createRoom(payload);
+    } else {
+      if (!editingRoomId.value) {
+        formError.value = 'Missing room id for update.';
+        return;
+      }
+      await roomsStore.updateRoom(editingRoomId.value, payload);
+    }
+
+    closeForm();
+  } catch (e) {
+    formError.value = getErrMsg(e, 'Save failed');
+  } finally {
+    saving.value = false;
+  }
 }
 
+// --- Delete ---
+async function deleteRoom(roomId: string, roomName: string) {
+  try {
+    const count = await roomService.countBookingsForRoom(roomId);
+    const ok = confirm(`Delete "${roomName}"? ${count} booking(s) will be removed.`);
+    if (!ok) return;
+
+    const { deletedBookings } = await roomsStore.deleteRoom(roomId);
+    alert(`Deleted "${roomName}". Removed ${deletedBookings} booking(s).`);
+  } catch (e) {
+    alert(getErrMsg(e, 'Delete failed'));
+  }
+}
 
 onMounted(async () => {
-  // building-name-by-id needs buildings to be loaded
   if (buildings.value.length === 0) await roomsStore.fetchBuildings();
   if (rooms.value.length === 0) await roomsStore.fetchRooms();
 });
+
+// --- Tooling keep-alive (für Projekte, die tsc/noUnusedLocals statt vue-tsc verwenden) ---
+void [
+  toggleSort,
+  yesNo,
+  openCreateForm,
+  openEditForm,
+  closeForm,
+  saveForm,
+  deleteRoom,
+  sortedRooms,
+  buildingOptions,
+  formOpen,
+  formMode,
+  editingRoomId,
+  formError,
+  form,
+  saving,
+];
 </script>
 
 <template>
@@ -172,12 +280,72 @@ onMounted(async () => {
     <h1>Room Editor</h1>
 
     <div v-if="error" class="error">{{ error }}</div>
+
+    <!-- Create button (wie vorher Create test room) -->
     <div class="actions">
-    <button @click="createTestRoom">Create test room</button>
-    <button @click="updateTestRoom" :disabled="!lastTestRoomId">Update test room</button>
-    <button @click="deleteTestRoom" :disabled="!lastTestRoomId">Delete test room</button>
+      <button @click="openCreateForm">Create room</button>
     </div>
 
+    <!-- Create/Edit Maske -->
+    <div v-if="formOpen" class="form">
+      <h2>{{ formMode === 'create' ? 'Create Room' : 'Edit Room' }}</h2>
+
+      <p v-if="formMode === 'edit' && editingRoomId" class="meta">ID: {{ editingRoomId }}</p>
+
+      <div v-if="formError" class="error">{{ formError }}</div>
+
+      <div class="form-grid">
+        <label class="full">
+          Building
+          <select v-model="form.buildingId">
+            <option value="" disabled>Select building</option>
+            <option v-for="b in buildingOptions" :key="b.id" :value="b.id">
+              {{ b.label }}
+            </option>
+          </select>
+        </label>
+
+        <label class="full">
+          Name
+          <input v-model="form.name" type="text" placeholder="Room name" />
+        </label>
+
+        <label>
+          Floor
+          <input v-model.number="form.floor" type="number" />
+        </label>
+
+        <label>
+          Capacity
+          <input v-model.number="form.capacity" type="number" min="0" />
+        </label>
+
+        <label class="full">
+          Description
+          <input v-model="form.description" type="text" placeholder="Optional" />
+        </label>
+
+        <label>
+          <input v-model="form.hasProjector" type="checkbox" />
+          Projector
+        </label>
+        <label>
+          <input v-model="form.hasWhiteboard" type="checkbox" />
+          Whiteboard
+        </label>
+        <label>
+          <input v-model="form.hasVideoConference" type="checkbox" />
+          Video conf
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button @click="saveForm" :disabled="saving">
+          {{ formMode === 'create' ? 'Create' : 'Save' }}
+        </button>
+        <button @click="closeForm" :disabled="saving">Cancel</button>
+      </div>
+    </div>
 
     <div class="filters">
       <input v-model="search" type="text" placeholder="Search (name, building, description…)" />
@@ -209,6 +377,7 @@ onMounted(async () => {
           <th>Projector</th>
           <th>Whiteboard</th>
           <th>Video conf</th>
+          <th>Actions</th>
         </tr>
       </thead>
 
@@ -222,6 +391,10 @@ onMounted(async () => {
           <td class="center">{{ yesNo(room.hasProjector) }}</td>
           <td class="center">{{ yesNo(room.hasWhiteboard) }}</td>
           <td class="center">{{ yesNo(room.hasVideoConference) }}</td>
+          <td class="actions-cell">
+            <button @click="openEditForm(room)">Edit</button>
+            <button @click="deleteRoom(room.roomId, room.name)">Delete</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -234,11 +407,23 @@ onMounted(async () => {
 .page { padding: 16px; display: grid; gap: 12px; }
 .filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .filters input[type="text"] { min-width: 260px; }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.actions button { padding: 6px 10px; }
+
+.form { border: 1px solid #ddd; padding: 12px; border-radius: 6px; display: grid; gap: 10px; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.form-grid label { display: grid; gap: 6px; }
+.form-grid .full { grid-column: 1 / -1; }
+.form-actions { display: flex; gap: 8px; }
+.actions-cell { display: flex; gap: 8px; }
+
 .table { width: 100%; border-collapse: collapse; }
 .table th, .table td { border-bottom: 1px solid #ddd; padding: 8px; vertical-align: top; }
 .table th { text-align: left; user-select: none; }
 .table th[role="button"] { cursor: pointer; }
 .center { text-align: center; }
+
 .error { color: #b00020; }
 .meta { opacity: 0.8; }
 </style>

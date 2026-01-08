@@ -44,6 +44,10 @@ export const useBookingsStore = defineStore('booking', {
       state.userBookings.filter((booking: Booking) =>
         booking.status === 'completed' || new Date(booking.endTime) < new Date()
       ),
+      cancelledBookings: (state) =>
+      state.userBookings.filter((booking: Booking) =>
+        booking.status === 'cancelled'
+      ),
   },
 
   actions: {

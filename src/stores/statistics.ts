@@ -11,7 +11,9 @@ interface StatisticsState {
     totalBookings: number;
     occupancyRate: number;
     noShowRate: number;
+    cancellationRate: number;
     bookingsPerDay: Map<string, number>;
+    bookingsPerDayOfWeek: Array<{ day: string; count: number }>;
     peakHours: Array<{ hour: number; count: number }>;
     popularRooms: Array<{ roomId: string; roomName: string; usageFrequency: number }>;
   } | null;
@@ -57,6 +59,15 @@ export const useStatisticsStore = defineStore('statistics', {
     },
 
     /**
+     * Calculate cancellation rate (cancelled bookings / total bookings)
+     */
+    calculateCancellationRate(bookings: Booking[]): number {
+      if (bookings.length === 0) return 0;
+      const cancelledBookings = bookings.filter(b => b.status === 'cancelled').length;
+      return Math.round((cancelledBookings / bookings.length) * 1000) / 10;
+    },
+
+    /**
      * Calculate bookings per day
      */
     calculateBookingsPerDay(bookings: Booking[]): Map<string, number> {
@@ -67,6 +78,26 @@ export const useStatisticsStore = defineStore('statistics', {
         perDay.set(dateString, (perDay.get(dateString) || 0) + 1);
       });
       return perDay;
+    },
+
+    /**
+     * Calculate bookings per day of week (0=Sunday, 6=Saturday)
+     */
+    calculateBookingsPerDayOfWeek(bookings: Booking[]): Array<{ day: string; count: number }> {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const dayCounts = new Map<number, number>();
+
+      bookings.forEach(booking => {
+        const date = new Date(booking.startTime);
+        const dayOfWeek = date.getDay(); // 0=Sunday, 6=Saturday
+        dayCounts.set(dayOfWeek, (dayCounts.get(dayOfWeek) || 0) + 1);
+      });
+
+      // Return all days of the week in order
+      return days.map((day, index) => ({
+        day,
+        count: dayCounts.get(index) || 0
+      }));
     },
 
     /**
@@ -108,17 +139,16 @@ export const useStatisticsStore = defineStore('statistics', {
     async fetchAdminStatistics() {
       this.loading = true;
       try {
-        // Fetch ALL bookings from the system (not user-specific)
-        // Get a wide date range to fetch all historical bookings
-        const startOfTime = new Date('2020-01-01');
-        const endOfTime = new Date('2099-12-31');
-        const allBookings = await bookingService.getBookingsByTimeRange(startOfTime, endOfTime);
+        // Fetch ALL bookings from the system (no time filter)
+        const allBookings = await bookingService.getAllBookings();
 
         // Calculate all metrics
         const totalBookings = this.calculateTotalBookings(allBookings);
         const occupancyRate = this.calculateOccupancyRate(allBookings);
         const noShowRate = this.calculateNoShowRate(allBookings);
+        const cancellationRate = this.calculateCancellationRate(allBookings);
         const bookingsPerDay = this.calculateBookingsPerDay(allBookings);
+        const bookingsPerDayOfWeek = this.calculateBookingsPerDayOfWeek(allBookings);
         const peakHours = this.calculatePeakHours(allBookings);
         const popularRooms = this.calculatePopularRooms(allBookings);
 
@@ -126,7 +156,9 @@ export const useStatisticsStore = defineStore('statistics', {
           totalBookings,
           occupancyRate,
           noShowRate,
+          cancellationRate,
           bookingsPerDay,
+          bookingsPerDayOfWeek,
           peakHours,
           popularRooms,
         };

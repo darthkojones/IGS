@@ -21,135 +21,71 @@
       <div class="metrics-grid">
         <div class="metric-card">
           <div class="metric-label">Total Bookings</div>
-          <div class="metric-value">{{ statisticsStore.adminStatistics.totalBookings }}</div>
+          <div class="metric-value">{{ statisticsStore.adminStatistics?.totalBookings || 0 }}</div>
         </div>
 
         <div class="metric-card">
           <div class="metric-label">Occupancy Rate</div>
-          <div class="metric-value">{{ statisticsStore.adminStatistics.occupancyRate }}%</div>
+          <div class="metric-value">{{ statisticsStore.adminStatistics?.occupancyRate || 0 }}%</div>
         </div>
 
         <div class="metric-card">
           <div class="metric-label">No-Show Rate</div>
-          <div class="metric-value">{{ statisticsStore.adminStatistics.noShowRate }}%</div>
+          <div class="metric-value">{{ statisticsStore.adminStatistics?.noShowRate || 0 }}%</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Cancellations</div>
+          <div class="metric-value">{{ statisticsStore.adminStatistics?.cancellationRate || 0 }}%</div>
         </div>
       </div>
 
-      <!-- Peak Hours Section -->
+      <!-- Peak Hours Chart Section -->
       <div class="section">
         <h2>Peak Booking Hours</h2>
-        <div class="peak-hours-list">
-          <div
-            v-if="statisticsStore.adminStatistics.peakHours.length > 0"
-            class="hours-container"
-          >
-            <div
-              v-for="(hour, index) in sortedPeakHours"
-              :key="index"
-              class="hour-item"
-            >
-              <div class="hour-bar">
-                <span class="hour-count">{{ hour.count }}</span>
-                <div
-                  class="hour-fill"
-                  :style="{
-                    height: `${
-                      (hour.count / maxPeakHourCount) * 100
-                    }%`
-                  }"
-                ></div>
-              </div>
-              <span class="hour-label">{{ formatHour(hour.hour) }}</span>
-            </div>
-          </div>
-          <p v-else class="no-data">No peak hour data available</p>
+        <div v-if="statisticsStore.adminStatistics?.peakHours.length && statisticsStore.adminStatistics.peakHours.length > 0" class="chart-wrapper">
+          <BarChart
+            :data="peakHoursChartData"
+            :options="peakHoursOptions"
+          />
         </div>
+        <p v-else class="no-data">No peak hour data available</p>
       </div>
 
-      <!-- Popular Rooms Section -->
+      <!-- Popular Rooms Chart Section -->
       <div class="section">
         <h2>Most Popular Rooms</h2>
-        <div v-if="statisticsStore.adminStatistics.popularRooms.length > 0" class="popular-rooms">
-          <div
-            v-for="(room, index) in statisticsStore.adminStatistics.popularRooms.slice(0, 10)"
-            :key="index"
-            class="room-item"
-          >
-            <span class="room-count">{{ room.usageFrequency }} bookings</span>
-            <div class="room-bar" :title="room.roomName">
-              <div
-                class="room-fill"
-                :style="{
-                  height: `${(room.usageFrequency / maxRoomUsage) * 100}%`
-                }"
-              ></div>
-            </div>
-            <span class="room-label" :title="room.roomName">{{ room.roomId }}</span>
-          </div>
+        <div v-if="statisticsStore.adminStatistics?.popularRooms.length && statisticsStore.adminStatistics.popularRooms.length > 0" class="chart-wrapper">
+          <BarChart
+            :data="popularRoomsChartData"
+            :options="popularRoomsOptions"
+          />
         </div>
         <p v-else class="no-data">No room usage data available</p>
       </div>
 
-      <!-- Bookings Per Day Section -->
+      <!-- Bookings Per Day Chart Section -->
       <div class="section">
         <h2>Bookings Per Day (Last 30 Days)</h2>
-        <svg v-if="recentBookingsPerDay.length > 0" class="line-chart" viewBox="0 0 1000 300">
-          <!-- Grid lines -->
-          <line x1="50" y1="250" x2="950" y2="250" stroke="#e0e0e0" stroke-width="1" />
-
-          <!-- Y-axis labels -->
-          <text x="20" y="255" font-size="12" text-anchor="end">0</text>
-          <text x="20" y="180" font-size="12" text-anchor="end">{{ maxDailyBookings / 2 }}</text>
-          <text x="20" y="105" font-size="12" text-anchor="end">{{ maxDailyBookings }}</text>
-
-          <!-- Line path -->
-          <polyline
-            :points="linePoints"
-            fill="none"
-            stroke="#4facfe"
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+        <div v-if="statisticsStore.adminStatistics?.bookingsPerDay.size && statisticsStore.adminStatistics.bookingsPerDay.size > 0" class="chart-wrapper">
+          <LineChart
+            :data="bookingsPerDayChartData"
+            :options="bookingsPerDayOptions"
           />
-
-          <!-- Area under line -->
-          <polygon
-            :points="areaPoints"
-            fill="url(#gradient)"
-            opacity="0.3"
-          />
-
-          <!-- Gradient definition -->
-          <defs>
-            <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" style="stop-color:#4facfe;stop-opacity:0.5" />
-              <stop offset="100%" style="stop-color:#4facfe;stop-opacity:0" />
-            </linearGradient>
-          </defs>
-
-          <!-- Data points -->
-          <circle
-            v-for="(point, i) in chartPoints"
-            :key="i"
-            :cx="point.x"
-            :cy="point.y"
-            r="4"
-            fill="#4facfe"
-          />
-
-          <!-- X-axis labels -->
-          <text
-            v-for="(point, i) in xAxisLabels"
-            :key="`label-${i}`"
-            :x="point.x"
-            y="270"
-            font-size="12"
-            text-anchor="middle"
-          >
-            {{ point.label }}
-          </text>
-        </svg>
+        </div>
         <p v-else class="no-data">No daily booking data available</p>
+      </div>
+
+      <!-- Bookings Per Day of Week Chart Section -->
+      <div class="section">
+        <h2>Bookings by Day of Week</h2>
+        <div v-if="statisticsStore.adminStatistics?.bookingsPerDayOfWeek && statisticsStore.adminStatistics.bookingsPerDayOfWeek.length > 0" class="chart-wrapper">
+          <LineChart
+            :data="bookingsPerDayOfWeekChartData"
+            :options="bookingsPerDayOfWeekOptions"
+          />
+        </div>
+        <p v-else class="no-data">No day of week booking data available</p>
       </div>
     </div>
   </div>
@@ -157,9 +93,45 @@
 
 <script setup lang="ts">
 import { useStatisticsStore } from '@/stores/statistics';
-import { onMounted, onUnmounted, computed } from 'vue';
+import { chartColors } from '@/assets/chartColors';
+import { onMounted, onUnmounted, computed, ref } from 'vue';
+import { Bar as BarChart, Line as LineChart } from 'vue-chartjs';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 const statisticsStore = useStatisticsStore();
+
+/**
+ * Track window width for responsive labels
+ */
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 0);
+
+const handleResize = () => {
+  windowWidth.value = window.innerWidth;
+};
 
 /**
  * Subscribe to real-time updates on mount
@@ -167,6 +139,7 @@ const statisticsStore = useStatisticsStore();
 onMounted(async () => {
   await statisticsStore.fetchAdminStatistics();
   await statisticsStore.subscribeToRealtimeAdminStatistics();
+  window.addEventListener('resize', handleResize);
 });
 
 /**
@@ -174,28 +147,13 @@ onMounted(async () => {
  */
 onUnmounted(async () => {
   await statisticsStore.unsubscribeFromRealtimeAdminStatistics();
-});
-
-/**
- * Compute the maximum peak hour count for scaling
- */
-const maxPeakHourCount = computed(() => {
-  if (!statisticsStore.adminStatistics?.peakHours.length) return 1;
-  return Math.max(...statisticsStore.adminStatistics.peakHours.map((h) => h.count));
-});
-
-/**
- * Compute the maximum room usage for scaling
- */
-const maxRoomUsage = computed(() => {
-  if (!statisticsStore.adminStatistics?.popularRooms.length) return 1;
-  return Math.max(...statisticsStore.adminStatistics.popularRooms.map((r) => r.usageFrequency));
+  window.removeEventListener('resize', handleResize);
 });
 
 /**
  * Get recent bookings per day (last 30 days)
  */
-const recentBookingsPerDay = computed(() => {
+function getRecentBookingsPerDay() {
   if (!statisticsStore.adminStatistics?.bookingsPerDay) return [];
 
   const now = new Date();
@@ -205,92 +163,268 @@ const recentBookingsPerDay = computed(() => {
     .map(([date, count]) => ({ date, count }))
     .filter((item) => new Date(item.date) >= thirtyDaysAgo)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-});
-
-/**
- * Calculate max daily bookings for SVG chart scaling
- */
-const maxDailyBookings = computed(() => {
-  if (!recentBookingsPerDay.value.length) return 1;
-  return Math.max(...recentBookingsPerDay.value.map((d) => d.count));
-});
-
-/**
- * Calculate data points for SVG chart rendering
- */
-const chartPoints = computed(() => {
-  if (!recentBookingsPerDay.value.length) return [];
-
-  const width = 900 / recentBookingsPerDay.value.length;
-  const maxCount = maxDailyBookings.value;
-
-  return recentBookingsPerDay.value.map((d, i) => ({
-    x: 50 + i * width,
-    y: 250 - (d.count / maxCount) * 200,
-    label: d.date.substring(5), // MM-DD format
-    count: d.count
-  }));
-});
-
-/**
- * Generate SVG polyline points for line chart
- */
-const linePoints = computed(() => {
-  return chartPoints.value.map((p) => `${p.x},${p.y}`).join(' ');
-});
-
-/**
- * Generate SVG polygon points for area chart fill
- */
-const areaPoints = computed(() => {
-  if (!chartPoints.value.length) return '';
-
-  const points = chartPoints.value.map((p) => `${p.x},${p.y}`);
-  const lastPoint = chartPoints.value[chartPoints.value.length - 1];
-  const closePath = lastPoint
-    ? [
-        `${lastPoint.x},250`,
-        `50,250`
-      ]
-    : [];
-
-  return [...points, ...closePath].join(' ');
-});
-
-/**
- * Get x-axis labels - every nth point to avoid crowding
- */
-const xAxisLabels = computed(() => {
-  if (!chartPoints.value.length) return [];
-  const interval = Math.ceil(chartPoints.value.length / 6);
-  return chartPoints.value.filter((_, i) => i % interval === 0);
-});
+}
 
 /**
  * Get peak hours sorted chronologically (0:00 to 23:00)
  */
-const sortedPeakHours = computed(() => {
+function getSortedPeakHours() {
   if (!statisticsStore.adminStatistics?.peakHours.length) return [];
 
   return statisticsStore.adminStatistics.peakHours
     .slice(0, 24)
     .sort((a, b) => a.hour - b.hour);
-});
+}
+
 /**
  * Format hour (0-23) to readable time
  */
 function formatHour(hour: number): string {
   return `${hour.toString().padStart(2, '0')}:00`;
 }
+
+/**
+ * Peak Hours Chart Data (computed - Chart.js watches this)
+ */
+const peakHoursChartData = computed(() => {
+  const sortedPeakHours = getSortedPeakHours();
+  return {
+    labels: sortedPeakHours.map((h) => formatHour(h.hour)),
+    datasets: [
+      {
+        label: 'Bookings',
+        data: sortedPeakHours.map((h) => h.count),
+        backgroundColor: chartColors.peakHours.background,
+        borderColor: chartColors.peakHours.border,
+        borderWidth: 2,
+        borderRadius: 4,
+        hoverBackgroundColor: chartColors.peakHours.hover
+      }
+    ]
+  };
+});
+
+/**
+ * Popular Rooms Chart Data (computed - Chart.js watches this)
+ */
+const popularRoomsChartData = computed(() => {
+  const rooms = statisticsStore.adminStatistics?.popularRooms.slice(0, 10) || [];
+  return {
+    labels: rooms.map((r) => r.roomId),
+    datasets: [
+      {
+        label: 'Bookings',
+        data: rooms.map((r) => r.usageFrequency),
+        backgroundColor: chartColors.popularRooms.background,
+        borderColor: chartColors.popularRooms.border,
+        borderWidth: 2,
+        borderRadius: 4,
+        hoverBackgroundColor: chartColors.popularRooms.hover,
+        // Store room names for tooltip display
+        roomNames: rooms.map((r) => r.roomName)
+      }
+    ]
+  };
+});
+
+/**
+ * Bookings Per Day Chart Data (computed - Chart.js watches this)
+ */
+const bookingsPerDayChartData = computed(() => {
+  const recentBookingsPerDay = getRecentBookingsPerDay();
+  return {
+    labels: recentBookingsPerDay.map((d) => {
+      const [, month, day] = d.date.split('-');
+      return `${month}/${day}`;
+    }),
+    datasets: [
+      {
+        label: 'Daily Bookings',
+        data: recentBookingsPerDay.map((d) => d.count),
+        borderColor: chartColors.bookingsPerDay.border,
+        backgroundColor: chartColors.bookingsPerDay.background,
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: chartColors.bookingsPerDay.point,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointHoverRadius: 7,
+        hoverBackgroundColor: chartColors.bookingsPerDay.hover
+      }
+    ]
+  };
+});
+
+/**
+ * Peak Hours Chart Options
+ */
+const peakHoursOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top' as const
+    },
+    title: {
+      display: false
+    }
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        font: { size: 12 }
+      }
+    },
+    x: {
+      ticks: {
+        font: { size: 11 }
+      }
+    }
+  }
+};
+
+/**
+ * Popular Rooms Chart Options
+ */
+const popularRoomsOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top' as const
+    },
+    title: {
+      display: false
+    },
+    tooltip: {
+      callbacks: {
+        title: (context: any) => {
+          const roomId = context[0].label;
+          const roomName = context[0].dataset.roomNames?.[context[0].dataIndex];
+          return `${roomId}: ${roomName}`;
+        },
+        label: (context: any) => {
+          return `Bookings: ${context.parsed.y}`;
+        }
+      }
+    }
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        font: { size: 12 }
+      }
+    },
+    x: {
+      ticks: {
+        font: { size: 11 }
+      }
+    }
+  }
+};
+
+/**
+ * Bookings Per Day Chart Options
+ */
+const bookingsPerDayOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top' as const
+    },
+    title: {
+      display: false
+    }
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        font: { size: 12 }
+      }
+    },
+    x: {
+      ticks: {
+        font: { size: 11 }
+      }
+    }
+  }
+};
+
+/**
+ * Bookings Per Day of Week Chart Data (computed)
+ */
+const bookingsPerDayOfWeekChartData = computed(() => {
+  const weekData = statisticsStore.adminStatistics?.bookingsPerDayOfWeek || [];
+  const dayAbbreviations = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const isSmallScreen = windowWidth.value < 768;
+
+  return {
+    labels: weekData.map((d, index) => isSmallScreen ? dayAbbreviations[index] : d.day),
+    datasets: [
+      {
+        label: 'Bookings',
+        data: weekData.map((d) => d.count),
+        borderColor: chartColors.bookingsPerDayOfWeek.border,
+        backgroundColor: chartColors.bookingsPerDayOfWeek.background,
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: chartColors.bookingsPerDayOfWeek.point,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointHoverRadius: 7,
+        hoverBackgroundColor: chartColors.bookingsPerDayOfWeek.hover
+      }
+    ]
+  };
+});
+
+/**
+ * Bookings Per Day of Week Chart Options
+ */
+const bookingsPerDayOfWeekOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top' as const
+    },
+    title: {
+      display: false
+    }
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        font: { size: 12 }
+      }
+    },
+    x: {
+      ticks: {
+        font: { size: 11 }
+      }
+    }
+  }
+};
 </script>
 
 <style scoped>
 .admin-panel {
-  padding: 1rem;
-  width: 100%;
-  max-width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-  box-sizing: border-box;
+  padding: 1rem;
 }
 
 .header {
@@ -298,14 +432,14 @@ function formatHour(hour: number): string {
 }
 
 .header h1 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   margin: 0 0 0.5rem 0;
   color: #333;
 }
 
 .subtitle {
   color: #666;
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin: 0;
 }
 
@@ -341,7 +475,7 @@ function formatHour(hour: number): string {
 }
 
 .metric-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: v-bind('chartColors.cards.gradient');
   padding: 1.5rem;
   border-radius: 8px;
   color: white;
@@ -385,209 +519,23 @@ function formatHour(hour: number): string {
   font-style: italic;
 }
 
-/* SVG Line Chart */
-.line-chart {
-  width: 100%;
-  height: auto;
-  min-height: 300px;
-  max-width: 100%;
-}
-
-/* Peak Hours */
-.peak-hours-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.hours-container {
-  display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
-  align-items: flex-end;
-  width: 100%;
-  padding-bottom: 0.5rem;
-  min-height: 200px;
-}
-
-.hour-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.hour-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #333;
-  text-align: center;
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.hour-bar {
-  width: 100%;
-  height: 150px;
-  background-color: #e0e0e0;
-  border-radius: 4px 4px 0 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+/* Chart Wrapper */
+.chart-wrapper {
   position: relative;
-}
-
-.hour-fill {
-  width: 100%;
-  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-  transition: height 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hour-count {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: white;
-  text-align: center;
-  position: absolute;
-  bottom: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-}
-
-/* Popular Rooms */
-.popular-rooms {
-  display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
-  align-items: flex-end;
-  padding-bottom: 0.5rem;
-}
-
-.room-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.room-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #333;
-  text-align: center;
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  word-break: break-word;
-}
-
-.room-bar {
-  width: 100%;
-  height: 150px;
-  background-color: #e0e0e0;
-  border-radius: 4px 4px 0 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-
-.room-fill {
-  width: 100%;
-  background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%);
-  transition: height 0.3s ease;
-}
-
-.room-count {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: white;
-  text-align: center;
-  position: absolute;
-  bottom: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-}
-
-/* Chart Container */
-.chart-container {
   width: 100%;
   height: 400px;
-  margin-top: 1rem;
+  min-height: 300px;
 }
 
-/* Daily Stats */
-.daily-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1.5rem;
-  max-height: 400px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  width: 100%;
-}
-
-.day-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.day-label {
-  font-weight: 600;
-  color: #333;
-  font-size: 0.9rem;
-}
-
-.day-bar {
-  height: 100px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-end;
-}
-
-.day-fill {
-  width: 100%;
-  background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
-  transition: height 0.3s ease;
-}
-
-.day-count {
-  text-align: center;
-  font-weight: 600;
-  color: #666;
-  font-size: 0.9rem;
-}
-
-/* Responsive - Tablet */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .admin-panel {
-    padding: 1.5rem;
+    padding: 0.75rem;
   }
 
-  .metrics-grid {
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  .header h1 {
+    font-size: 1.5rem;
   }
 
-  .daily-stats {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  }
-}
-
-/* Responsive - Small Tablet */
-@media (max-width: 900px) {
   .metrics-grid {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 1rem;
@@ -601,80 +549,12 @@ function formatHour(hour: number): string {
     font-size: 1.8rem;
   }
 
-  .metric-label {
-    font-size: 0.8rem;
-  }
-
-  /*.hours-container {
-    display: none;
-  }*/
-}
-
-/* Responsive - Mobile */
-@media (max-width: 768px) {
-  .admin-panel {
-    padding: 1rem;
-  }
-
-  .header h1 {
-    font-size: 1.8rem;
-  }
-
-  .metrics-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .metric-card {
-    padding: 1rem;
-  }
-
-  .metric-value {
-    font-size: 2rem;
-  }
-
   .section {
     padding: 1rem;
   }
 
-  .section h2 {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-  }
-
-  .hour-item,
-  .room-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .hour-label,
-  .room-label {
-    width: 100%;
-    min-width: auto;
-  }
-
-  .hour-bar,
-  .room-bar {
-    width: 100%;
-    min-width: unset;
-  }
-
-  .hour-count,
-  .room-count {
-    width: 100%;
-    text-align: left;
-    min-width: auto;
-  }
-
-  .daily-stats {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 1rem;
-    max-height: none;
-  }
-
-  .day-bar {
-    height: 80px;
+  .chart-wrapper {
+    height: 300px;
   }
 }
 </style>

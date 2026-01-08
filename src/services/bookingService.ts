@@ -206,6 +206,35 @@ export const bookingService = {
   },
 
   /**
+   * Get all bookings in the system (no time filter) - for statistics
+   */
+  async getAllBookings(): Promise<Booking[]> {
+    try {
+      const { data, error } = await supabase
+        .from('booking')
+        .select(`${ROOM_SELECT},
+          user:user_id (
+            id,
+            first_name,
+            last_name,
+            email,
+            role
+          )`)
+        .order('start_time', { ascending: true });
+
+      if (error) {
+        console.error('Supabase error fetching all bookings:', error);
+        throw error;
+      }
+
+      return (data || []).map(mapBookingData);
+    } catch (err) {
+      console.error('bookingService.getAllBookings error:', err);
+      throw err;
+    }
+  },
+
+  /**
    * Create a new booking
    */
   async createBooking(booking: Omit<Booking, 'bookingId' | 'createdAt'>): Promise<Booking> {

@@ -11,6 +11,7 @@ interface StatisticsState {
     totalBookings: number;
     occupancyRate: number;
     noShowRate: number;
+    cancellationRate: number;
     bookingsPerDay: Map<string, number>;
     peakHours: Array<{ hour: number; count: number }>;
     popularRooms: Array<{ roomId: string; roomName: string; usageFrequency: number }>;
@@ -54,6 +55,15 @@ export const useStatisticsStore = defineStore('statistics', {
       if (nonCancelledBookings.length === 0) return 0;
       const expiredBookings = bookings.filter(b => b.status === 'expired').length;
       return Math.round((expiredBookings / nonCancelledBookings.length) * 1000) / 10;
+    },
+
+    /**
+     * Calculate cancellation rate (cancelled bookings / total bookings)
+     */
+    calculateCancellationRate(bookings: Booking[]): number {
+      if (bookings.length === 0) return 0;
+      const cancelledBookings = bookings.filter(b => b.status === 'cancelled').length;
+      return Math.round((cancelledBookings / bookings.length) * 1000) / 10;
     },
 
     /**
@@ -108,16 +118,14 @@ export const useStatisticsStore = defineStore('statistics', {
     async fetchAdminStatistics() {
       this.loading = true;
       try {
-        // Fetch ALL bookings from the system (not user-specific)
-        // Get a wide date range to fetch all historical bookings
-        const startOfTime = new Date('2020-01-01');
-        const endOfTime = new Date('2099-12-31');
-        const allBookings = await bookingService.getBookingsByTimeRange(startOfTime, endOfTime);
+        // Fetch ALL bookings from the system (no time filter)
+        const allBookings = await bookingService.getAllBookings();
 
         // Calculate all metrics
         const totalBookings = this.calculateTotalBookings(allBookings);
         const occupancyRate = this.calculateOccupancyRate(allBookings);
         const noShowRate = this.calculateNoShowRate(allBookings);
+        const cancellationRate = this.calculateCancellationRate(allBookings);
         const bookingsPerDay = this.calculateBookingsPerDay(allBookings);
         const peakHours = this.calculatePeakHours(allBookings);
         const popularRooms = this.calculatePopularRooms(allBookings);
@@ -126,6 +134,7 @@ export const useStatisticsStore = defineStore('statistics', {
           totalBookings,
           occupancyRate,
           noShowRate,
+          cancellationRate,
           bookingsPerDay,
           peakHours,
           popularRooms,

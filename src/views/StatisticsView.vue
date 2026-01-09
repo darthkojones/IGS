@@ -25,24 +25,6 @@
         </div>
       </section>
 
-      <section class="popular-rooms">
-        <h2>Most Popular Rooms</h2>
-        <div v-if="popularRooms.length === 0" class="no-data">
-          No data available yet
-        </div>
-        <div v-else class="rooms-list">
-          <div
-            v-for="(room, index) in popularRooms"
-            :key="room.roomId"
-            class="room-stat"
-          >
-            <span class="rank">{{ index + 1 }}</span>
-            <span class="room-name">Room {{ room.roomId }}</span>
-            <span class="usage">{{ room.usageFrequency }} bookings</span>
-          </div>
-        </div>
-      </section>
-
       <section class="peak-hours">
         <h2>Peak Booking Hours</h2>
         <div class="chart-placeholder">
@@ -61,8 +43,7 @@ import { useStatisticsStore } from '@/stores/statistics';
 const statisticsStore = useStatisticsStore();
 
 const overallStats = computed(() => statisticsStore.overallStatistics);
-const popularRooms = computed(() => statisticsStore.getMostPopularRooms);
-const loading = computed(() => statisticsStore.loading);
+//const loading = computed(() => statisticsStore.loading);
 
 onMounted(() => {
   statisticsStore.fetchOverallStatistics();

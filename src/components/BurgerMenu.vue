@@ -65,6 +65,7 @@ const allMenuItems: MenuItem[] = [
    { path: '/room-editor', label: 'Room Editor', icon: '🗂️' },
   { path: '/bookings', label: 'Bookings', icon: '📋', requiresAuth: true },
   { path: '/statistics', label: 'Statistics', icon: '📊', requiresAuth: true },
+  { path: '/admin/panel', label: 'Admin Panel', icon: '📈', requiresAuth: true /*, requiresAdmin: true */},
   { path: '/accessibility', label: 'Accessibility', icon: '⚙️' },
   { path: '/profile', label: 'Profile', icon: '👤', requiresAuth: true },
   { path: '/about', label: 'About', icon: 'ℹ️' }

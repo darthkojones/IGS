@@ -139,7 +139,8 @@ export const bookingService = {
   ): Promise<boolean> {
     try {
       // Add 5-minute buffer (300000 ms)
-      const BUFFER_MS = 5 * 60 * 1000;
+      //const BUFFER_MS = 5 * 60 * 1000;
+      const BUFFER_MS = 0;
       const bufferedStart = new Date(new Date(startTime).getTime() - BUFFER_MS);
       const bufferedEnd = new Date(new Date(endTime).getTime() + BUFFER_MS);
 
@@ -190,7 +191,6 @@ export const bookingService = {
         .or(
           `and(start_time.lt.${endTime.toISOString()},end_time.gt.${startTime.toISOString()})`
         )
-        .in('status', ['reserved', 'active'])
         .order('start_time', { ascending: true });
 
       if (error) {
@@ -201,6 +201,35 @@ export const bookingService = {
       return (data || []).map(mapBookingData);
     } catch (err) {
       console.error('bookingService.getBookingsByTimeRange error:', err);
+      throw err;
+    }
+  },
+
+  /**
+   * Get all bookings in the system (no time filter) - for statistics
+   */
+  async getAllBookings(): Promise<Booking[]> {
+    try {
+      const { data, error } = await supabase
+        .from('booking')
+        .select(`${ROOM_SELECT},
+          user:user_id (
+            id,
+            first_name,
+            last_name,
+            email,
+            role
+          )`)
+        .order('start_time', { ascending: true });
+
+      if (error) {
+        console.error('Supabase error fetching all bookings:', error);
+        throw error;
+      }
+
+      return (data || []).map(mapBookingData);
+    } catch (err) {
+      console.error('bookingService.getAllBookings error:', err);
       throw err;
     }
   },

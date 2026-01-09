@@ -13,7 +13,7 @@
         :aria-label="`Status: ${statusText}`"
       >
         <span class="room-card__status-indicator"></span>
-        <span class="room-card__status-text">{{ statusText }}</span>
+        <span class="room-card__status-text">{{ timeRemainingText || statusText }}</span>
       </div>
     </div>
 
@@ -45,183 +45,224 @@
     </div>
 
     <div class="room-card__footer">
-      <button
-        v-if="isAvailable"
-        class="btn btn--primary"
-        @click="$emit('book', room)"
-        :aria-label="`Book ${room.name}`"
-      >
+      <!--
+       <button
+         v-if="isAvailable"
+         class="btn btn--primary"
+         @click="$emit('book', room)"
+         :aria-label="`Book ${room.name}`"
+       >
         Book Now
-      </button>
-      <button
-        class="btn btn--secondary"
-        @click="$emit('view-details', room)"
-        :aria-label="`View details for ${room.name}`"
-      >
-        View Details
-      </button>
-    </div>
-  </div>
-</template>
+       </button> -->
+       <button
+         class="btn btn--primary"
+         @click="$emit('view-details', room)"
+         :aria-label="`View details for ${room.name}`"
+       >
+         View & Book
+       </button>
+     </div>
+   </div>
+ </template>
 
-<script setup lang="ts">
-import { computed } from 'vue';
-import type { Room } from '@/types';
-import { useRoomStatus } from '@/composables/useRoomStatus';
+ <script setup lang="ts">
+ import { computed } from 'vue';
+ import type { Room, Booking } from '@/types';
+ import { useRoomStatus } from '@/composables/useRoomStatus';
 
-interface Props {
-  room: Room;
-  showReachability?: boolean;
-  travelTime?: number;
-}
+ interface Props {
+   room: Room;
+   showReachability?: boolean;
+   travelTime?: number;
+   selectedDatetime?: string | null;
+   allBookings?: Booking[];
+ }
 
-const props = withDefaults(defineProps<Props>(), {
-  showReachability: false,
-  travelTime: 0,
-});
+ const props = withDefaults(defineProps<Props>(), {
+   showReachability: false,
+   travelTime: 0,
+   selectedDatetime: null,
+   allBookings: () => [],
+ });
 
-const { statusColor, statusText } = useRoomStatus(props.room.roomId);
+ // Check if room is booked at the selected datetime
+ const bookingAtSelectedTime = computed(() => {
+   if (!props.selectedDatetime) return null;
 
-const isAvailable = computed(() => statusText.value === 'Available');
-</script>
+   const selectedTime = new Date(props.selectedDatetime);
+   const roomBookings = props.allBookings.filter(b => b.roomId === props.room.roomId);
 
-<style scoped>
-.room-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1.5rem;
-  background: white;
-  transition: box-shadow 0.3s ease;
-}
+   return roomBookings.find(booking => {
+     const bookingStart = new Date(booking.startTime);
+     const bookingEnd = new Date(booking.endTime);
+     return selectedTime >= bookingStart && selectedTime < bookingEnd;
+   });
+ });
 
-.room-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+ // Override status if room is booked at selected time
+ const statusColor = computed(() => {
+   if (bookingAtSelectedTime.value) return 'yellow';
+   return useRoomStatus(props.room.roomId, props.room.currentBooking).statusColor.value;
+ });
 
-.room-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
+ const statusText = computed(() => {
+   if (bookingAtSelectedTime.value) return 'Reserved';
+   return useRoomStatus(props.room.roomId, props.room.currentBooking).statusText.value;
+ });
 
-.room-card__title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
-}
+ const timeRemainingText = computed(() => {
+   if (bookingAtSelectedTime.value) {
+     const endTime = new Date(bookingAtSelectedTime.value.endTime);
+     const hours = endTime.getHours();
+     const minutes = endTime.getMinutes();
+     const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+     return `Occupied until ${formattedTime}`;
+   }
+   return useRoomStatus(props.room.roomId, props.room.currentBooking).timeRemainingText.value;
+ });
 
-.room-card__status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
+ const isAvailable = computed(() => !bookingAtSelectedTime.value && statusText.value === 'Available');
+ </script>
 
-.room-card__status-indicator {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
+ <style scoped>
+ .room-card {
+   border: 1px solid #ddd;
+   border-radius: 8px;
+   padding: 1.5rem;
+   background: white;
+   transition: box-shadow 0.3s ease;
+ }
 
-.room-card__status--green {
-  background: #e6f7e6;
-  color: #2d862d;
-}
+ .room-card:hover {
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+ }
 
-.room-card__status--green .room-card__status-indicator {
-  background: #2d862d;
-}
+ .room-card__header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: 1rem;
+ }
 
-.room-card__status--yellow {
-  background: #fff8e6;
-  color: #b38600;
-}
+ .room-card__title {
+   font-size: 1.25rem;
+   font-weight: 600;
+   margin: 0;
+ }
 
-.room-card__status--yellow .room-card__status-indicator {
-  background: #ffc107;
-}
+ .room-card__status {
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+   padding: 0.25rem 0.75rem;
+   border-radius: 1rem;
+   font-size: 0.875rem;
+   font-weight: 500;
+ }
 
-.room-card__status--red {
-  background: #ffe6e6;
-  color: #c62828;
-}
+ .room-card__status-indicator {
+   width: 10px;
+   height: 10px;
+   border-radius: 50%;
+ }
 
-.room-card__status--red .room-card__status-indicator {
-  background: #c62828;
-}
+ .room-card__status--green {
+   background: #e6f7e6;
+   color: #2d862d;
+ }
 
-.room-card__body {
-  margin-bottom: 1rem;
-}
+ .room-card__status--green .room-card__status-indicator {
+   background: #2d862d;
+ }
 
-.room-card__info p {
-  margin: 0.5rem 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+ .room-card__status--yellow {
+   background: #fff8e6;
+   color: #b38600;
+ }
 
-.room-card__equipment {
-  margin-top: 1rem;
-}
+ .room-card__status--yellow .room-card__status-indicator {
+   background: #ffc107;
+ }
 
-.room-card__equipment h4 {
-  font-size: 0.875rem;
-  margin-bottom: 0.5rem;
-}
+ .room-card__status--red {
+   background: #ffe6e6;
+   color: #c62828;
+ }
 
-.room-card__equipment ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
+ .room-card__status--red .room-card__status-indicator {
+   background: #c62828;
+ }
 
-.room-card__equipment li {
-  background: #f0f0f0;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.8125rem;
-}
+ .room-card__body {
+   margin-bottom: 1rem;
+ }
 
-.room-card__footer {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
+ .room-card__info p {
+   margin: 0.5rem 0;
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+ }
 
-.btn {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  border: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
+ .room-card__equipment {
+   margin-top: 1rem;
+ }
 
-.btn--primary {
-  background: #1976d2;
-  color: white;
-}
+ .room-card__equipment h4 {
+   font-size: 0.875rem;
+   margin-bottom: 0.5rem;
+ }
 
-.btn--primary:hover {
-  background: #1565c0;
-}
+ .room-card__equipment ul {
+   list-style: none;
+   padding: 0;
+   margin: 0;
+   display: flex;
+   flex-wrap: wrap;
+   gap: 0.5rem;
+ }
 
-.btn--secondary {
-  background: transparent;
-  color: #1976d2;
-  border: 1px solid #1976d2;
-}
+ .room-card__equipment li {
+   background: #f0f0f0;
+   padding: 0.25rem 0.75rem;
+   border-radius: 1rem;
+   font-size: 0.8125rem;
+ }
 
-.btn--secondary:hover {
-  background: #e3f2fd;
-}
-</style>
+ .room-card__footer {
+   display: flex;
+   gap: 0.75rem;
+   margin-top: 1rem;
+   justify-content: flex-end;
+ }
+
+ .btn {
+   padding: 0.5rem 1rem;
+   border-radius: 4px;
+   border: none;
+   font-size: 0.875rem;
+   font-weight: 500;
+   cursor: pointer;
+   transition: all 0.2s ease;
+ }
+
+ .btn--primary {
+   background: #1976d2;
+   color: white;
+
+ }
+
+ .btn--primary:hover {
+   background: #1565c0;
+ }
+
+ .btn--secondary {
+   background: transparent;
+   color: #1976d2;
+   border: 1px solid #1976d2;
+ }
+
+ .btn--secondary:hover {
+   background: #e3f2fd;
+ }
+ </style>

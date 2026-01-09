@@ -254,7 +254,6 @@ const formatBookingDisplayWithDate = (booking: Booking) => {
 // Get booking status class for styling
 const getBookingStatusClass = (booking: Booking) => {
   const now = new Date();
-  const startTime = new Date(booking.startTime);
   const endTime = new Date(booking.endTime);
 
   // Expired: past end time or status is expired
@@ -278,7 +277,6 @@ const getBookingStatusClass = (booking: Booking) => {
 // Get booking status text for badge
 const getBookingStatusText = (booking: Booking) => {
   const now = new Date();
-  const startTime = new Date(booking.startTime);
   const endTime = new Date(booking.endTime);
 
   if (now > endTime || booking.status === 'expired') {

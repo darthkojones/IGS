@@ -7,6 +7,44 @@ const supabase = createClient(
   process.env.VITE_SUPABASE_PUBLISHABLE_KEY
 );
 
+// MISSING COMMENT!
+async function getAllRooms() {
+  const { data, error } = await supabase
+    .from('room')
+    .select('room_id, name, floor, building_id')
+
+  if (error) {
+    console.error('Supabase error fetching rooms', error);
+    throw error;
+  }
+
+  const returnArray = [];
+  data.forEach(r => {
+    const returnElement = new Room();
+    returnElement.roomId = data.room_id ?? "";
+    returnElement.name = data.name ?? "";
+    returnElement.floor = data.floor ?? null;
+    returnElement.buildingId = data.building_id ?? "";
+    returnArray.push(returnElement);
+  })
+  return returnArray;
+}
+
+async function getPreviousAndNextBookingForRoom(room) {
+  const roomId = room.roomId;
+
+  if (!roomId) {
+    throw new Error('Invalid argument, hand over valid room.')
+  }
+
+  const { data, error } = await supabase
+    .from('booking')
+    .select('id, room_id, status, start_time, end_time, entered_at')
+    .eq('room_id', roomId); // HIER DANN DIE NÄCHSTE BUCHUNG UND DIE LETZTE BUCHUNG ERMITTELN!
+    // START TIME KANN BIS ZU 2 TAGE ZURÜCKGEHEN
+    // END TIME KANN BIS ZU 4 TAGE ZURÜCKGEHEN
+}
+
 /**
  * Gets bookings that are reserved and the start_date is smaller than the expiryDateTime are returned;
  * These bookings count as expired because the user did not check in within n minutes after the start date.
@@ -36,7 +74,7 @@ async function getExpiredBookings(expiryDateTime) {
     returnElement.enteredAt = b.entered_at ?? null;
     returnArray.push(returnElement)
   })
-  return returnArray || [];
+  return returnArray;
 }
 
 /**
@@ -78,6 +116,13 @@ class Booking {
   startTime;  // Date
   endTime;    // Date
   enteredAt;  // Date
+}
+
+class Room {
+  roomId;     // str
+  name;       // str
+  floor;      // num
+  buildingId; // str
 }
 
 module.exports = {

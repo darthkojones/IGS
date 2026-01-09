@@ -80,7 +80,16 @@ cron.schedule('*/1 * * * * *', async () => {
   }
 });
 
+cron.schedule('*/1 * * * * *', async () => {
+/**
+ * Get all rooms that are currently free
+ *
+ */
 
+
+
+
+});
 /**
  *
  * Hier muss folgendes rein:

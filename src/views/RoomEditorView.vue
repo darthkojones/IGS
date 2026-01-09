@@ -28,7 +28,7 @@ const buildingNameById = computed(() => {
   return map;
 });
 
-// fallback: wenn buildings leer sind, nimm buildingIds aus rooms (damit man trotzdem auswählen kann)
+// fallback: if buildings are empty, use buildingIds from rooms (so that you can choose something)
 const buildingOptions = computed(() => {
   if (buildings.value.length > 0) {
     return buildings.value.map(b => ({ id: b.buildingId, label: b.name }));
@@ -252,10 +252,13 @@ async function deleteRoom(roomId: string, roomName: string) {
 
 onMounted(async () => {
   if (buildings.value.length === 0) await roomsStore.fetchBuildings();
+  console.log('buildings from store:', buildings.value);
+
   if (rooms.value.length === 0) await roomsStore.fetchRooms();
+  console.log('rooms sample:', rooms.value.slice(0, 3));
 });
 
-// --- Tooling keep-alive (für Projekte, die tsc/noUnusedLocals statt vue-tsc verwenden) ---
+
 void [
   toggleSort,
   yesNo,
@@ -281,12 +284,10 @@ void [
 
     <div v-if="error" class="error">{{ error }}</div>
 
-    <!-- Create button (wie vorher Create test room) -->
     <div class="actions">
       <button @click="openCreateForm">Create room</button>
     </div>
 
-    <!-- Create/Edit Maske -->
     <div v-if="formOpen" class="form">
       <h2>{{ formMode === 'create' ? 'Create Room' : 'Edit Room' }}</h2>
 
@@ -325,18 +326,19 @@ void [
           <input v-model="form.description" type="text" placeholder="Optional" />
         </label>
 
-        <label>
+        <label class="check">
           <input v-model="form.hasProjector" type="checkbox" />
           Projector
         </label>
-        <label>
+        <label class="check">
           <input v-model="form.hasWhiteboard" type="checkbox" />
           Whiteboard
         </label>
-        <label>
+        <label class="check">
           <input v-model="form.hasVideoConference" type="checkbox" />
           Video conf
         </label>
+
       </div>
 
       <div class="form-actions">
@@ -350,12 +352,12 @@ void [
     <div class="filters">
       <input v-model="search" type="text" placeholder="Search (name, building, description…)" />
 
-      <select v-model="buildingFilter">
-        <option value="">All buildings</option>
-        <option v-for="b in buildings" :key="b.buildingId" :value="b.buildingId">
-          {{ b.name }}
-        </option>
-      </select>
+    <select v-model="buildingFilter">
+      <option value="">All buildings</option>
+      <option v-for="b in buildingOptions" :key="b.id" :value="b.id">
+        {{ b.label }}
+      </option>
+    </select>
 
       <input v-model.number="minCapacity" type="number" min="0" placeholder="Min capacity" />
 
@@ -404,6 +406,25 @@ void [
 </template>
 
 <style scoped>
+
+
+.form-grid label.check {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.form-grid label.check input[type="checkbox"] {
+  margin: 0;
+  order: 2;
+}
+
+.form-grid label.check {
+  padding: 2px 0;
+}
+
+
 .page { padding: 16px; display: grid; gap: 12px; }
 .filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .filters input[type="text"] { min-width: 260px; }
@@ -427,3 +448,5 @@ void [
 .error { color: #b00020; }
 .meta { opacity: 0.8; }
 </style>
+
+

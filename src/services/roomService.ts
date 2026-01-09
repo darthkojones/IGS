@@ -3,6 +3,19 @@ import { supabase } from '@/lib/supabaseClient';
 import { mapRoomData } from '@/mappers/roomMapper';
 import { mapBuildingData } from '@/mappers/buildingMapper';
 
+export type RoomCreateInput = {
+  name: string;
+  floor: number;
+  capacity: number;
+  buildingId: string;
+  description?: string;
+  hasProjector?: boolean;
+  hasWhiteboard?: boolean;
+  hasVideoConference?: boolean;
+};
+
+export type RoomUpdateInput = Partial<RoomCreateInput>;
+
 export const roomService = {
   /**
    * Fetch all rooms from the database
@@ -166,6 +179,137 @@ export const roomService = {
       }
     } catch (err) {
       console.error('roomService.controlRoomEquipment error:', err);
+      throw err;
+    }
+  },
+
+  /**
+   * Count bookings for a room (for delete checks)
+   */
+  async countBookingsForRoom(roomId: string): Promise<number> {
+    try {
+      const { count, error } = await supabase
+        .from('booking')
+        .select('*', { count: 'exact', head: true })
+        .eq('room_id', roomId);
+
+      if (error) {
+        console.error('Supabase error counting bookings:', error);
+        throw error;
+      }
+
+      return count ?? 0;
+    } catch (err) {
+      console.error('roomService.countBookingsForRoom error:', err);
+      throw err;
+    }
+  },
+
+  /**
+   * Create a room
+   */
+  async createRoom(input: RoomCreateInput): Promise<Room> {
+    try {
+      const payload = {
+        name: input.name,
+        floor: input.floor,
+        capacity: input.capacity,
+        building_id: input.buildingId,
+        description: input.description ?? null,
+        has_projector: input.hasProjector ?? false,
+        has_whiteboard: input.hasWhiteboard ?? false,
+        has_video_conference: input.hasVideoConference ?? false,
+      };
+
+      const { data, error } = await supabase
+        .from('room')
+        .insert(payload)
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error('Supabase error creating room:', error);
+        throw error;
+      }
+
+      return mapRoomData(data as unknown as Record<string, unknown>);
+    } catch (err) {
+      console.error('roomService.createRoom error:', err);
+      throw err;
+    }
+  },
+
+  /**
+   * Update a room
+   */
+  async updateRoom(roomId: string, patch: RoomUpdateInput): Promise<Room> {
+    try {
+      const payload: Record<string, unknown> = {};
+
+      if (patch.name !== undefined) payload.name = patch.name;
+      if (patch.floor !== undefined) payload.floor = patch.floor;
+      if (patch.capacity !== undefined) payload.capacity = patch.capacity;
+      if (patch.buildingId !== undefined) payload.building_id = patch.buildingId;
+      if (patch.description !== undefined) payload.description = patch.description ?? null;
+
+      if (patch.hasProjector !== undefined) payload.has_projector = patch.hasProjector;
+      if (patch.hasWhiteboard !== undefined) payload.has_whiteboard = patch.hasWhiteboard;
+      if (patch.hasVideoConference !== undefined) payload.has_video_conference = patch.hasVideoConference;
+
+      const { data, error } = await supabase
+        .from('room')
+        .update(payload)
+        .eq('room_id', roomId)
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error('Supabase error updating room:', error);
+        throw error;
+      }
+
+      return mapRoomData(data as unknown as Record<string, unknown>);
+    } catch (err) {
+      console.error('roomService.updateRoom error:', err);
+      throw err;
+    }
+  },
+
+  /**
+   * Delete a room and (optionally) its bookings.
+   * Returns how many bookings were removed so UI can inform the user.
+   */
+  async deleteRoom(roomId: string): Promise<{ deletedBookings: number }> {
+    try {
+      const bookingCount = await this.countBookingsForRoom(roomId);
+
+      // 1) delete bookings first (fits your task requirement)
+      if (bookingCount > 0) {
+        const { error: bookingsError } = await supabase
+          .from('booking')
+          .delete()
+          .eq('room_id', roomId);
+
+        if (bookingsError) {
+          console.error('Supabase error deleting bookings for room:', bookingsError);
+          throw bookingsError;
+        }
+      }
+
+      // 2) delete room
+      const { error: roomError } = await supabase
+        .from('room')
+        .delete()
+        .eq('room_id', roomId);
+
+      if (roomError) {
+        console.error('Supabase error deleting room:', roomError);
+        throw roomError;
+      }
+
+      return { deletedBookings: bookingCount };
+    } catch (err) {
+      console.error('roomService.deleteRoom error:', err);
       throw err;
     }
   },

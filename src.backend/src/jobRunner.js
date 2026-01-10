@@ -8,38 +8,16 @@ const supabaseClient = require('./clients/supabaseClient');
  * Here we are processing all updates sent to us
  * Mainly status updates but we can easily extend this to also process warnings or other info messages
  */
-const deviceStatusCache = {};
-
 mqttClient.on('message', async (topic, message) => {
   try {
     const parts = topic.split('/');
 
-    /**
-     * Here we are processing status updates from all devices across all buildings
-     * The status updates land in a hash map and in a redis key value store so that they are available quickly
-     */
     if (parts.length == 6 && parts[5] == 'status') {
       const [, building, floor, room, device] = parts;
       const data = JSON.parse(message.toString());
-      const deviceKey = `${building}:${floor}:${room}:${device}`;
-      deviceStatusCache[deviceKey] = data.status;
 
-      //console.log(`DSC\tStatus Saved\tRoom:${room}/${device}\tStatus: ${data.status}`);
-
-      console.log(deviceKey)
-
-      await redisClient.hSet(
-        `device:${deviceKey}`,
-        {
-          status: data.status,
-          modifier: data.modifier,
-          modified: data.modified,
-          room,
-          device
-        }
-      );
-
-      //console.log(`Redis\tStatus Saved\tRoom:${room}/${device}\tStatus: ${data.status}`);
+      const deviceKey = redisClient.createDeviceKey(building, floor, room, device);
+      await redisClient.setStatus(deviceKey, data.status, data.modifier, data.modified, room, device);
 
     } else {
       console.warn('Invalid topic:', topic);
@@ -97,12 +75,6 @@ async function infrastructure() {
   }
 }
 
-async function test() {
-  let sesh = await redisClient.hGetAll('device:mciIV:3:raum3:licht');
-  console.log(sesh)
-}
-
-
 cron.schedule('*/1 * * * * *', () => {
   requestMqttUpdatesFromDevices();
   test();
@@ -117,8 +89,3 @@ cron.schedule('*/3 * * * * *', async () => {
   return;
   infrastructure();
 });
-
-
-
-
-// device:mciIV:3:raum3:licht

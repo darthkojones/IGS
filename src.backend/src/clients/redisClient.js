@@ -14,4 +14,37 @@ redisClient.on('connect', () => {
 
 redisClient.connect();
 
-module.exports = redisClient;
+function createDeviceKey(building, floor, room, device) {
+  return String(`device:${building}:${floor}:${room}:${device}`);
+}
+
+async function setStatus(deviceKey, status, modifier, modified, room, device) {
+  await redisClient.hSet(
+    deviceKey,
+    {
+      status: status,
+      modifier: modifier,
+      modified: modified,
+      room,
+      device
+    }
+  )
+}
+
+async function getStatus(deviceKey) {
+  const data = await redisClient.hGetAll(deviceKey);
+  return {
+    status: data?.status ?? null,
+    modifier: data?.modifier ?? null,
+    modified: data?.modified ?? null,
+    room: data?.room ?? null,
+    device: data?.device ?? null
+  }
+}
+
+module.exports = {
+  redisClient,
+  createDeviceKey,
+  setStatus,
+  getStatus
+}

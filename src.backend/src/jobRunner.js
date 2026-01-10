@@ -3,6 +3,7 @@ const cron = require('node-cron');
 const redisClient = require('./clients/redisClient');
 const mqttClient = require('./clients/mqttClient');
 const supabaseClient = require('./clients/supabaseClient');
+const deviceConfig = require('./deviceConfig.json');
 
 /**
  * Here we are processing all updates sent to us
@@ -59,25 +60,35 @@ function requestMqttUpdatesFromDevices() {
 
 async function infrastructure() {
   const now = new Date();
-
   const allRooms = await supabaseClient.getAllRooms();
+  const deviceList = deviceConfig.devices;
+
   for (let r of allRooms) {
     const bookingsForCurrentRoom = await supabaseClient.getAllBookingsForRoom(r);
 
+    if (supabaseClient.isRoomOccupied(bookingsForCurrentRoom, now)) continue;
+
     const prevBooking = supabaseClient.findPreviousBooking(bookingsForCurrentRoom, now);
     const nextBooking = supabaseClient.findNextBooking(bookingsForCurrentRoom, now);
-
     const minsToPrevBooking = prevBooking ? ((now.getTime() - prevBooking.endTime.getTime()) / 1000 / 60) : 60 * 24;
     const minsToNextBooking = nextBooking ? ((nextBooking.startTime.getTime() - now.getTime()) / 1000 / 60) : 60 * 24;
-    const isOccupied = supabaseClient.isRoomOccupied(bookingsForCurrentRoom, now);
 
-    createCommand(minsToPrevBooking, minsToNextBooking, isOccupied)
+    // Wir haben es hier nur mit räumen zutun die aktuell nicht genutzt werden
+
+    // Actions sind ende eines aktiven bookings, manueller command
+    // n minuten nach einer action gehen wir in den standby mode
+    // m minuten nach einer action gehen wir in den shutdown mode
+
+    // Einschalten findet über separaten
+
+
+
   }
 }
 
-cron.schedule('*/1 * * * * *', () => {
+cron.schedule('*/10 * * * * *', () => {
   requestMqttUpdatesFromDevices();
-  test();
+  infrastructure();
 });
 
 cron.schedule('*/1 * * * * *', async () => {
@@ -89,3 +100,16 @@ cron.schedule('*/3 * * * * *', async () => {
   return;
   infrastructure();
 });
+
+class Device {
+
+  // Wir haben:
+  // Zeit zum vorherigen slot
+  // Zeit zum vergangenen slot
+  // Pro device type haben wir ein objekt, das wir global erstellen (also nur einmal)
+  //
+
+  getCommand() {
+
+  }
+}

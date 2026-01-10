@@ -33,12 +33,17 @@ async function setStatus(deviceKey, status, modifier, modified, room, device) {
 
 async function getStatus(deviceKey) {
   const data = await redisClient.hGetAll(deviceKey);
-  return {
-    status: data?.status ?? null,
-    modifier: data?.modifier ?? null,
-    modified: data?.modified ?? null,
-    room: data?.room ?? null,
-    device: data?.device ?? null
+
+  if (!await redisClient.exists(deviceKey)) {
+    return null;
+  } else {
+    return {
+      status: data?.status ?? null,
+      modifier: data?.modifier ?? null,
+      modified: data?.modified ?? null,
+      room: data?.room ?? null,
+      device: data?.device ?? null
+    }
   }
 }
 

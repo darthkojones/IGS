@@ -21,16 +21,14 @@ async function getAllRooms() {
     throw error;
   }
 
-  const returnArray = [];
-  data.forEach(r => {
-    const returnElement = new Room();
-    returnElement.roomId = r.room_id ?? "";
-    returnElement.name = r.name ?? "";
-    returnElement.floor = r.floor ?? null;
-    returnElement.buildingId = r.building_id ?? "";
-    returnArray.push(returnElement);
-  })
-  return returnArray;
+  return data.map(r =>
+    Object.assign(new Room(), {
+      roomId: r.room_id ?? null,
+      name: r.name ?? null,
+      floor: r.floor ?? null,
+      buildingId: r.building_id ?? null
+    })
+  )
 }
 
 /**

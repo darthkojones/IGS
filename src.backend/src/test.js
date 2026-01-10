@@ -6,6 +6,7 @@ async function main() {
 
   const rooms = await supabaseClient.getAllRooms();
 
+  console.log(rooms)
   const testroom = rooms[0];
 
 

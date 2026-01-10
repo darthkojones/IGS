@@ -24,7 +24,9 @@ mqttClient.on('message', async (topic, message) => {
       const deviceKey = `${building}:${floor}:${room}:${device}`;
       deviceStatusCache[deviceKey] = data.status;
 
-      console.log(`DSC\tStatus Saved\tRoom:${room}/${device}\tStatus: ${data.status}`);
+      //console.log(`DSC\tStatus Saved\tRoom:${room}/${device}\tStatus: ${data.status}`);
+
+      console.log(deviceKey)
 
       await redisClient.hSet(
         `device:${deviceKey}`,
@@ -37,7 +39,7 @@ mqttClient.on('message', async (topic, message) => {
         }
       );
 
-      console.log(`Redis\tStatus Saved\tRoom:${room}/${device}\tStatus: ${data.status}`);
+      //console.log(`Redis\tStatus Saved\tRoom:${room}/${device}\tStatus: ${data.status}`);
 
     } else {
       console.warn('Invalid topic:', topic);
@@ -48,12 +50,25 @@ mqttClient.on('message', async (topic, message) => {
   }
 });
 
-/**
- * Here we are polling all devices across all buildings
- * Devices send back their latest status
- * Latest status is stored in redis store
- */
-cron.schedule('*/5 * * * * *', () => {
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Cron jobs
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+async function bumpRooms() {
+  const utcDate = new Date();
+  const nowMinusTenMinutes = new Date(utcDate.getTime() - 10 * 60 * 1000);
+
+  try {
+    const bookingsToExpire = await supabaseClient.getExpiredBookings(nowMinusTenMinutes);
+    if (bookingsToExpire.length) {
+      supabaseClient.setBookingsToExpired(bookingsToExpire)
+    }
+  } catch(error) {
+    console.error('Supabase error', error)
+  }
+}
+
+function requestMqttUpdatesFromDevices() {
   mqttClient.publish(
     'mci/all/command',
     JSON.stringify({
@@ -62,40 +77,48 @@ cron.schedule('*/5 * * * * *', () => {
     }),
     { qos: 1 }
   );
-});
+}
 
-/**
- * Here we query all expired rooms across all buildings
- * Expired rooms are bumped
- */
-cron.schedule('*/1 * * * * *', async () => {
-  const utcDate = new Date();
-  const nowMinusTenMinutes = new Date(utcDate.getTime() - 10 * 60 * 1000).toISOString();
+async function infrastructure() {
+  const now = new Date();
 
-  try {
-    const bookingsToExpire = await supabaseClient.getExpiredBookings(nowMinusTenMinutes);
-    if (bookingsToExpire.length >= 1) supabaseClient.setBookingsToExpired(bookingsToExpire);
-  } catch(error) {
-    console.error('Supabase error', error)
+  const allRooms = await supabaseClient.getAllRooms();
+  for (let r of allRooms) {
+    const bookingsForCurrentRoom = await supabaseClient.getAllBookingsForRoom(r);
+
+    const prevBooking = supabaseClient.findPreviousBooking(bookingsForCurrentRoom, now);
+    const nextBooking = supabaseClient.findNextBooking(bookingsForCurrentRoom, now);
+
+    const minsToPrevBooking = prevBooking ? ((now.getTime() - prevBooking.endTime.getTime()) / 1000 / 60) : 60 * 24;
+    const minsToNextBooking = nextBooking ? ((nextBooking.startTime.getTime() - now.getTime()) / 1000 / 60) : 60 * 24;
+    const isOccupied = supabaseClient.isRoomOccupied(bookingsForCurrentRoom, now);
+
+    createCommand(minsToPrevBooking, minsToNextBooking, isOccupied)
   }
+}
+
+async function test() {
+  let sesh = await redisClient.hGetAll('device:mciIV:3:raum3:licht');
+  console.log(sesh)
+}
+
+
+cron.schedule('*/1 * * * * *', () => {
+  requestMqttUpdatesFromDevices();
+  test();
 });
 
 cron.schedule('*/1 * * * * *', async () => {
-/**
- * Get all rooms that are currently free
- *
- */
-
-
-
-
+  return;
+  bumpRooms();
 });
-/**
- *
- * Hier muss folgendes rein:
- * - Cron job der alle 5 minuten läuft
- * - Der alle Räume abfragt aus supabase
- * - Der die letzten redis status erhält
- * 1. Beurteilung ob etwas zu unternehmen ist (licht ein obwohl aus gehört, licht aus obwohl ein gehört, etc)
- * 2. Commands an die betroffenen räume melden
- */
+
+cron.schedule('*/3 * * * * *', async () => {
+  return;
+  infrastructure();
+});
+
+
+
+
+// device:mciIV:3:raum3:licht

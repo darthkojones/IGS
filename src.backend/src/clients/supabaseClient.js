@@ -9,7 +9,7 @@ const supabase = createClient(
 
 /**
  *
- * @returns {Room[]}: List of all rooms
+ * @returns {Room[]}
  */
 async function getAllRooms() {
   const { data, error } = await supabase
@@ -28,9 +28,14 @@ async function getAllRooms() {
       floor: r.floor ?? null,
       buildingId: r.building_id ?? null
     })
-  )
+  ) ?? [];
 }
 
+/**
+ *
+ * @param {Room} room
+ * @returns {Booking[]}
+ */
 async function getAllBookingsForRoom(room) {
   const roomId = room.roomId;
 
@@ -54,80 +59,85 @@ async function getAllBookingsForRoom(room) {
         endTime: new Date(b.end_time ?? null),
         enteredAt: new Date(b.entered_at ?? null)
       })
-    ).filter(b =>
-      b.bookingId != null &&
-      b.roomId != null &&
-      b.status != null &&
-      b.startTime != null &&
-      b.endTime != null
-    );
+    ) ?? [];
 }
 
-async function isRoomOccupied(bookings, dateTimeNow) {
+/**
+
+ * @param {Booking[]} bookings
+ * @param {Date} dateTimeNow
+ * @returns {Boolean}
+ */
+function isRoomOccupied(bookings, dateTimeNow) {
   const now = dateTimeNow.getTime();
-  return bookings
-    .filter(b => b.startTime.getTime() < now && b.endTime.getTime() > now)
-    .length > 0;
+  return bookings.filter(b => b.startTime.getTime() < now && b.endTime.getTime() > now).length > 0;
 }
 
+/**
+ *
+ * @param {Booking[]} bookings
+ * @param {Date} dateTimeNow
+ * @returns {Booking | null}
+ */
 function findNextBooking(bookings, dateTimeNow) {
   const now = dateTimeNow.getTime();
   return bookings
     .filter(b => b.startTime.getTime() > now && (b.status === BookingStatus.CONFIRMED || b.status === BookingStatus.RESERVED))
     .sort((a, b) => (a.startTime.getTime() > b.startTime.getTime() ? 1 : a.startTime.getTime() < b.startTime.getTime() ? -1 : 0))
-    .at(0);
+    .at(0) ?? null;
 }
 
+/**
+ *
+ * @param {Booking[]} bookings
+ * @param {Date} dateTimeNow
+ * @returns {Booking | null}
+ */
 function findPreviousBooking(bookings, dateTimeNow) {
   const now = dateTimeNow.getTime();
   return bookings
     .filter(b => b.endTime.getTime() < now && b.status === BookingStatus.COMPLETED)
     .sort((a, b) => (a.endTime.getTime() > b.endTime.getTime() ? -1 : a.endTime.getTime() < b.endTime.getTime() ? 1 : 0))
-    .at(0);
+    .at(0) ?? null;
 }
 
-
 /**
- * Gets bookings that are reserved and the start_date is smaller than the expiryDateTime are returned;
- * These bookings count as expired because the user did not check in within n minutes after the start date.
- * @param {Date} expiryDateTime: Bookings with start_date smaller than this are returned.
- * @returns {Booking[]}: Object of class Booking defined in supaBaseClient.js for use in the backend.
+ *
+ * @param {Date} expiryDateTime
+ * @returns {Booking[]}
  */
 async function getExpiredBookings(expiryDateTime) {
   const { data, error } = await supabase
     .from('booking')
     .select('id, room_id, status, start_time, end_time, entered_at')
     .eq('status', BookingStatus.RESERVED)
-    .lt('start_time', expiryDateTime);
+    .lt('start_time', expiryDateTime.toISOString());
 
   if (error) {
     console.error('Supabase error fetching bookings', error);
     throw error;
   }
 
-  const returnArray = [];
-  data.forEach(b => {
-    const returnElement = new Booking();
-    returnElement.bookingId = b.id ?? "";
-    returnElement.roomId = b.room_id ?? "";
-    returnElement.status = b.status ?? "";
-    returnElement.startTime = b.start_time ?? null;
-    returnElement.endTime = b.end_time ?? null;
-    returnElement.enteredAt = b.entered_at ?? null;
-    returnArray.push(returnElement)
-  })
-  return returnArray;
+  return data
+    .map(b =>
+      Object.assign(new Booking(), {
+        bookingId: b.id ?? null,
+        roomId: b.room_id ?? null,
+        status: b.status ?? null,
+        startTime: new Date(b.start_time ?? null),
+        endTime: new Date(b.end_time ?? null),
+        enteredAt: new Date(b.entered_at ?? null),
+      })
+    ) ?? [];
 }
 
 /**
- * Bumps (sets to expired) the bookings handed over
+ *
  * @param {Booking[]} bookings
- * @returns {int} Number of bookings updated
+ * @returns {void}
  */
 async function setBookingsToExpired(bookings) {
-  const bookingIds = bookings
-    .map(b => b.bookingId)
-    .filter(id => id != null);
+  const bookingIds = bookings.map(b => b.bookingId);
 
   const { error } = await supabase
     .from('booking')
@@ -138,8 +148,6 @@ async function setBookingsToExpired(bookings) {
     console.error('Supabase error updating bookings', error);
     throw error;
   }
-
-  return bookingIds.length;
 }
 
 const BookingStatus = {
@@ -170,10 +178,12 @@ class Room {
 module.exports = {
   supabase,
   getAllRooms,
-  getExpiredBookings,
-  findPreviousBooking,
-  findNextBooking,
-  isRoomOccupied,
   getAllBookingsForRoom,
-  Booking
+  isRoomOccupied,
+  findNextBooking,
+  findPreviousBooking,
+  getExpiredBookings,
+  setBookingsToExpired,
+  Booking,
+  Room
 };

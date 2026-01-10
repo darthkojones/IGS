@@ -31,66 +31,61 @@ async function getAllRooms() {
   )
 }
 
-/**
- *
- * @param {Room} room: The room for which the previous and next meeting should be queried
- * @param {Date} timestampNow: The timestamp that serves as 'now'
- * @returns {null | { previous: float, next: float }}The minutes to the previous and next booking; returns null if there is an active booking
- */
-async function getMinutesToPreviousAndNextBooking(room, timestampNow) {
+async function getAllBookingsForRoom(room) {
   const roomId = room.roomId;
-  if (!roomId) throw new Error('Invalid argument, hand over valid room.');
-
-  if (!(timestampNow instanceof Date)) throw new Error('Invalid argument, hand over valid date.')
-  const utcDate = timestampNow.getTime();
 
   const { data, error } = await supabase
     .from('booking')
     .select('id, room_id, status, start_time, end_time, entered_at')
-    .eq('room_id', roomId)
-    .order('start_time', { ascending: true });
+    .eq('room_id', roomId);
 
   if (error) {
     console.error('Supabase error fetching bookings', error);
     throw error;
   }
 
-  let prevAndNext = { prev: new Date(0).getTime(), next: new Date(2100, 0) }
-  for (let b of data) {
-    if (!b.start_time || !b.end_time || !b.status) continue;
-
-    entry = {
-      start: new Date(b.start_time).getTime(),
-      end: new Date(b.end_time).getTime(),
-      status: b.status
-    };
-
-    if (
-      entry.status === BookingStatus.ACTIVE &&
-      entry.start <= utcDate &&
-      entry.end >= utcDate
-    ) {
-      return null;
-    } else if (
-      entry.status === BookingStatus.COMPLETED &&
-      entry.end <= utcDate &&
-      entry.end > prevAndNext.previous
-      ) {
-      prevAndNext.prev = entry.end;
-    } else if (
-      (entry.status === BookingStatus.RESERVED || entry.status === BookingStatus.CONFIRMED) &&
-      entry.start >= utcDate &&
-      entry.start < prevAndNext.next
-      ) {
-      prevAndNext.next = entry.start;
-    }
-  }
-
-  prevAndNext.next = (prevAndNext.next - utcDate) / 1000 / 60;
-  prevAndNext.prev = (utcDate - prevAndNext.prev) / 1000 / 60;
-
-  return prevAndNext;
+  return data
+    .map(b =>
+      Object.assign(new Booking(), {
+        bookingId: b.id ?? null,
+        roomId: b.room_id ?? null,
+        status: b.status ?? null,
+        startTime: new Date(b.start_time ?? null),
+        endTime: new Date(b.end_time ?? null),
+        enteredAt: new Date(b.entered_at ?? null)
+      })
+    ).filter(b =>
+      b.bookingId != null &&
+      b.roomId != null &&
+      b.status != null &&
+      b.startTime != null &&
+      b.endTime != null
+    );
 }
+
+async function isRoomOccupied(bookings, dateTimeNow) {
+  const now = dateTimeNow.getTime();
+  return bookings
+    .filter(b => b.startTime.getTime() < now && b.endTime.getTime() > now)
+    .length > 0;
+}
+
+function findNextBooking(bookings, dateTimeNow) {
+  const now = dateTimeNow.getTime();
+  return bookings
+    .filter(b => b.startTime.getTime() > now && (b.status === BookingStatus.CONFIRMED || b.status === BookingStatus.RESERVED))
+    .sort((a, b) => (a.startTime.getTime() > b.startTime.getTime() ? 1 : a.startTime.getTime() < b.startTime.getTime() ? -1 : 0))
+    .at(0);
+}
+
+function findPreviousBooking(bookings, dateTimeNow) {
+  const now = dateTimeNow.getTime();
+  return bookings
+    .filter(b => b.endTime.getTime() < now && b.status === BookingStatus.COMPLETED)
+    .sort((a, b) => (a.endTime.getTime() > b.endTime.getTime() ? -1 : a.endTime.getTime() < b.endTime.getTime() ? 1 : 0))
+    .at(0);
+}
+
 
 /**
  * Gets bookings that are reserved and the start_date is smaller than the expiryDateTime are returned;
@@ -176,7 +171,9 @@ module.exports = {
   supabase,
   getAllRooms,
   getExpiredBookings,
-  getMinutesToPreviousAndNextBooking,
-  setBookingsToExpired,
+  findPreviousBooking,
+  findNextBooking,
+  isRoomOccupied,
+  getAllBookingsForRoom,
   Booking
 };

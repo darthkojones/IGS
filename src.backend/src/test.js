@@ -1,3 +1,4 @@
+
 const supabaseClient = require('./clients/supabaseClient');
 
 async function main() {
@@ -6,13 +7,17 @@ async function main() {
 
   const rooms = await supabaseClient.getAllRooms();
 
-  console.log(rooms)
-  const testroom = rooms[0];
+  const testroom = rooms.at(0);
 
+  const bookingsForRoom = supabaseClient.getAllBookingsForRoom(testroom);
 
-  const prevAndNext = await supabaseClient.getMinutesToPreviousAndNextBooking(testroom, new Date());
+  const now = new Date();
+  const prev = supabaseClient.findPreviousBooking(bookingsForRoom, now);
+  const next = supabaseClient.findNextBooking(bookingsForRoom, now);
 
-  console.log(prevAndNext)
+  console.log(testroom)
+  console.log(prev);
+  console.log(next);
 
 }
 

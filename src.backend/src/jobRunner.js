@@ -79,8 +79,12 @@ async function infrastructure() {
     // n minuten nach einer action gehen wir in den standby mode
     // m minuten nach einer action gehen wir in den shutdown mode
 
-    // Einschalten findet über separaten
+    /*
+    Es gibt nur zwei arten von actions: ON-ACTIONS, OFF-ACTIONS
+    Wir definieren events mit mindestabstand zu ON-ACTIONS und OFF-ACTIONS
 
+
+    */
 
 
   }
@@ -100,16 +104,3 @@ cron.schedule('*/3 * * * * *', async () => {
   return;
   infrastructure();
 });
-
-class Device {
-
-  // Wir haben:
-  // Zeit zum vorherigen slot
-  // Zeit zum vergangenen slot
-  // Pro device type haben wir ein objekt, das wir global erstellen (also nur einmal)
-  //
-
-  getCommand() {
-
-  }
-}

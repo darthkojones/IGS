@@ -206,35 +206,6 @@ export const bookingService = {
   },
 
   /**
-   * Get all bookings in the system (no time filter) - for statistics
-   */
-  async getAllBookings(): Promise<Booking[]> {
-    try {
-      const { data, error } = await supabase
-        .from('booking')
-        .select(`${ROOM_SELECT},
-          user:user_id (
-            id,
-            first_name,
-            last_name,
-            email,
-            role
-          )`)
-        .order('start_time', { ascending: true });
-
-      if (error) {
-        console.error('Supabase error fetching all bookings:', error);
-        throw error;
-      }
-
-      return (data || []).map(mapBookingData);
-    } catch (err) {
-      console.error('bookingService.getAllBookings error:', err);
-      throw err;
-    }
-  },
-
-  /**
    * Create a new booking
    */
   async createBooking(booking: Omit<Booking, 'bookingId' | 'createdAt'>): Promise<Booking> {
@@ -244,6 +215,9 @@ export const bookingService = {
       if (hasConflict) {
         throw new Error('Room is not available for the requested time slot');
       }
+
+      // Generate access token for QR code
+      const accessToken = this.generateAccessToken(booking.userId);
 
       const { data, error } = await supabase
         .from('booking')
@@ -255,6 +229,7 @@ export const bookingService = {
           title: booking.title,
           status: booking.status || 'reserved',
           entry_method: booking.entryMethod,
+          access_token: accessToken,
         })
         .select()
         .single();
@@ -269,6 +244,16 @@ export const bookingService = {
       console.error('bookingService.createBooking error:', err);
       throw err;
     }
+  },
+
+  /**
+   * Generate a secure access token for booking
+   */
+  generateAccessToken(userId: string): string {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    const data = `${userId}:${timestamp}:${random}`;
+    return btoa(data);
   },
 
   // update booking

@@ -11,7 +11,7 @@ export function mapBookingData(data: Record<string, unknown>): Booking {
   console.log('Raw data:', data);
   console.log('User data present?', !!data.user);
   console.log('User data:', data.user);
-  
+
   const booking: Booking = {
     bookingId: String(data.id ?? data.booking_id ?? ''),
     roomId: String(data.room_id ?? ''),
@@ -23,6 +23,7 @@ export function mapBookingData(data: Record<string, unknown>): Booking {
     entryMethod: data.entry_method ? (String(data.entry_method) as EntryMethod) : undefined,
     enteredAt: data.entered_at ? new Date(String(data.entered_at)) : undefined,
     createdAt: data.created_at ? new Date(String(data.created_at)) : new Date(),
+    accessToken: data.access_token ? String(data.access_token) : undefined,
   };
 
   // Map room data if available
@@ -44,7 +45,7 @@ export function mapBookingData(data: Record<string, unknown>): Booking {
   } else {
     console.log('No user data in booking object');
   }
-  
+
   console.log('Final booking.user:', booking.user);
   console.log('===========================\n');
 

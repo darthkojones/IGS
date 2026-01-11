@@ -45,6 +45,20 @@
           </dl>
         </section>
 
+        <section v-if="(booking.status === 'reserved' || booking.status === 'confirmed') && !isExpiredFromTimer" class="qr-code-section">
+          <h2>🔐 Your Access QR Code</h2>
+          <p>Scan this QR code with your phone when you arrive at the room to check in:</p>
+          <div class="qr-code-container">
+            <QrcodeVue :value="qrCodeUrl" :size="200" level="H" />
+          </div>
+          <p class="qr-instructions">
+            <strong>How to use:</strong><br>
+            1. Open this page on your phone when you're near the room<br>
+            2. The QR code will verify your identity and grant access<br>
+            3. Valid only within 10 minutes of booking start time
+          </p>
+        </section>
+
         <section v-if="(booking.status === 'reserved' || booking.status === 'confirmed') && !isExpiredFromTimer" class="entry-section">
           <div v-if="!isWithinWindow" class="window-closed">
             <h2>⏰ Entry Window Not Open</h2>
@@ -103,6 +117,7 @@ import { useBookingTimer } from '@/composables/useBookingTimer';
 import { useBookingRealtime } from '@/composables/useBookingRealtime';
 import { formatLocalDate, formatLocalTime } from '@/utils/timezoneUtils';
 import type { Booking, BookingStatus } from '@/types';
+import QrcodeVue from 'qrcode.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -112,6 +127,28 @@ const bookingsStore = useBookingsStore();
 const bookingId = computed(() => route.params.id as string);
 const booking = ref<Booking | null>(null);
 const loading = computed(() => bookingsStore.loading || !booking.value);
+
+// Generate access token for QR code (simple implementation)
+const generateAccessToken = (bookingId: string, userId: string): string => {
+  // In production, this should be done on the server and use proper cryptographic functions
+  const timestamp = Date.now();
+  const data = `${bookingId}:${userId}:${timestamp}`;
+  // Simple base64 encoding (in production, use JWT or similar)
+  return btoa(data);
+};
+
+// Generate QR code URL that includes the access token
+const qrCodeUrl = computed(() => {
+  if (!booking.value || !authStore.currentUser) return '';
+
+  // Generate or use existing access token
+  const token = booking.value.accessToken || generateAccessToken(booking.value.bookingId, authStore.currentUser.userId);
+
+  // Create the check-in URL (temporary testing URL)
+  //const baseUrl = window.location.origin;
+  const baseUrl = 'http://192.168.50.132:5173/IGS';
+  return `${baseUrl}/check-in?token=${token}&booking=${booking.value.bookingId}`;
+});
 
 // Helper to load building data if needed
 const loadBuildingData = async (foundBooking: Booking) => {
@@ -410,6 +447,32 @@ dd {
   border-left: 4px solid #2196f3;
   padding: 1.5rem;
   border-radius: 4px;
+}
+
+.qr-code-section {
+  text-align: center;
+  background: #f5f5f5;
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  margin: 1.5rem auto;
+  width: fit-content;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.qr-instructions {
+  text-align: left;
+  background: #e3f2fd;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+  color: #0d47a1;
+  line-height: 1.6;
 }
 
 .booking-actions {

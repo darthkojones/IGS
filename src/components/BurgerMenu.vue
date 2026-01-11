@@ -156,12 +156,12 @@ const closeMenu = () => {
 .menu-panel {
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0;
   bottom: 0;
   width: 280px;
   max-width: 80vw;
   background: white;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -259,7 +259,7 @@ const closeMenu = () => {
 
 .slide-enter-from,
 .slide-leave-to {
-  transform: translateX(-100%);
+  transform: translateX(100%);
 }
 
 /* Responsive */

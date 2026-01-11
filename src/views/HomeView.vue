@@ -221,7 +221,7 @@ const handleCheckIn = () => {
 };
 
 // Handle cancel booking with confirmation
-const handleCancelBooking = () => {
+const handleCancelBooking = async () => {
   if (!activeBooking.value) return;
 
   const confirmed = confirm(
@@ -229,8 +229,14 @@ const handleCancelBooking = () => {
   );
 
   if (confirmed) {
-    console.log('Booking cancelled:', activeBooking.value.bookingId);
-    // Placeholder for future cancel functionality
+    try {
+      await bookingsStore.cancelBooking(activeBooking.value.bookingId);
+      // Refresh bookings to update UI
+      await fetchBookings();
+    } catch (error) {
+      console.error('Failed to cancel booking:', error);
+      alert('Failed to cancel booking. Please try again.');
+    }
   }
 };
 

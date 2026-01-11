@@ -266,7 +266,8 @@ const peakHoursOptions = {
   plugins: {
     legend: {
       display: true,
-      position: 'top' as const
+      position: 'top' as const,
+      onClick: () => {} // Disable toggling dataset visibility on legend click
     },
     title: {
       display: false
@@ -296,7 +297,8 @@ const popularRoomsOptions = {
   plugins: {
     legend: {
       display: true,
-      position: 'top' as const
+      position: 'top' as const,
+      onClick: () => {} // Disable toggling dataset visibility on legend click
     },
     title: {
       display: false
@@ -338,7 +340,8 @@ const bookingsPerDayOptions = {
   plugins: {
     legend: {
       display: true,
-      position: 'top' as const
+      position: 'top' as const,
+      onClick: () => {} // Disable toggling dataset visibility on legend click
     },
     title: {
       display: false
@@ -398,7 +401,8 @@ const bookingsPerDayOfWeekOptions = {
   plugins: {
     legend: {
       display: true,
-      position: 'top' as const
+      position: 'top' as const,
+      onClick: () => {} // Disable toggling dataset visibility on legend click
     },
     title: {
       display: false

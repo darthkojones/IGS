@@ -145,8 +145,8 @@ const qrCodeUrl = computed(() => {
   const token = booking.value.accessToken || generateAccessToken(booking.value.bookingId, authStore.currentUser.userId);
 
   // Create the check-in URL (temporary testing URL)
-  //const baseUrl = window.location.origin;
-  const baseUrl = 'http://192.168.50.132:5173/IGS';
+  const baseUrl = window.location.origin;
+  //const baseUrl = 'http://192.168.50.132:5173/IGS';
   return `${baseUrl}/check-in?token=${token}&booking=${booking.value.bookingId}`;
 });
 

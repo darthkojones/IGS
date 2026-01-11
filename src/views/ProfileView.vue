@@ -83,11 +83,14 @@ const handleLogout = async () => {
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
+  background: var(--color-background);
+  min-height: 100vh;
 }
 
 .profile-view h1 {
   font-size: 2rem;
   margin-bottom: 2rem;
+  color: var(--color-heading);
 }
 
 .profile-container {
@@ -97,16 +100,16 @@ const handleLogout = async () => {
 }
 
 section {
-  background: white;
+  background: var(--color-card-bg);
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 section h2 {
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: var(--color-heading);
 }
 
 dl {
@@ -117,12 +120,12 @@ dl {
 
 dt {
   font-weight: 600;
-  color: #666;
+  color: var(--color-text-soft);
 }
 
 dd {
   margin: 0;
-  color: #333;
+  color: var(--color-text);
 }
 
 .role-badge {

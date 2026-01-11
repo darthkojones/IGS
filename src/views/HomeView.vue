@@ -420,6 +420,8 @@ onUnmounted(() => {
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 /* Confirm Booking Section */
@@ -495,7 +497,7 @@ onUnmounted(() => {
 .my-bookings h2 {
   font-size: 2rem;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: var(--color-heading);
 }
 
 .bookings-container {
@@ -522,32 +524,32 @@ onUnmounted(() => {
 }
 
 .group-header:hover {
-  background-color: #f5f5f5;
+  background-color: var(--color-card-hover);
 }
 
 .group-header:hover .group-title {
-  color: #1976d2;
+  color: var(--color-primary);
 }
 
 .group-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #555;
+  color: var(--color-text);
   margin: 0;
   padding-left: 0.5rem;
-  border-left: 4px solid #1976d2;
+  border-left: 4px solid var(--color-primary);
   transition: color 0.2s ease;
 }
 
 .group-toggle-icon {
   font-size: 1.125rem;
-  color: #666;
+  color: var(--color-text-soft);
   margin-right: 0.5rem;
   transition: color 0.2s ease;
 }
 
 .group-header:hover .group-toggle-icon {
-  color: #1976d2;
+  color: var(--color-primary);
 }
 
 .section-header {
@@ -588,8 +590,8 @@ onUnmounted(() => {
 
 .booking-item {
   display: block;
-  background: white;
-  border: 2px solid #e0e0e0;
+  background: var(--color-card-bg);
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   padding: 1.5rem;
   transition: all 0.3s ease;
@@ -602,21 +604,24 @@ onUnmounted(() => {
 .booking-item.status-expired {
   background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
   border-color: #ef5350;
+  color: #1a1a1a;
 }
 
 .booking-item.status-pending {
   background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
   border-color: #ffa726;
+  color: #1a1a1a;
 }
 
 .booking-item.status-confirmed {
   background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
   border-color: #66bb6a;
+  color: #1a1a1a;
 }
 
 .booking-item:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .booking-item.status-expired:hover {
@@ -641,8 +646,9 @@ onUnmounted(() => {
 .booking-text {
   margin: 0;
   font-size: 1.125rem;
-  color: #333;
+  color: inherit;
   flex: 1;
+  font-weight: 500;
 }
 
 .booking-status-badge {

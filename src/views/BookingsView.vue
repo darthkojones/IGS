@@ -161,8 +161,8 @@ onMounted(async () => {
 .bookings-view {
   max-width: 900px;
   margin: 0 auto;
-  padding: 1rem;
-}
+  padding: 1rem;  background: var(--color-background);
+  min-height: 100vh;}
 
 .page-header {
   display: flex;
@@ -171,11 +171,15 @@ onMounted(async () => {
   margin-bottom: 2rem;
 }
 
+.page-header h1 {
+  color: var(--color-heading);
+}
+
 .bookings-tabs {
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .bookings-tabs button {
@@ -187,11 +191,12 @@ onMounted(async () => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  color: var(--color-text-soft);
 }
 
 .bookings-tabs button.active {
-  border-bottom-color: #1976d2;
-  color: #1976d2;
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .bookings-list {
@@ -202,9 +207,14 @@ onMounted(async () => {
 
 .booking-card {
   padding: 1.5rem;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.booking-card:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .booking-header {
@@ -217,6 +227,11 @@ onMounted(async () => {
 .booking-header h3 {
   margin: 0;
   font-size: 1.25rem;
+  color: var(--color-heading);
+}
+
+.booking-details {
+  color: var(--color-text);
 }
 
 .booking-status {
@@ -260,24 +275,47 @@ onMounted(async () => {
 }
 
 .btn--primary {
-  background: #1976d2;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.btn--primary:hover {
+  background: var(--color-primary-hover);
 }
 
 .btn--secondary {
   background: transparent;
-  color: #1976d2;
-  border: 1px solid #1976d2;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.btn--secondary:hover {
+  background: var(--color-primary-light);
 }
 
 .btn--danger {
-  background: #d32f2f;
+  background: var(--color-error);
   color: white;
+}
+
+.btn--danger:hover {
+  background: #b71c1c;
 }
 
 .no-bookings {
   text-align: center;
   padding: 3rem;
-  color: #757575;
+  color: var(--color-text-soft);
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text);
+}
+
+.error {
+  color: var(--color-error);
 }
 </style>

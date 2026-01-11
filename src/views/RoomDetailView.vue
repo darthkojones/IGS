@@ -349,8 +349,8 @@ watch(formattedDate, fetchBookings)
 .room-detail-view {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1.5rem;
-}
+  padding: 1.5rem;  background: var(--color-background);
+  min-height: 100vh;}
 
 .back-btn {
   background: none;
@@ -381,10 +381,10 @@ watch(formattedDate, fetchBookings)
   display: flex;
   justify-content: space-between;
   align-items: stretch;
-  background: white;
+  background: var(--color-card-bg);
   padding: 0;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
 }
 
@@ -400,11 +400,11 @@ watch(formattedDate, fetchBookings)
 .header-main h1 {
   margin: 0;
   font-size: 1.85rem;
-  color: #0f172a;
+  color: var(--color-heading);
 }
 
 .room-location {
-  color: #64748b;
+  color: var(--color-text-soft);
   margin: 0.25rem 0 0;
 }
 
@@ -557,22 +557,23 @@ watch(formattedDate, fetchBookings)
 }
 
 .card {
-  background: white;
+  background: var(--color-card-bg);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   padding: 1.5rem;
+  transition: background-color 0.3s ease;
 }
 
 h2 {
   font-size: 1.25rem;
   margin: 0 0 1.25rem;
-  color: #1e293b;
+  color: var(--color-heading);
 }
 
 .section-title {
   font-size: 1rem;
   margin: 1.5rem 0 0.75rem;
-  color: #475569;
+  color: var(--color-text-soft);
 }
 
 /* Info Card */
@@ -585,13 +586,13 @@ h2 {
   display: block;
   font-size: 0.8rem;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   letter-spacing: 0.025em;
   margin-bottom: 0.2rem;
 }
 
 .value {
-  color: #334155;
+  color: var(--color-text);
   font-weight: 500;
 }
 
@@ -605,8 +606,8 @@ h2 {
 }
 
 .equipment-pill {
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--color-surface-soft);
+  color: var(--color-text);
   padding: 0.4rem 0.8rem;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -670,8 +671,8 @@ h2 {
 }
 
 .timeline-item.is-own {
-  background: #eff6ff;
-  border-left-color: #3b82f6;
+  background: var(--color-primary-light);
+  border-left-color: var(--color-primary);
 }
 
 .time-col {
@@ -683,12 +684,12 @@ h2 {
 
 .time-start {
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-heading);
 }
 
 .time-end {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--color-text-soft);
 }
 
 .content-col {

@@ -2,7 +2,7 @@
   <div class="login-view">
     <div class="login-container">
       <h1>Login</h1>
-      
+
       <form @submit.prevent="handleSubmit" class="login-form">
         <div class="form-group">
           <label for="email">Email</label>
@@ -89,20 +89,22 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  background: var(--color-background);
 }
 
 .login-container {
   width: 100%;
   max-width: 400px;
   padding: 2rem;
-  background: white;
+  background: var(--color-card-bg);
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
 }
 
 .login-container h1 {
   text-align: center;
   margin-bottom: 2rem;
+  color: var(--color-heading);
 }
 
 .form-group {
@@ -113,20 +115,23 @@ const handleSubmit = async () => {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  color: var(--color-text);
 }
 
 .form-group input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-input-border);
   border-radius: 4px;
   font-size: 1rem;
+  background: var(--color-input-bg);
+  color: var(--color-input-text);
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .error-message {

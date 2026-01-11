@@ -63,6 +63,45 @@ async function getAllBookingsForRoom(room) {
 }
 
 /**
+ *
+ * @param {Room} room
+ * @returns {Booking[]}
+ */
+async function getTodaysBookingsForRoom(room) {
+  const roomId = room.roomId;
+
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+
+  const endOfToday = new Date(startOfToday.getTime());
+  endOfToday.setUTCHours(23, 59, 59, 59);
+
+  const { data, error } = await supabase
+    .from('booking')
+    .select('id, room_id, status, start_time, end_time, entered_at')
+    .eq('room_id', roomId)
+    .gte('start_time', startOfToday.toISOString())  // Every booking that starts afer today 00:00
+    .lte('start_time', endOfToday.toISOString());   // Every booking that starts before today 00:00
+
+  if (error) {
+    console.error('Supabase error fetching bookings', error);
+    throw error;
+  }
+
+  return data
+    .map(b =>
+      Object.assign(new Booking(), {
+        bookingId: b.id ?? null,
+        roomId: b.room_id ?? null,
+        status: b.status ?? null,
+        startTime: new Date(b.start_time ?? null),
+        endTime: new Date(b.end_time ?? null),
+        enteredAt: new Date(b.entered_at ?? null)
+      })
+    ) ?? [];
+}
+
+/**
 
  * @param {Booking[]} bookings
  * @param {Date} dateTimeNow
@@ -184,6 +223,7 @@ module.exports = {
   findPreviousBooking,
   getExpiredBookings,
   setBookingsToExpired,
+  getTodaysBookingsForRoom,
   Booking,
   Room
 };

@@ -3,7 +3,6 @@ const cron = require('node-cron');
 const redisClient = require('./clients/redisClient');
 const mqttClient = require('./clients/mqttClient');
 const supabaseClient = require('./clients/supabaseClient');
-const deviceConfig = require('./deviceConfig.json');
 
 /**
  * Here we are processing all updates sent to us
@@ -61,10 +60,9 @@ function requestMqttUpdatesFromDevices() {
 async function infrastructure() {
   const now = new Date();
   const allRooms = await supabaseClient.getAllRooms();
-  const deviceList = deviceConfig.devices;
 
   for (let r of allRooms) {
-    const bookingsForCurrentRoom = await supabaseClient.getAllBookingsForRoom(r);
+    const bookingsForCurrentRoom = await supabaseClient.getTodaysBookingsForRoom(r);
 
     if (supabaseClient.isRoomOccupied(bookingsForCurrentRoom, now)) continue;
 
@@ -73,6 +71,8 @@ async function infrastructure() {
     const minsToPrevBooking = prevBooking ? ((now.getTime() - prevBooking.endTime.getTime()) / 1000 / 60) : 60 * 24;
     const minsToNextBooking = nextBooking ? ((nextBooking.startTime.getTime() - now.getTime()) / 1000 / 60) : 60 * 24;
 
+
+    console.log(minsToPrevBooking, minsToNextBooking);
     // Wir haben es hier nur mit räumen zutun die aktuell nicht genutzt werden
 
     // Actions sind ende eines aktiven bookings, manueller command
@@ -82,7 +82,7 @@ async function infrastructure() {
     /*
     Es gibt nur zwei arten von actions: ON-ACTIONS, OFF-ACTIONS
     Wir definieren events mit mindestabstand zu ON-ACTIONS und OFF-ACTIONS
-
+    Müssen wir entscheiden welche action bevorzugt wird? Was wenn es 10 minuten pause gibt und es würde beide actions triggern, weil beide mit 5 minuten verzögerung laufen?
 
     */
 

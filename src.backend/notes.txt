@@ -24,3 +24,11 @@
 
 
 mci/building/floor/room/device_type/message_type
+
+
+Alle empfänger hören auf:
+    mci/request_status
+    mci/building/request_status
+    mci/building/floor/request_status
+    mci/building/floor/room/request_status
+    mci/building/floor/room/device/request_status

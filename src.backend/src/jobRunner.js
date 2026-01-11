@@ -3,6 +3,8 @@ const cron = require('node-cron');
 const redisClient = require('./clients/redisClient');
 const mqttClient = require('./clients/mqttClient');
 const supabaseClient = require('./clients/supabaseClient');
+const deviceConfig = require('./deviceConfig.json');
+const devices = deviceConfig.devices;
 
 /**
  * Here we are processing all updates sent to us
@@ -57,42 +59,56 @@ function requestMqttUpdatesFromDevices() {
   );
 }
 
-async function infrastructure() {
-  const now = new Date();
-  const allRooms = await supabaseClient.getAllRooms();
+async function handleNewCheckIns() {
+  const utcDate = new Date();
+  const nowMinus = new Date(utcDate.getTime() - 150 * 60 * 1000);
 
-  for (let r of allRooms) {
-    const bookingsForCurrentRoom = await supabaseClient.getTodaysBookingsForRoom(r);
+  const confirmedBookings = await supabaseClient.getConfirmedBookings(nowMinus);
+  const newConfirmedBookings = await Promise.all(
+    confirmedBookings.map(async b => {
+      const bookingKey = redisClient.createBookingKey(b.bookingId);
+      const isBookingAlreadyHandled = await redisClient.getBookingConfirmHandled(bookingKey);
+      return isBookingAlreadyHandled ? null : b;
+    })
+  );
+  const newConfirmedFilteredBookings = newConfirmedBookings.filter(b => b != null);
 
-    if (supabaseClient.isRoomOccupied(bookingsForCurrentRoom, now)) continue;
-
-    const prevBooking = supabaseClient.findPreviousBooking(bookingsForCurrentRoom, now);
-    const nextBooking = supabaseClient.findNextBooking(bookingsForCurrentRoom, now);
-    const minsToPrevBooking = prevBooking ? ((now.getTime() - prevBooking.endTime.getTime()) / 1000 / 60) : 60 * 24;
-    const minsToNextBooking = nextBooking ? ((nextBooking.startTime.getTime() - now.getTime()) / 1000 / 60) : 60 * 24;
-
-
-    console.log(minsToPrevBooking, minsToNextBooking);
-    // Wir haben es hier nur mit räumen zutun die aktuell nicht genutzt werden
-
-    // Actions sind ende eines aktiven bookings, manueller command
-    // n minuten nach einer action gehen wir in den standby mode
-    // m minuten nach einer action gehen wir in den shutdown mode
-
-    /*
-    Es gibt nur zwei arten von actions: ON-ACTIONS, OFF-ACTIONS
-    Wir definieren events mit mindestabstand zu ON-ACTIONS und OFF-ACTIONS
-    Müssen wir entscheiden welche action bevorzugt wird? Was wenn es 10 minuten pause gibt und es würde beide actions triggern, weil beide mit 5 minuten verzögerung laufen?
-
-    */
-
-
+  if (!newConfirmedFilteredBookings.length) {
+    console.log(`No bookings confirmed since ${nowMinus.toISOString()}`)
+    //return; //UNCOMMENT
   }
+
+  for (let booking of confirmedBookings) { //CHANGE!
+    const bookedRoom = await supabaseClient.getRoomById(booking.roomId);
+    for (let device of devices) {
+      const redisDeviceKey = redisClient.createDeviceKey(bookedRoom.buildingId, bookedRoom.floor, bookedRoom.roomId, device.name);
+      const deviceStatus = await redisClient.getDeviceStatus(redisDeviceKey);
+
+      if (!deviceStatus) {
+        console.log(`Device ${redisDeviceKey} has no status, running onStart command ${redisDeviceKey}:${device.onStart}`);
+      } else {
+        console.log(redisDeviceKey, deviceStatus, `Device has status ${deviceStatus} checking ...`)
+
+        const status = Number(deviceStatus.status);
+
+        if (device.statusOn.includes(status)) {
+          console.log(`Device ${redisDeviceKey} status indicates that device is running, doing nothing ...`)
+        } else if (!device.statusOn.includes(status)) {
+          console.log(`Device ${redisDeviceKey} status indicates that device is not running, running onStart command ${redisDeviceKey}:${device.onStart}`)
+        }
+
+
+
+      }
+    }
+  }
+
+
 }
 
-cron.schedule('*/10 * * * * *', () => {
+cron.schedule('*/4 * * * * *', () => {
   requestMqttUpdatesFromDevices();
-  infrastructure();
+  handleNewCheckIns();
 });
 
 cron.schedule('*/1 * * * * *', async () => {

@@ -31,6 +31,29 @@ async function getAllRooms() {
   ) ?? [];
 }
 
+async function getRoomById(roomId) {
+
+  console.log(roomId)
+  const { data, error } = await supabase
+    .from('room')
+    .select('room_id, name, floor, building_id')
+    .eq('room_id', roomId)
+
+  if (error) {
+    console.error('Supabase error fetching rooms', error);
+    throw error;
+  }
+
+  return data.map(r =>
+    Object.assign(new Room(), {
+      roomId: r.room_id ?? null,
+      name: r.name ?? null,
+      floor: r.floor ?? null,
+      buildingId: r.building_id ?? null
+    })
+  ).at(0) ?? null;
+}
+
 /**
  *
  * @param {Room} room
@@ -43,6 +66,42 @@ async function getAllBookingsForRoom(room) {
     .from('booking')
     .select('id, room_id, status, start_time, end_time, entered_at')
     .eq('room_id', roomId);
+
+  if (error) {
+    console.error('Supabase error fetching bookings', error);
+    throw error;
+  }
+
+  return data
+    .map(b =>
+      Object.assign(new Booking(), {
+        bookingId: b.id ?? null,
+        roomId: b.room_id ?? null,
+        status: b.status ?? null,
+        startTime: new Date(b.start_time ?? null),
+        endTime: new Date(b.end_time ?? null),
+        enteredAt: new Date(b.entered_at ?? null)
+      })
+    ) ?? [];
+}
+
+/**
+ *
+ * @param {Room} room
+ * @returns {Booking[]}
+ */
+async function getTodaysBookings() {
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+
+  const endOfToday = new Date(startOfToday.getTime());
+  endOfToday.setUTCHours(23, 59, 59, 59);
+
+  const { data, error } = await supabase
+    .from('booking')
+    .select('id, room_id, status, start_time, end_time, entered_at')
+    .gte('start_time', startOfToday.toISOString())  // Every booking that starts afer today 00:00
+    .lte('start_time', endOfToday.toISOString());   // Every booking that starts before today 00:00
 
   if (error) {
     console.error('Supabase error fetching bookings', error);
@@ -140,6 +199,56 @@ function findPreviousBooking(bookings, dateTimeNow) {
     .at(0) ?? null;
 }
 
+async function getConfirmedBookings(checkedInAfterDateTime) {
+  const { data, error } = await supabase
+    .from('booking')
+    .select('id, room_id, status, start_time, end_time, entered_at')
+    .in('status', [BookingStatus.CONFIRMED, BookingStatus.ACTIVE] )
+    .gt('entered_at', checkedInAfterDateTime.toISOString());
+
+  if (error) {
+    console.error('Supabase error fetching bookings', error);
+    throw error;
+  }
+
+  return data
+    .map(b =>
+      Object.assign(new Booking(), {
+        bookingId: b.id ?? null,
+        roomId: b.room_id ?? null,
+        status: b.status ?? null,
+        startTime: new Date(b.start_time ?? null),
+        endTime: new Date(b.end_time ?? null),
+        enteredAt: new Date(b.entered_at ?? null),
+      })
+    ) ?? [];
+}
+
+async function getCompletedBookings(completedAfterDateTime) {
+    const { data, error } = await supabase
+    .from('booking')
+    .select('id, room_id, status, start_time, end_time, entered_at')
+    .eq('status', BookingStatus.COMPLETED)
+    .gt('end_time', completedAfterDateTime.toISOString());
+
+  if (error) {
+    console.error('Supabase error fetching bookings', error);
+    throw error;
+  }
+
+  return data
+    .map(b =>
+      Object.assign(new Booking(), {
+        bookingId: b.id ?? null,
+        roomId: b.room_id ?? null,
+        status: b.status ?? null,
+        startTime: new Date(b.start_time ?? null),
+        endTime: new Date(b.end_time ?? null),
+        enteredAt: new Date(b.entered_at ?? null),
+      })
+    ) ?? [];
+}
+
 /**
  *
  * @param {Date} expiryDateTime
@@ -224,6 +333,10 @@ module.exports = {
   getExpiredBookings,
   setBookingsToExpired,
   getTodaysBookingsForRoom,
+  getTodaysBookings,
+  getConfirmedBookings,
+  getCompletedBookings,
+  getRoomById,
   Booking,
   Room
 };

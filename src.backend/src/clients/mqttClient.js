@@ -19,4 +19,14 @@ client.on('error', (err) => {
   console.error('MQTT-Fehler:', err);
 });
 
-module.exports = client;
+function createKey(baseTopic, building = null, floor = null, room = null, device = null) {
+  return String(`device:${baseTopic}:${building}:${floor}:${room}:${device}`);
+}
+
+function publishCommand(building, floor, room, device) {
+
+}
+
+module.exports = {
+  client
+}

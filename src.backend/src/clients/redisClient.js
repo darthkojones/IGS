@@ -18,7 +18,7 @@ function createDeviceKey(building, floor, room, device) {
   return String(`device:${building}:${floor}:${room}:${device}`);
 }
 
-async function setStatus(deviceKey, status, modifier, modified, room, device) {
+async function setDeviceStatus(deviceKey, status, modifier, modified, room, device) {
   await redisClient.hSet(
     deviceKey,
     {
@@ -31,7 +31,7 @@ async function setStatus(deviceKey, status, modifier, modified, room, device) {
   )
 }
 
-async function getStatus(deviceKey) {
+async function getDeviceStatus(deviceKey) {
   const data = await redisClient.hGetAll(deviceKey);
 
   if (!await redisClient.exists(deviceKey)) {
@@ -47,9 +47,35 @@ async function getStatus(deviceKey) {
   }
 }
 
+function createBookingKey(bookingId) {
+  return String(`booking${bookingId}`);
+}
+
+async function setBookingConfirmHandled(bookingKey) {
+  await redisClient.set(
+    bookingKey,
+    1
+  )
+}
+
+async function getBookingConfirmHandled(bookingKey) {
+  const data = await redisClient.get(bookingKey);
+
+  if (!await redisClient.exists(bookingKey)) {
+    return null;
+  } else {
+    return data
+  }
+}
+
+
+
 module.exports = {
   redisClient,
   createDeviceKey,
-  setStatus,
-  getStatus
+  setDeviceStatus,
+  getDeviceStatus,
+  createBookingKey,
+  setBookingConfirmHandled,
+  getBookingConfirmHandled
 }

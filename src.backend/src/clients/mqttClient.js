@@ -9,7 +9,7 @@ client.on('connect', () => {
 
   console.log('Connected to MQTT broker.');
 
-  client.subscribe('mci/+/+/+/+/status', (err) => {
+  client.subscribe('mci/+/+/+/+/reply_status', (err) => {
     if (!err) console.log('Subscribed to status updates.');
   });
 
@@ -27,6 +27,4 @@ function publishCommand(building, floor, room, device) {
 
 }
 
-module.exports = {
-  client
-}
+module.exports = client;

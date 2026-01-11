@@ -1,5 +1,21 @@
+const devices = require('./deviceConfig.json');
+const rooms = require('./roomlist.json')
 
+class DeviceParameters {
+  name;
+  commands;
+  statusOff;
+  statusOn;
+  onStart;
 
+  constructor(name, commands, statusOff, statusOn, onStart) {
+    this.name = name;
+    this.commands = commands;
+    this.statusOff = statusOff;
+    this.statusOn = statusOn;
+    this.onStart = onStart;
+  }
+}
 
 class Device {
   baseTopic;
@@ -11,7 +27,11 @@ class Device {
   mqtt;
   client;
 
-  constructor(baseTopic, building, floor, room, devicename) {
+  parameters;
+
+  lastCommand = { modifier: 'sys', modified: new Date(), status: 0 };
+
+  constructor(baseTopic, building, floor, room, devicename, parameters) {
     if (
       (baseTopic === null || baseTopic === undefined) ||
       (building === null || building === undefined) ||
@@ -24,32 +44,96 @@ class Device {
     this.floor = floor;
     this.room = room;
     this.deviceName = devicename;
+    this.parameters = parameters;
   }
 
   getFullDeviceName() {
-    return String(`device:${this.baseTopic}/${this.building}/${this.floor}/${this.room}/${this.deviceName}`);
+    return `${this.baseTopic}/${this.building}/${this.floor}/${this.room}/${this.deviceName}`;
+  }
+
+  getDeviceLevels() {
+    return [
+      `${this.baseTopic}/${this.building}/${this.floor}/${this.room}/${this.deviceName}/`,
+      `${this.baseTopic}/${this.building}/${this.floor}/${this.room}/`,
+      `${this.baseTopic}/${this.building}/${this.floor}/`,
+      `${this.baseTopic}/${this.building}/`,
+      `${this.baseTopic}/`
+    ]
   }
 
   connect() {
     this.mqtt = require('mqtt');
     this.client = this.mqtt.connect('mqtt://localhost:1883');
-
     this.client.on('connect', () => console.log(`${this.getFullDeviceName()} is now connected to MQTT broker.`));
-
-
   }
 
+  subscribe() {
+    const levels = this.getDeviceLevels();
+    levels.forEach(l => {
+      this.client.subscribe(l.concat('request_status'));
+      this.client.subscribe(l.concat('command'));
+    });
+    console.log(`${this.getFullDeviceName()} is now subscribed to ${levels.length * 2} topics`);
+  }
 
+  setUpMessageHandler() {
+    this.client.on('message', (topic, message) => {
+      try {
+        if (String(topic).endsWith('request_status')) {
+          this.handleStatusRequest()
+        } else if (String(topic).endsWith('command')) {
+          this.handleCommandRequest(message.toString());
+        }
+      } catch (error) {
+        console.error('Fehler:', error.message);
+      }
+    });
+  }
 
+  handleStatusRequest() {
+    this.client.publish(
+      `${this.getFullDeviceName()}/reply_status`,
+      JSON.stringify(this.lastCommand),
+      { qos: 1}
+    )
+  }
+
+  handleCommandRequest(message) {
+   const command = JSON.parse(message);
+   this.lastCommand = command.action;
+  }
 }
 
-
 function main() {
-  d = new Device('mci', 'building', 'floor', 'room', 'device')
+  mockRooms = rooms.rooms;
+  mockDevices = devices.devices;
 
-  console.log(d.getFullDeviceName())
-
-  d.connect()
+  const deviceList = [];
+  mockRooms.forEach(r => {
+    mockDevices.forEach(d => {
+      deviceList.push(
+        new Device(
+          'mci',
+          r.buildingId,
+          r.floor,
+          r.roomId,
+          d.name,
+          new DeviceParameters(
+            d.name,
+            d.commands,
+            d.statusOff,
+            d.statusOn,
+            d.onStart
+          )
+        )
+      )
+    })
+  })
+  deviceList.forEach(d => {
+    d.connect();
+    d.subscribe();
+    d.setUpMessageHandler();
+  })
 }
 
 main()

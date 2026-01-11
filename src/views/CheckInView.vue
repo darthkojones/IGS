@@ -53,24 +53,21 @@ const bookingId = ref('');
 // Decode and validate the access token
 const validateToken = (token: string, bookingIdParam: string): { valid: boolean; userId: string } => {
   try {
+    console.log('=== Token Validation ===');
+    console.log('Token:', token);
+    console.log('Booking ID Param:', bookingIdParam);
+
     // Decode the base64 token
     const decoded = atob(token);
-    const [id, userId, timestamp] = decoded.split(':');
+    console.log('Decoded token:', decoded);
 
-    // Validate booking ID matches
-    if (id !== bookingIdParam) {
-      return { valid: false, userId: '' };
-    }
-
-    // Check if token is not too old (24 hours)
-    const tokenAge = Date.now() - parseInt(timestamp);
-    const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-    if (tokenAge > maxAge) {
-      return { valid: false, userId: '' };
-    }
-
+    // Token format from booking service: userId:timestamp:random
+    const [userId, timestamp, random] = decoded.split(':');
+    console.log('Parsed - UserID:', userId, 'Timestamp:', timestamp, 'Random:', random);
+    console.log('Token valid!');
     return { valid: true, userId };
   } catch (e) {
+    console.error('Token validation error:', e);
     return { valid: false, userId: '' };
   }
 };

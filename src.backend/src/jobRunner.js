@@ -1,22 +1,25 @@
 const cron = require('node-cron');
 
 const redisService = require('./services/redisService.js')
+const mqttService = require('./services/mqttService.js');
+const supabaseService = require('./services/supabaseService.js');
 
 
-
-const mqttClient = require('./clients/mqttClient');
-const supabaseClient = require('./clients/supabaseClient');
 const deviceConfig = require('./deviceConfig.json');
 const devices = deviceConfig.devices;
 
 
-mqttClient.on('message', async (topic, message) => {
+
+
+mqttService.subscribeToTopics(['mci/+/+/+/+/reply_status']);
+
+mqttService.mqttClient.on('message', async (topic, message) => {
   try {
     if (String(topic.endsWith('reply_status'))) {
       const [, building, floor, room, device] = topic.split('/');
       const data = JSON.parse(message.toString());
 
-      await redisService.getDeviceStatus(
+      await redisService.setDeviceStatus(
         redisService.createDeviceKey(building, floor, room, device),
         data.status, data.modifier, data.modified, room, device
       );
@@ -39,9 +42,9 @@ async function bumpRooms() {
   const nowMinusTenMinutes = new Date(utcDate.getTime() - 10 * 60 * 1000);
 
   try {
-    const bookingsToExpire = await supabaseClient.getExpiredBookings(nowMinusTenMinutes);
+    const bookingsToExpire = await supabaseService.getExpiredBookings(nowMinusTenMinutes);
     if (bookingsToExpire.length) {
-      supabaseClient.setBookingsToExpired(bookingsToExpire)
+      supabaseService.setBookingsToExpired(bookingsToExpire)
     }
   } catch(error) {
     console.error('Supabase error', error)
@@ -49,7 +52,7 @@ async function bumpRooms() {
 }
 
 function requestMqttUpdatesFromDevices() {
-  mqttClient.publish(
+  mqttService.mqttClient.publish(
     'mci/request_status',
     'no message'
   );
@@ -60,7 +63,7 @@ function requestMqttUpdatesFromDevices() {
 async function handleNewCheckIns() {
   const nowMinus = new Date(new Date().getTime() - 150 * 60 * 1000); // 150 mins
 
-  const confirmed = await supabaseClient.getConfirmedBookings(nowMinus);
+  const confirmed = await supabaseService.getConfirmedBookings(nowMinus);
   const newConfirmed = await Promise.all(
     confirmed.map(async b => {
       const isAlreadyChecked = await redisService.getBookingConfirmHandled(redisService.createBookingKey(b.bookingId));
@@ -72,27 +75,37 @@ async function handleNewCheckIns() {
   if (!filteredNewConfirmed.length) console.log(`No bookings confirmed since ${nowMinus.toISOString()}`); // NUR DEBUGGING
 
   for (let b of confirmed) { //CHANGE!
-    const room = await supabaseClient.getRoomById(b.roomId);
+    const room = await supabaseService.getRoomById(b.roomId);
 
     for (let d of devices) {
       const redisDeviceKey = redisService.createDeviceKey(room.buildingId, room.floor, room.roomId, d.name);
       const deviceStatus = await redisService.getDeviceStatus(redisDeviceKey);
 
+      const currentStatus = Number(deviceStatus.status);
+      const statusesQualifyingAsOn = d.statusOn;
+
+      const mqttDeviceKey = mqttService.createDeviceKey('mci', room.buildingId, room.floor, room.roomId, d.name);
+
       if (!deviceStatus) {
         console.log(`${redisDeviceKey} has no status, starting device ...`);
 
-        mqttClient.publish()
+        mqttService.mqttClient.publish(
+          `${mqttDeviceKey}/command`,
+          JSON.stringify({ modifier: 'sys', modified: new Date(), status: d.onStart}),
+          { qos: 1 }
+        )
 
-
-      } else if (d.statusOn.includes(deviceStatus.status))  {
+      } else if (statusesQualifyingAsOn.includes(currentStatus))  {
         console.log(`${redisDeviceKey} is already running ...`)
 
-
-
-      } else if (!d.statusOn.includes(deviceStatus.status)) {
+      } else if (!statusesQualifyingAsOn.includes(currentStatus)) {
         console.log(`${redisDeviceKey} is not running, starting device ...`)
 
-
+        mqttService.mqttClient.publish(
+          `${mqttDeviceKey}/command`,
+          JSON.stringify({ modifier: 'sys', modified: new Date(), status: d.onStart}),
+          { qos: 1 }
+        )
       }
     }
   }
@@ -100,17 +113,7 @@ async function handleNewCheckIns() {
 
 }
 
-cron.schedule('*/4 * * * * *', async () => {
+cron.schedule('*/5 * * * * *', async () => {
   requestMqttUpdatesFromDevices();
   handleNewCheckIns();
-});
-
-cron.schedule('*/1 * * * * *', async () => {
-  return;
-  bumpRooms();
-});
-
-cron.schedule('*/3 * * * * *', async () => {
-  return;
-  infrastructure();
 });

@@ -91,6 +91,7 @@ class Device {
   }
 
   handleStatusRequest() {
+    console.log('< out', this.getFullDeviceName(), this.lastCommand.status)
     this.client.publish(
       `${this.getFullDeviceName()}/reply_status`,
       JSON.stringify(this.lastCommand),
@@ -100,12 +101,13 @@ class Device {
 
   handleCommandRequest(message) {
    const command = JSON.parse(message);
-   this.lastCommand = command.action;
+   console.log('> in', this.getFullDeviceName(), command.status)
+   this.lastCommand = command
   }
 }
 
 function main() {
-  mockRooms = rooms.rooms;
+  mockRooms = rooms.rooms.filter(r => r.roomId == 12 || r.roomId == 26)
   mockDevices = devices.devices;
 
   const deviceList = [];

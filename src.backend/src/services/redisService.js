@@ -1,4 +1,4 @@
-const redisClient = require('./clients/redisClient');
+const redisClient = require('../clients/redisClient');
 
 function createDeviceKey(buildingId, floor, roomId, deviceName) {
   return String(`device:${buildingId}:${floor}:${roomId}:${deviceName}`);

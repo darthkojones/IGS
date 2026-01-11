@@ -20,7 +20,7 @@
         type="text"
         class="form-control"
         :class="{ 'input--error': !form.title && form.touched }"
-        placeholder="Meeting Titel"
+        placeholder="Meeting Title"
         required
         aria-required="true"
         @blur="form.touched = true"

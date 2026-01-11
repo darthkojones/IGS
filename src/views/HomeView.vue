@@ -247,7 +247,7 @@ const formatBookingDisplay = (booking: Booking) => {
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', hour12: false });
   };
-  return `${getRoomName(booking.roomId)} - Made by ${getUserName(booking)} - ${formatTime(start)} to ${formatTime(end)}`;
+  return `${getRoomName(booking.roomId)}  - ${formatTime(start)} to ${formatTime(end)}`;
 };
 
 // Format booking for display with date (upcoming bookings)
@@ -260,7 +260,7 @@ const formatBookingDisplayWithDate = (booking: Booking) => {
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   };
-  return `${getRoomName(booking.roomId)} - Made by ${getUserName(booking)} - ${formatDate(start)} ${formatTime(start)} to ${formatTime(end)}`;
+  return `${getRoomName(booking.roomId)}  - ${formatDate(start)} ${formatTime(start)} to ${formatTime(end)}`;
 };
 
 // Get booking status class for styling

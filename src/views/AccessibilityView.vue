@@ -180,17 +180,19 @@ onMounted(() => {
 .setting-description {
   margin-top: 0.5rem;
   margin-left: 2rem;
-  color: #666;
+  color: var(--color-text-soft);
   font-size: 0.875rem;
 }
 
 .setting-select {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 1rem;
   margin-top: 0.5rem;
+  background: var(--color-card-bg);
+  color: var(--color-text);
 }
 
 .keyboard-shortcuts {
@@ -201,17 +203,19 @@ onMounted(() => {
 .keyboard-shortcuts li {
   padding: 0.75rem;
   margin-bottom: 0.5rem;
-  background: #f5f5f5;
+  background: var(--color-surface-soft);
   border-radius: 4px;
+  color: var(--color-text);
 }
 
 kbd {
   padding: 0.25rem 0.5rem;
-  background: #333;
-  color: white;
+  background: var(--color-text);
+  color: var(--color-background);
   border-radius: 3px;
   font-family: monospace;
   font-size: 0.875rem;
+  font-weight: 600;
 }
 
 /* Screen reader only class */

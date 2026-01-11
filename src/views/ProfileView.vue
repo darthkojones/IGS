@@ -131,8 +131,8 @@ dd {
 .role-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--color-info-bg);
+  color: var(--color-info);
   border-radius: 1rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -147,21 +147,21 @@ dd {
 
 .stat-card {
   padding: 1.5rem;
-  background: #f5f5f5;
+  background: var(--color-surface-soft);
   border-radius: 8px;
   text-align: center;
 }
 
 .stat-card h3 {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--color-text-soft);
   margin-bottom: 0.75rem;
 }
 
 .stat-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #1976d2;
+  color: var(--color-primary);
   margin: 0;
 }
 
@@ -174,46 +174,47 @@ dd {
 .action-link {
   display: block;
   padding: 1rem;
-  background: #f5f5f5;
-  color: #333;
+  background: var(--color-surface-soft);
+  color: var(--color-text);
   text-decoration: none;
   border-radius: 4px;
   transition: background 0.2s;
 }
 
 .action-link:hover {
-  background: #e3f2fd;
+  background: var(--color-card-hover);
 }
 
 .btn {
   width: 100%;
   padding: 1rem;
   border-radius: 4px;
-  border: 2px solid #1976d2;
+  border: 2px solid var(--color-primary);
   background: transparent;
-  color: #1976d2;
+  color: var(--color-primary);
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
 }
 
 .btn--secondary:hover {
-  background: #e3f2fd;
+  background: var(--color-card-hover);
 }
 
 .no-user {
   text-align: center;
   padding: 3rem;
-  background: white;
+  background: var(--color-card-bg);
   border-radius: 8px;
+  color: var(--color-text);
 }
 
 .no-user .btn {
   margin-top: 1rem;
   display: inline-block;
   padding: 0.75rem 2rem;
-  background: #1976d2;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-primary-text);
   text-decoration: none;
   width: auto;
 }

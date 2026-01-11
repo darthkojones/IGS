@@ -79,6 +79,7 @@ export interface Booking {
   entryMethod?: EntryMethod;
   enteredAt?: Date;
   createdAt: Date;
+  accessToken?: string; // Secure token for QR code access
   room?: Room; // Optional room data
   user?: User; // Optional user data
 }

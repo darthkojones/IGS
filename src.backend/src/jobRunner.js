@@ -109,7 +109,9 @@ async function handleNewCheckIns() {
       }
     }
   }
+}
 
+async function handleShutdowns() {
 
 }
 

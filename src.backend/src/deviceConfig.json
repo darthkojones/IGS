@@ -3,28 +3,28 @@
         {
             "name": "lights_binary",
             "commands": [ 0, 1 ],
-            "statusOff": [ 0 ],
+            "statusOff": 0,
             "statusOn": [ 1 ],
             "onStart": 1
         },
         {
             "name": "lights_dimmable",
             "commands": [ 0, 20, 40, 60, 80, 100 ],
-            "statusOff": [ 0 ],
+            "statusOff": 0,
             "statusOn": [ 20, 40, 60, 80, 100 ],
             "onStart": 60
         },
         {
             "name": "aircon",
             "commands": [ 0, 20, 40, 60, 80, 100 ],
-            "statusOff": [ 0 ],
+            "statusOff": 0,
             "statusOn": [ 20, 40, 60, 80, 100 ],
             "onStart": 20
         },
         {
             "name": "blinds",
             "commands": [ 0, 20, 40, 60, 80, 100 ],
-            "statusOff": [ 0 ],
+            "statusOff": 0,
             "statusOn": [ 20, 40, 60, 80, 100 ],
             "onStart": 100
         }

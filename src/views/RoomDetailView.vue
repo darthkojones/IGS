@@ -421,7 +421,7 @@ watch(formattedDate, fetchBookings)
   flex-direction: row;
   align-items: center;
   gap: 0.5rem;
-  background: #f1f5f9;
+  background: var(--color-surface-soft);
   border: none;
   text-align: left;
   min-width: fit-content;
@@ -482,7 +482,7 @@ watch(formattedDate, fetchBookings)
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
+  background: var(--color-surface-soft);
   padding: 1rem;
 }
 
@@ -626,7 +626,7 @@ h2 {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: #f8fafc;
+  background: var(--color-surface-soft);
   padding: 0.4rem 0.8rem;
   border-radius: 8px;
 }
@@ -635,6 +635,7 @@ h2 {
   font-weight: 600;
   min-width: 100px;
   text-align: center;
+  color: var(--color-text);
 }
 
 .icon-btn {
@@ -646,7 +647,7 @@ h2 {
 }
 
 .icon-btn:hover {
-  background: #e2e8f0;
+  background: var(--color-card-hover);
 }
 
 .icon-btn.is-disabled {
@@ -666,8 +667,8 @@ h2 {
   gap: 1.5rem;
   padding: 1rem;
   border-radius: 8px;
-  background: #f8fafc;
-  border-left: 4px solid #cbd5e1;
+  background: var(--color-surface-soft);
+  border-left: 4px solid var(--color-border);
 }
 
 .timeline-item.is-own {
@@ -743,20 +744,29 @@ h2 {
 }
 
 .btn--primary {
-  background: #2563eb;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.btn--primary:hover {
+  background: var(--color-primary-hover);
 }
 
 .btn--danger-outline {
-  background: white;
-  color: #dc2626;
-  border: 1px solid #fca5a5;
+  background: var(--color-card-bg);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
 }
 
 .loading-state,
 .error-state {
   text-align: center;
   padding: 4rem 1rem;
+  color: var(--color-text);
+}
+
+.error-state {
+  color: var(--color-error);
 }
 
 @media (max-width: 1024px) {

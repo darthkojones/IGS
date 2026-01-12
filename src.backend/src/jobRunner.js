@@ -116,6 +116,8 @@ async function handleShutdowns() {
 }
 
 cron.schedule('*/5 * * * * *', async () => {
+
+  console.log(await supabaseService.getAllRooms());
   requestMqttUpdatesFromDevices();
   handleNewCheckIns();
 });

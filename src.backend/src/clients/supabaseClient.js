@@ -1,10 +1,10 @@
-require('dotenv').config({ path: '../../.env.local'});
+require('dotenv').config({ path: '../.env.backend'});
 
 const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_PUBLISHABLE_KEY
 );
 
 module.exports = supabase;

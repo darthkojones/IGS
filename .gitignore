@@ -39,4 +39,5 @@ test-results/
 playwright-report/
 .env.local
 .env
+.env.backend
 

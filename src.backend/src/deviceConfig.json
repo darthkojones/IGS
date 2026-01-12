@@ -5,28 +5,56 @@
             "commands": [ 0, 1 ],
             "statusOff": 0,
             "statusOn": [ 1 ],
-            "onStart": 1
+
+            "onStart": 100,
+            "onOff": 0,
+            "onStandby": null,
+
+            "offAfter": 20,
+            "offNextBookingThreshold": 5,
+            "standByAfter": 20
         },
         {
             "name": "lights_dimmable",
             "commands": [ 0, 20, 40, 60, 80, 100 ],
             "statusOff": 0,
             "statusOn": [ 20, 40, 60, 80, 100 ],
-            "onStart": 60
+
+            "onStart": 100,
+            "onOff": 0,
+            "onStandby:": null,
+
+            "offAfter": 20,
+            "offNextBookingThreshold": 5,
+            "standByAfter": 20
         },
         {
             "name": "aircon",
             "commands": [ 0, 20, 40, 60, 80, 100 ],
             "statusOff": 0,
             "statusOn": [ 20, 40, 60, 80, 100 ],
-            "onStart": 20
+
+            "onStart": 100,
+            "onOff": 0,
+            "onStandby:": null,
+
+            "offAfter": 20,
+            "offNextBookingThreshold": 20,
+            "standByAfter": 20
         },
         {
             "name": "blinds",
             "commands": [ 0, 20, 40, 60, 80, 100 ],
             "statusOff": 0,
             "statusOn": [ 20, 40, 60, 80, 100 ],
-            "onStart": 100
+
+            "onStart": 100,
+            "onOff": 0,
+            "onStandby:": null,
+
+            "offAfter": 20,
+            "offNextBookingThreshold": null,
+            "standByAfter": 20
         }
     ]
 }

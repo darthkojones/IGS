@@ -171,7 +171,7 @@ function isRoomOccupied(bookings, dateTimeNow) {
 function findNextBooking(bookings, dateTimeNow) {
   const now = dateTimeNow.getTime();
   return bookings
-    .filter(b => b.startTime.getTime() > now && (b.status === BookingStatus.CONFIRMED || b.status === BookingStatus.RESERVED))
+    .filter(b => b.startTime.getTime() > now && (b.status === BookingStatus.CONFIRMED))
     .sort((a, b) => (a.startTime.getTime() > b.startTime.getTime() ? 1 : a.startTime.getTime() < b.startTime.getTime() ? -1 : 0))
     .at(0) ?? null;
 }

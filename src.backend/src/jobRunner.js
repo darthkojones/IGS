@@ -37,12 +37,12 @@ mqttService.mqttClient.on('message', async (topic, message) => {
 Cron jobs
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-async function bumpRooms() {
+async function bumpRooms(lastCheckNMinutesAgo) {
   const utcDate = new Date();
-  const nowMinusTenMinutes = new Date(utcDate.getTime() - 10 * 60 * 1000);
+  const nowMinus = new Date(utcDate.getTime() - lastCheckNMinutesAgo * 60 * 1000);
 
   try {
-    const bookingsToExpire = await supabaseService.getExpiredBookings(nowMinusTenMinutes);
+    const bookingsToExpire = await supabaseService.getExpiredBookings(nowMinus);
     if (bookingsToExpire.length) {
       supabaseService.setBookingsToExpired(bookingsToExpire)
     }
@@ -60,8 +60,8 @@ function requestMqttUpdatesFromDevices() {
 
 
 
-async function handleNewCheckIns() {
-  const nowMinus = new Date(new Date().getTime() - 150 * 60 * 1000); // 150 mins
+async function handleNewCheckIns(lastCheckNMinutesAgo) {
+  const nowMinus = new Date(new Date().getTime() - lastCheckNMinutesAgo * 60 * 1000); // 150 mins
 
   const confirmed = await supabaseService.getConfirmedBookings(nowMinus);
   const newConfirmed = await Promise.all(
@@ -72,9 +72,7 @@ async function handleNewCheckIns() {
   );
   const filteredNewConfirmed = newConfirmed.filter(b => b != null);
 
-  if (!filteredNewConfirmed.length) console.log(`No bookings confirmed since ${nowMinus.toISOString()}`); // NUR DEBUGGING
-
-  for (let b of confirmed) { //CHANGE!
+  for (let b of filteredNewConfirmed) {
     const room = await supabaseService.getRoomById(b.roomId);
 
     for (let d of devices) {
@@ -112,12 +110,76 @@ async function handleNewCheckIns() {
 }
 
 async function handleShutdowns() {
+  const now = new Date();
+  const allRooms = await supabaseService.getAllRooms();
 
+  for (let r of allRooms) {
+    const roomBookings = await supabaseService.getTodaysBookingsForRoom(r);
+
+    if (supabaseService.isRoomOccupied(roomBookings, now)) {
+      continue;
+    }
+
+    const prevMeeting = supabaseService.findPreviousBooking(roomBookings, now);
+    const prevActivityInMinutes = ((now.getTime() - (prevMeeting?.endTime?.getTime() ?? new Date(now).setHours(0, 0, 0))) / 1000 / 60);
+
+    const nextMeeting = supabaseService.findNextBooking(roomBookings, now);
+    const nextActivityInMinutes = (((nextMeeting?.startTime?.getTime() ?? new Date(now).setHours(23, 59, 59)) - now.getTime()) / 1000 / 60);
+
+    for (let d of devices) {
+      const redisDeviceKey = redisService.createDeviceKey(r.buildingId, r.floor, r.roomId, d.name);
+      const status = await redisService.getDeviceStatus(redisDeviceKey);
+
+      const statusStatus = Number(status.status);
+      const statusWasSetManually = (status.modifier !== 'sys');
+      const statusModified = new Date(status.modified);
+      const statusWasOn = d.statusOn.includes(statusStatus);
+
+      const minutesSinceStatusChange = ((now.getTime() - (statusModified.getTime() ?? new Date(now).setHours(0, 0, 0))) / 1000 / 60);
+
+      const previousActivityForDevice = (statusWasSetManually && minutesSinceStatusChange < prevActivityInMinutes && statusWasOn) ? minutesSinceStatusChange : prevActivityInMinutes;
+
+
+
+
+      const prevStandby = minutesSinceStatusChange > d.standByAfter ?? Infinity;
+      const prevOff = minutesSinceStatusChange > d.offAfter ?? Infinity;
+      const nextOff = nextActivityInMinutes > d.offNextBookingThreshold ?? Infinity;
+
+
+      if (prevOff && nextOff) {
+        // turn off
+      } else if (prevStandby) {
+        // standby
+        // standby is always possible, no matter how close the next meeting
+      } else {
+        // Other
+      }
+
+
+    }
+  }
 }
 
-cron.schedule('*/5 * * * * *', async () => {
+handleShutdowns()
 
-  console.log(await supabaseService.getAllRooms());
+return;
+{
+// Runs every 20 seconds
+cron.schedule('0,20,40 * * * * *', async () => {
+  console.log('>> node-cron >> Requesting MQTT updates from devices ...')
   requestMqttUpdatesFromDevices();
-  handleNewCheckIns();
 });
+
+// Runs every minute of every hour
+cron.schedule('0-59 * * * *', async () => {
+  console.log('>> node-cron >> Checking for new check-ins ...')
+  handleNewCheckIns(1);
+});
+
+// Runs every minute of every hour
+cron.schedule('0-59 * * * *', async () => {
+  console.log('>> node-cron >> Checking for expired rooms ...')
+  bumpRooms(1)
+});
+}

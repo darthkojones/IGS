@@ -3,12 +3,18 @@ const cron = require('node-cron');
 const redisService = require('./services/redisService.js')
 const mqttService = require('./services/mqttService.js');
 const supabaseService = require('./services/supabaseService.js');
+const fs = require('fs');
 
 
 const deviceConfig = require('./deviceConfig.json');
 const devices = deviceConfig.devices;
 
 
+function log(logfileName, service, line) {
+  fs.appendFile(logfileName, `${new Date().toISOString()}\t${service} >> ${line}\n`, 'utf8', (err) => {
+    if (err) throw err;
+  });
+}
 
 
 mqttService.subscribeToTopics(['mci/+/+/+/+/reply_status']);
@@ -45,6 +51,9 @@ async function bumpRooms(lastCheckNMinutesAgo) {
     const bookingsToExpire = await supabaseService.getExpiredBookings(nowMinus);
     if (bookingsToExpire.length) {
       supabaseService.setBookingsToExpired(bookingsToExpire)
+      log('logfile.txt', 'bumpRooms', `${bookingsToExpire.length} Bookings bumped.`)
+    } else {
+      log('logfile.txt', 'bumpRooms', `No bookings bumped.`)
     }
   } catch(error) {
     console.error('Supabase error', error)
@@ -60,7 +69,7 @@ function requestMqttUpdatesFromDevices() {
 
 
 
-async function handleNewCheckIns(lastCheckNMinutesAgo) {
+async function handleCheckIns(lastCheckNMinutesAgo) {
   const nowMinus = new Date(new Date().getTime() - lastCheckNMinutesAgo * 60 * 1000); // 150 mins
 
   const confirmed = await supabaseService.getConfirmedBookings(nowMinus);
@@ -85,7 +94,7 @@ async function handleNewCheckIns(lastCheckNMinutesAgo) {
       const mqttDeviceKey = mqttService.createDeviceKey('mci', room.buildingId, room.floor, room.roomId, d.name);
 
       if (!deviceStatus) {
-        console.log(`${redisDeviceKey} has no status, starting device ...`);
+        log('logfile.txt', 'handleCheckIns', `${mqttDeviceKey} has no status, starting device ...`)
 
         mqttService.mqttClient.publish(
           `${mqttDeviceKey}/command`,
@@ -94,10 +103,10 @@ async function handleNewCheckIns(lastCheckNMinutesAgo) {
         )
 
       } else if (statusesQualifyingAsOn.includes(currentStatus))  {
-        console.log(`${redisDeviceKey} is already running ...`)
+        log('logfile.txt', 'handleCheckIns', `${mqttDeviceKey} is already running ...`)
 
       } else if (!statusesQualifyingAsOn.includes(currentStatus)) {
-        console.log(`${redisDeviceKey} is not running, starting device ...`)
+        log('logfile.txt', 'handleCheckIns', `${mqttDeviceKey} is not running, starting device ...`)
 
         mqttService.mqttClient.publish(
           `${mqttDeviceKey}/command`,
@@ -133,53 +142,66 @@ async function handleShutdowns() {
       const statusStatus = Number(status.status);
       const statusWasSetManually = (status.modifier !== 'sys');
       const statusModified = new Date(status.modified);
+
+
       const statusWasOn = d.statusOn.includes(statusStatus);
 
       const minutesSinceStatusChange = ((now.getTime() - (statusModified.getTime() ?? new Date(now).setHours(0, 0, 0))) / 1000 / 60);
 
-      const previousActivityForDevice = (statusWasSetManually && minutesSinceStatusChange < prevActivityInMinutes && statusWasOn) ? minutesSinceStatusChange : prevActivityInMinutes;
+      const previousActivityForDevice = (statusWasSetManually && minutesSinceStatusChange < prevActivityInMinutes) ? minutesSinceStatusChange : prevActivityInMinutes;
 
 
-
-
-      const prevStandby = minutesSinceStatusChange > d.standByAfter ?? Infinity;
+      const prevStandby = previousActivityForDevice > d.standByAfter ?? Infinity;
       const prevOff = minutesSinceStatusChange > d.offAfter ?? Infinity;
       const nextOff = nextActivityInMinutes > d.offNextBookingThreshold ?? Infinity;
 
+      const mqttDeviceKey = mqttService.createDeviceKey('mci', r.buildingId, r.floor, r.roomId, d.name);
 
-      if (prevOff && nextOff) {
-        // turn off
-      } else if (prevStandby) {
-        // standby
-        // standby is always possible, no matter how close the next meeting
+      if (prevOff && nextOff && statusWasOn) {
+          log('logfile.txt', 'handleShutdowns', `${mqttDeviceKey} can be turned off, sending command ...`)
+
+          mqttService.mqttClient.publish(
+          `${mqttDeviceKey}/command`,
+          JSON.stringify({ modifier: 'sys', modified: new Date(), status: d.onOff}),
+          { qos: 1 }
+        );
+      } else if (prevStandby && statusWasOn) {
+        log('logfile.txt', 'handleShutdowns', `${mqttDeviceKey} can be set on stand by mode, sending command ...`)
+
+        if (d.onStandby) {
+          mqttService.mqttClient.publish(
+          `${mqttDeviceKey}/command`,
+          JSON.stringify({ modifier: 'sys', modified: new Date(), status: d.onStandby}),
+          { qos: 1 }
+          );
+        }
       } else {
-        // Other
+        log('logfile.txt', 'handleShutdowns', `${mqttDeviceKey} to be kept running, no command to be sent.`)
       }
-
-
     }
   }
 }
 
-handleShutdowns()
-
-return;
-{
 // Runs every 20 seconds
 cron.schedule('0,20,40 * * * * *', async () => {
-  console.log('>> node-cron >> Requesting MQTT updates from devices ...')
+  log('logfile.txt', 'cron', 'Requesting device updates ...')
   requestMqttUpdatesFromDevices();
 });
 
 // Runs every minute of every hour
 cron.schedule('0-59 * * * *', async () => {
-  console.log('>> node-cron >> Checking for new check-ins ...')
-  handleNewCheckIns(1);
+  log('logfile.txt', 'cron', 'Running checking handler ...')
+  handleCheckIns(1);
 });
 
 // Runs every minute of every hour
 cron.schedule('0-59 * * * *', async () => {
-  console.log('>> node-cron >> Checking for expired rooms ...')
+  log('logfile.txt', 'cron', 'Bumping rooms ...')
   bumpRooms(1)
 });
-}
+
+// Runs every minute of every hour
+cron.schedule('0-59 * * * *', async () => {
+  log('logfile.txt', 'cron', 'Running shutdown handler ...')
+  handleShutdowns()
+});

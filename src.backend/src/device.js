@@ -107,7 +107,7 @@ class Device {
 }
 
 function main() {
-  mockRooms = rooms.rooms.filter(r => r.roomId == 12 || r.roomId == 26)
+  mockRooms = rooms.rooms //.filter(r => r.roomId == 12 || r.roomId == 26)
   mockDevices = devices.devices;
 
   const deviceList = [];

@@ -40,4 +40,5 @@ playwright-report/
 .env.local
 .env
 .env.backend
-
+logfile.txt
+src.backend/src/logfile.txt

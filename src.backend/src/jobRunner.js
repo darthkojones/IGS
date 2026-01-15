@@ -176,7 +176,7 @@ async function handleShutdowns() {
           );
         }
       } else {
-        log('logfile.txt', 'handleShutdowns', `${mqttDeviceKey} to be kept running, no command to be sent.`)
+        log('logfile.txt', 'handleShutdowns', `${mqttDeviceKey} is OK, no command to be sent.`)
       }
     }
   }
@@ -190,7 +190,7 @@ cron.schedule('0,20,40 * * * * *', async () => {
 
 // Runs every minute of every hour
 cron.schedule('0-59 * * * *', async () => {
-  log('logfile.txt', 'cron', 'Running checking handler ...')
+  log('logfile.txt', 'cron', 'Running check in handler ...')
   handleCheckIns(1);
 });
 

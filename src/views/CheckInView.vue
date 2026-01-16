@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useBookingsStore } from '@/stores/bookings';
 import { bookingService } from '@/services/bookingService';
@@ -38,7 +38,6 @@ import { formatLocalTime } from '@/utils/timezoneUtils';
 import type { Booking } from '@/types';
 
 const route = useRoute();
-const router = useRouter();
 const authStore = useAuthStore();
 const bookingsStore = useBookingsStore();
 
@@ -65,7 +64,7 @@ const validateToken = (token: string, bookingIdParam: string): { valid: boolean;
     const [userId, timestamp, random] = decoded.split(':');
     console.log('Parsed - UserID:', userId, 'Timestamp:', timestamp, 'Random:', random);
     console.log('Token valid!');
-    return { valid: true, userId };
+    return { valid: true, userId: userId || '' };
   } catch (e) {
     console.error('Token validation error:', e);
     return { valid: false, userId: '' };
@@ -74,8 +73,8 @@ const validateToken = (token: string, bookingIdParam: string): { valid: boolean;
 
 const performCheckIn = async () => {
   try {
-    const token = route.query.token as string;
-    const bookingIdParam = route.query.booking as string;
+    const token = route.query.token as string | undefined;
+    const bookingIdParam = route.query.booking as string | undefined;
 
     if (!token || !bookingIdParam) {
       error.value = 'Invalid check-in link. Missing required parameters.';
@@ -151,9 +150,10 @@ const performCheckIn = async () => {
     bookingTime.value = `${formatLocalTime(booking.startTime)} - ${formatLocalTime(booking.endTime)}`;
     loading.value = false;
 
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'An error occurred during check-in. Please try again.';
     console.error('Check-in error:', err);
-    error.value = err.message || 'An error occurred during check-in. Please try again.';
+    error.value = errorMessage;
     loading.value = false;
   }
 };

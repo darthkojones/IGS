@@ -32,19 +32,25 @@ export const useBookingsStore = defineStore('booking', {
   }),
 
   getters: {
+    // active bookings -- occupied or active
     activeBookings: (state) =>
       state.bookings.filter((booking: Booking) => booking.status === 'active'),
 
+    // upcomming bookings -- reserved
     upcomingBookings: (state) =>
       state.userBookings.filter((booking: Booking) =>
-        booking.status === 'reserved' && new Date(booking.startTime) > new Date()
+        // here we just needed to check reserved meetings, because we have a backend solution now
+        // that auto expires bookings. So no need for any logic here other than status check.
+        booking.status === 'reserved' //&& new Date(booking.startTime) > new Date()
       ),
 
+    // past bookings -- completed or ended
     pastBookings: (state) =>
       state.userBookings.filter((booking: Booking) =>
         booking.status === 'completed' || new Date(booking.endTime) < new Date()
       ),
-      cancelledBookings: (state) =>
+    // cancelled
+    cancelledBookings: (state) =>
       state.userBookings.filter((booking: Booking) =>
         booking.status === 'cancelled'
       ),

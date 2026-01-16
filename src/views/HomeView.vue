@@ -232,7 +232,8 @@ const handleCancelBooking = async () => {
     try {
       await bookingsStore.cancelBooking(activeBooking.value.bookingId);
       // Refresh bookings to update UI
-      await fetchTodaysBookings();
+      //await fetchBookings();
+      await bookingsStore.fetchUserBookings(authStore.currentUser!.userId);
     } catch (error) {
       console.error('Failed to cancel booking:', error);
       alert('Failed to cancel booking. Please try again.');

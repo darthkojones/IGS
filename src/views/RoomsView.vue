@@ -86,23 +86,27 @@
 
     <div v-if="loading" class="loading">Loading rooms...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else-if="locationError" class="location-warning">
-      Location access denied. Distance sorting unavailable.
-    </div>
 
-    <div v-else class="rooms-grid">
-      <RoomCard
-        v-for="room in roomsWithDistance"
-        :key="room.roomId"
-        :room="room"
-        :show-reachability="hasLocation && room.distance !== undefined"
-        :travel-time="room.distance?.durationMinutes"
-        :selected-datetime="filters.startDateTime"
-        :all-bookings="bookingsStore.bookings"
-        @book="handleBook"
-        @view-details="handleViewDetails"
-      />
-    </div>
+    <template v-else>
+      <!-- Show location warning as a banner, not blocking content -->
+      <div v-if="locationError" class="location-warning">
+        Location access denied. Distance sorting unavailable.
+      </div>
+
+      <div class="rooms-grid">
+        <RoomCard
+          v-for="room in roomsWithDistance"
+          :key="room.roomId"
+          :room="room"
+          :show-reachability="hasLocation && room.distance !== undefined"
+          :travel-time="room.distance?.durationMinutes"
+          :selected-datetime="filters.startDateTime"
+          :all-bookings="bookingsStore.bookings"
+          @book="handleBook"
+          @view-details="handleViewDetails"
+        />
+      </div>
+    </template>
   </div>
 </template>
 

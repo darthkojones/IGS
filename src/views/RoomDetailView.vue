@@ -20,6 +20,9 @@
             <h1>{{ room.name }}</h1>
             <p class="room-location">
               Floor {{ room.floor }} • {{ getBuildingName(room.buildingId) }}
+              <span v-if="roomDistance" class="room-distance">
+                • {{ roomDistance.durationMinutes }} min walk
+              </span>
             </p>
           </div>
           <div class="status-container">
@@ -155,9 +158,11 @@ import BookingForm from '@/components/BookingForm.vue'
 import { useRoomsStore } from '@/stores/rooms'
 import { useBookingsStore } from '@/stores/bookings'
 import { useAuthStore } from '@/stores/auth'
+import { useLocation } from '@/composables/useLocation'
 import { bookingService } from '@/services/bookingService'
 import { formatLocalTime, formatLocalDate } from '@/utils/timezoneUtils'
 import { type Booking, type User, type Room, BookingStatus } from '@/types'
+import type { DistanceResult } from '@/services/distanceService'
 
 import meetingSmall from '@/assets/icons/meeting_small.png'
 import meetingMiddle from '@/assets/icons/meeting_midlle.png'
@@ -167,6 +172,10 @@ const route = useRoute()
 const roomsStore = useRoomsStore()
 const bookingsStore = useBookingsStore()
 const authStore = useAuthStore()
+
+// Location composable for distance calculation
+const { hasLocation, calculateDistanceToRoom } = useLocation()
+const roomDistance = ref<DistanceResult | null>(null)
 
 const roomImage = computed(() => {
   if (!room.value) return meetingBig
@@ -341,6 +350,15 @@ onMounted(async () => {
 })
 
 watch(formattedDate, fetchBookings)
+
+// Watch for room and location changes to calculate distance
+watch([room, hasLocation], async ([currentRoom]) => {
+  if (currentRoom && hasLocation.value) {
+    roomDistance.value = await calculateDistanceToRoom(currentRoom)
+  } else {
+    roomDistance.value = null
+  }
+}, { immediate: true })
 </script>
 
 ##############################################################
@@ -406,6 +424,11 @@ watch(formattedDate, fetchBookings)
 .room-location {
   color: #64748b;
   margin: 0.25rem 0 0;
+}
+
+.room-distance {
+  color: #059669;
+  font-weight: 500;
 }
 
 .status-container {

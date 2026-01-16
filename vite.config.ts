@@ -31,6 +31,13 @@ export default defineConfig({
       protocol: 'wss',
       host: 'dev.tinsae.net',
       clientPort: 443
+    },
+    // Proxy API requests to Express backend
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      }
     }
   }
 })

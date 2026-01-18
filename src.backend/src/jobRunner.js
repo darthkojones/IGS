@@ -1,5 +1,9 @@
-const cron = require('node-cron');
+/**
+ * Author: wa7205@mci4me.at
+ * Modified: 18 Jan 2025
+ */
 
+const cron = require('node-cron');
 const redisService = require('./services/redisService.js')
 const mqttService = require('./services/mqttService.js');
 const supabaseService = require('./services/supabaseService.js');

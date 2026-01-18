@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine  # Leichtgewichtiges Redis-Image
+    container_name: iot_redis
+    restart: unless-stopped  # Startet automatisch nach Neustart
+    ports:
+      - "6379:6379"  # Standard-Port für Redis
+    volumes:
+      - redis_data:/data  # Persistente Speicherung der Daten
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    container_name: iot_mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"  # Standard-MQTT-Port
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-h", "localhost", "-t", "$SYS/broker/uptime", "-C", "1", "-W", "5"]
+      interval: 30s
+      timeout: 10s
+
+
+volumes:
+  redis_data:  # Speichert Daten dauerhaft auf deinem Host

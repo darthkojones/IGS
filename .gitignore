@@ -38,6 +38,8 @@ __screenshots__/
 test-results/
 playwright-report/
 .env.local
-DISTANCE_FEATURE_IMPLEMENTATION.md
-IMPLEMENTATION_GUIDE.md
-IMPLEMENTATION_SUMMARY.md
+.env
+.env.backend
+logfile.txt
+src.backend/src/logfile.txt
+*logfile.txt

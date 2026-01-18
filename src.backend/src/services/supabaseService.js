@@ -1,7 +1,12 @@
+/**
+ * Author: wa7205@mci4me.at
+ * Modified: 18 Jan 2025
+ */
+
 const supabase = require('../clients/supabaseClient')
 
 /**
- *
+ * Gets a list of all rooms
  * @returns {Room[]}
  */
 async function getAllRooms() {
@@ -24,6 +29,11 @@ async function getAllRooms() {
   ) ?? [];
 }
 
+/**
+ * Gets room by ID
+ * @param {string} roomId
+ * @returns {Room | null}
+ */
 async function getRoomById(roomId) {
   const { data, error } = await supabase
     .from('room')
@@ -46,74 +56,7 @@ async function getRoomById(roomId) {
 }
 
 /**
- *
- * @param {Room} room
- * @returns {Booking[]}
- */
-async function getAllBookingsForRoom(room) {
-  const roomId = room.roomId;
-
-  const { data, error } = await supabase
-    .from('booking')
-    .select('id, room_id, status, start_time, end_time, entered_at')
-    .eq('room_id', roomId);
-
-  if (error) {
-    console.error('Supabase error fetching bookings', error);
-    throw error;
-  }
-
-  return data
-    .map(b =>
-      Object.assign(new Booking(), {
-        bookingId: b.id ?? null,
-        roomId: b.room_id ?? null,
-        status: b.status ?? null,
-        startTime: new Date(b.start_time ?? null),
-        endTime: new Date(b.end_time ?? null),
-        enteredAt: new Date(b.entered_at ?? null)
-      })
-    ) ?? [];
-}
-
-/**
- *
- * @param {Room} room
- * @returns {Booking[]}
- */
-async function getTodaysBookings() {
-  const startOfToday = new Date();
-  startOfToday.setUTCHours(0, 0, 0, 0);
-
-  const endOfToday = new Date(startOfToday.getTime());
-  endOfToday.setUTCHours(23, 59, 59, 59);
-
-  const { data, error } = await supabase
-    .from('booking')
-    .select('id, room_id, status, start_time, end_time, entered_at')
-    .gte('start_time', startOfToday.toISOString())  // Every booking that starts afer today 00:00
-    .lte('start_time', endOfToday.toISOString());   // Every booking that starts before today 00:00
-
-  if (error) {
-    console.error('Supabase error fetching bookings', error);
-    throw error;
-  }
-
-  return data
-    .map(b =>
-      Object.assign(new Booking(), {
-        bookingId: b.id ?? null,
-        roomId: b.room_id ?? null,
-        status: b.status ?? null,
-        startTime: new Date(b.start_time ?? null),
-        endTime: new Date(b.end_time ?? null),
-        enteredAt: new Date(b.entered_at ?? null)
-      })
-    ) ?? [];
-}
-
-/**
- *
+ * Gets todays bookings for the room
  * @param {Room} room
  * @returns {Booking[]}
  */
@@ -130,7 +73,7 @@ async function getTodaysBookingsForRoom(room) {
     .from('booking')
     .select('id, room_id, status, start_time, end_time, entered_at')
     .eq('room_id', roomId)
-    .gte('start_time', startOfToday.toISOString())  // Every booking that starts afer today 00:00
+    .gte('start_time', startOfToday.toISOString())  // Every booking that starts after today 00:00
     .lte('start_time', endOfToday.toISOString());   // Every booking that starts before today 00:00
 
   if (error) {
@@ -152,44 +95,10 @@ async function getTodaysBookingsForRoom(room) {
 }
 
 /**
-
- * @param {Booking[]} bookings
- * @param {Date} dateTimeNow
- * @returns {Boolean}
+ * Gets bookings confirmed after checkedInAfterDateTime
+ * @param {Date} checkedInAfterDateTime
+ * @returns {Booking[]}
  */
-function isRoomOccupied(bookings, dateTimeNow) {
-  const now = dateTimeNow.getTime();
-  return bookings.filter(b => b.startTime.getTime() < now && b.endTime.getTime() > now).length > 0;
-}
-
-/**
- *
- * @param {Booking[]} bookings
- * @param {Date} dateTimeNow
- * @returns {Booking | null}
- */
-function findNextBooking(bookings, dateTimeNow) {
-  const now = dateTimeNow.getTime();
-  return bookings
-    .filter(b => b.startTime.getTime() > now && (b.status === BookingStatus.CONFIRMED))
-    .sort((a, b) => (a.startTime.getTime() > b.startTime.getTime() ? 1 : a.startTime.getTime() < b.startTime.getTime() ? -1 : 0))
-    .at(0) ?? null;
-}
-
-/**
- *
- * @param {Booking[]} bookings
- * @param {Date} dateTimeNow
- * @returns {Booking | null}
- */
-function findPreviousBooking(bookings, dateTimeNow) {
-  const now = dateTimeNow.getTime();
-  return bookings
-    .filter(b => b.endTime.getTime() < now && b.status === BookingStatus.COMPLETED)
-    .sort((a, b) => (a.endTime.getTime() > b.endTime.getTime() ? -1 : a.endTime.getTime() < b.endTime.getTime() ? 1 : 0))
-    .at(0) ?? null;
-}
-
 async function getConfirmedBookings(checkedInAfterDateTime) {
   const { data, error } = await supabase
     .from('booking')
@@ -215,6 +124,11 @@ async function getConfirmedBookings(checkedInAfterDateTime) {
     ) ?? [];
 }
 
+/**
+ * Gets bookings completed after completedAfterDateTime
+ * @param {Date} completedAfterDateTime
+ * @returns {Booking[]}
+ */
 async function getCompletedBookings(completedAfterDateTime) {
     const { data, error } = await supabase
     .from('booking')
@@ -241,7 +155,7 @@ async function getCompletedBookings(completedAfterDateTime) {
 }
 
 /**
- *
+ * Gets bookings expired after expiryDateTime
  * @param {Date} expiryDateTime
  * @returns {Booking[]}
  */
@@ -271,7 +185,7 @@ async function getExpiredBookings(expiryDateTime) {
 }
 
 /**
- *
+ * Sets bookings to status expired
  * @param {Booking[]} bookings
  * @returns {void}
  */
@@ -289,6 +203,9 @@ async function setBookingsToExpired(bookings) {
   }
 }
 
+/**
+ * Needs to mirror statuses used in frontend
+ */
 const BookingStatus = {
   RESERVED: 'reserved',   // Initial state when booking is created
   CONFIRMED: 'confirmed', // User confirmed they will attend
@@ -298,36 +215,39 @@ const BookingStatus = {
   COMPLETED: 'completed'  // Meeting ended (only if was active)
 }
 
+/**
+ * Class Booking is only dataclass and has no methods
+ * All members are public
+ */
 class Booking {
-  bookingId;  // str
-  roomId;     // str
-  status;     // str
+  bookingId;  // string
+  roomId;     // string
+  status;     // string BookingStatus
   startTime;  // Date
   endTime;    // Date
   enteredAt;  // Date
 }
 
+/**
+ * Class Room is only dataclass and has no methods
+ * All members are public
+ */
 class Room {
-  roomId;     // str
-  name;       // str
-  floor;      // num
-  buildingId; // str
+  roomId;     // string
+  name;       // string
+  floor;      // number
+  buildingId; // string
 }
 
 module.exports = {
   supabase,
+  Booking,
+  Room,
   getAllRooms,
-  getAllBookingsForRoom,
-  isRoomOccupied,
-  findNextBooking,
-  findPreviousBooking,
   getExpiredBookings,
   setBookingsToExpired,
   getTodaysBookingsForRoom,
-  getTodaysBookings,
   getConfirmedBookings,
   getCompletedBookings,
-  getRoomById,
-  Booking,
-  Room
+  getRoomById
 };

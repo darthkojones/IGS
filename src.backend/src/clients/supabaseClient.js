@@ -1,3 +1,8 @@
+/**
+ * Author: wa7205@mci4me.at
+ * Modified: 18 Jan 2025
+ */
+
 require('dotenv').config({ path: '../.env.backend'});
 
 const { createClient } = require('@supabase/supabase-js');

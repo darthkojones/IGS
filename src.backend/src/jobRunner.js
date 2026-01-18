@@ -125,14 +125,14 @@ async function handleShutdowns() {
   for (let r of allRooms) {
     const roomBookings = await supabaseService.getTodaysBookingsForRoom(r);
 
-    if (supabaseService.isRoomOccupied(roomBookings, now)) {
+    if (isRoomOccupied(roomBookings, now)) {
       continue;
     }
 
-    const prevMeeting = supabaseService.findPreviousBooking(roomBookings, now);
+    const prevMeeting = findPreviousBooking(roomBookings, now);
     const prevActivityInMinutes = ((now.getTime() - (prevMeeting?.endTime?.getTime() ?? new Date(now).setHours(0, 0, 0))) / 1000 / 60);
 
-    const nextMeeting = supabaseService.findNextBooking(roomBookings, now);
+    const nextMeeting = findNextBooking(roomBookings, now);
     const nextActivityInMinutes = (((nextMeeting?.startTime?.getTime() ?? new Date(now).setHours(23, 59, 59)) - now.getTime()) / 1000 / 60);
 
     for (let d of devices) {
@@ -205,3 +205,43 @@ cron.schedule('0-59 * * * *', async () => {
   log('logfile.txt', 'cron', 'Running shutdown handler ...')
   handleShutdowns()
 });
+
+
+/**
+
+ * @param {Booking[]} bookings
+ * @param {Date} dateTimeNow
+ * @returns {Boolean}
+ */
+function isRoomOccupied(bookings, dateTimeNow) {
+  const now = dateTimeNow.getTime();
+  return bookings.filter(b => b.startTime.getTime() < now && b.endTime.getTime() > now).length > 0;
+}
+
+/**
+ *
+ * @param {Booking[]} bookings
+ * @param {Date} dateTimeNow
+ * @returns {Booking | null}
+ */
+function findNextBooking(bookings, dateTimeNow) {
+  const now = dateTimeNow.getTime();
+  return bookings
+    .filter(b => b.startTime.getTime() > now && (b.status === BookingStatus.CONFIRMED))
+    .sort((a, b) => (a.startTime.getTime() > b.startTime.getTime() ? 1 : a.startTime.getTime() < b.startTime.getTime() ? -1 : 0))
+    .at(0) ?? null;
+}
+
+/**
+ *
+ * @param {Booking[]} bookings
+ * @param {Date} dateTimeNow
+ * @returns {Booking | null}
+ */
+function findPreviousBooking(bookings, dateTimeNow) {
+  const now = dateTimeNow.getTime();
+  return bookings
+    .filter(b => b.endTime.getTime() < now && b.status === BookingStatus.COMPLETED)
+    .sort((a, b) => (a.endTime.getTime() > b.endTime.getTime() ? -1 : a.endTime.getTime() < b.endTime.getTime() ? 1 : 0))
+    .at(0) ?? null;
+}

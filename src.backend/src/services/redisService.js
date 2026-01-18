@@ -1,9 +1,31 @@
+/**
+ * Author: wa7205@mci4me.at
+ * Modified: 18 Jan 2025
+ */
+
 const redisClient = require('../clients/redisClient');
 
+/**
+ * Factory function that returns normalized device key for redis
+ * @param {string | number} buildingId
+ * @param {string | number} floor
+ * @param {string | number} roomId
+ * @param {string | number} deviceName
+ * @returns {string
+ */
 function createDeviceKey(buildingId, floor, roomId, deviceName) {
   return String(`device:${buildingId}:${floor}:${roomId}:${deviceName}`);
 }
 
+/**
+ *
+ * @param {string} deviceKey Use createDeviceKey() to generate the key
+ * @param {number} status
+ * @param {string} modifier
+ * @param {Date} modified
+ * @param {string} room
+ * @param {*} device
+ */
 async function setDeviceStatus(deviceKey, status, modifier, modified, room, device) {
   await redisClient.hSet(
     deviceKey,

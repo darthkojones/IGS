@@ -1,3 +1,8 @@
+/**
+ * Author: wa7205@mci4me.at
+ * Modified: 18 Jan 2025
+ */
+
 const mqtt = require('mqtt');
 
 const mqttClient = mqtt.connect('mqtt://localhost:1883', {

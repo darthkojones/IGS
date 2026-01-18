@@ -93,6 +93,7 @@
 
 <script setup lang="ts">
 import { useStatisticsStore } from '@/stores/statistics';
+import { useThemeStore } from '@/stores/theme';
 import { chartColors } from '@/assets/chartColors';
 import { onMounted, onUnmounted, computed, ref } from 'vue';
 import { Bar as BarChart, Line as LineChart } from 'vue-chartjs';
@@ -123,6 +124,11 @@ ChartJS.register(
 );
 
 const statisticsStore = useStatisticsStore();
+const themeStore = useThemeStore();
+
+// Get theme-aware text color
+const textColor = computed(() => themeStore.isDarkMode ? '#e2e8f0' : '#333');
+const gridColor = computed(() => themeStore.isDarkMode ? '#374151' : '#e5e7eb');
 
 /**
  * Track window width for responsive labels
@@ -260,13 +266,16 @@ const bookingsPerDayChartData = computed(() => {
 /**
  * Peak Hours Chart Options
  */
-const peakHoursOptions = {
+const peakHoursOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
       display: true,
       position: 'top' as const,
+      labels: {
+        color: textColor.value
+      }
       onClick: () => {} // Disable toggling dataset visibility on legend click
     },
     title: {
@@ -277,27 +286,38 @@ const peakHoursOptions = {
     y: {
       beginAtZero: true,
       ticks: {
-        font: { size: 12 }
+        font: { size: 12 },
+        color: textColor.value
+      },
+      grid: {
+        color: gridColor.value
       }
     },
     x: {
       ticks: {
-        font: { size: 11 }
+        font: { size: 11 },
+        color: textColor.value
+      },
+      grid: {
+        color: gridColor.value
       }
     }
   }
-};
+}));
 
 /**
  * Popular Rooms Chart Options
  */
-const popularRoomsOptions = {
+const popularRoomsOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
       display: true,
       position: 'top' as const,
+      labels: {
+        color: textColor.value
+      }
       onClick: () => {} // Disable toggling dataset visibility on legend click
     },
     title: {
@@ -320,27 +340,38 @@ const popularRoomsOptions = {
     y: {
       beginAtZero: true,
       ticks: {
-        font: { size: 12 }
+        font: { size: 12 },
+        color: textColor.value
+      },
+      grid: {
+        color: gridColor.value
       }
     },
     x: {
       ticks: {
-        font: { size: 11 }
+        font: { size: 11 },
+        color: textColor.value
+      },
+      grid: {
+        color: gridColor.value
       }
     }
   }
-};
+}));
 
 /**
  * Bookings Per Day Chart Options
  */
-const bookingsPerDayOptions = {
+const bookingsPerDayOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
       display: true,
       position: 'top' as const,
+      labels: {
+        color: textColor.value
+      }
       onClick: () => {} // Disable toggling dataset visibility on legend click
     },
     title: {
@@ -351,16 +382,24 @@ const bookingsPerDayOptions = {
     y: {
       beginAtZero: true,
       ticks: {
-        font: { size: 12 }
+        font: { size: 12 },
+        color: textColor.value
+      },
+      grid: {
+        color: gridColor.value
       }
     },
     x: {
       ticks: {
-        font: { size: 11 }
+        font: { size: 11 },
+        color: textColor.value
+      },
+      grid: {
+        color: gridColor.value
       }
     }
   }
-};
+}));
 
 /**
  * Bookings Per Day of Week Chart Data (computed)
@@ -395,13 +434,16 @@ const bookingsPerDayOfWeekChartData = computed(() => {
 /**
  * Bookings Per Day of Week Chart Options
  */
-const bookingsPerDayOfWeekOptions = {
+const bookingsPerDayOfWeekOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
       display: true,
       position: 'top' as const,
+      labels: {
+        color: textColor.value
+      }
       onClick: () => {} // Disable toggling dataset visibility on legend click
     },
     title: {
@@ -412,16 +454,24 @@ const bookingsPerDayOfWeekOptions = {
     y: {
       beginAtZero: true,
       ticks: {
-        font: { size: 12 }
+        font: { size: 12 },
+        color: textColor.value
+      },
+      grid: {
+        color: gridColor.value
       }
     },
     x: {
       ticks: {
-        font: { size: 11 }
+        font: { size: 11 },
+        color: textColor.value
+      },
+      grid: {
+        color: gridColor.value
       }
     }
   }
-};
+}));
 </script>
 
 <style scoped>
@@ -438,11 +488,11 @@ const bookingsPerDayOfWeekOptions = {
 .header h1 {
   font-size: 2rem;
   margin: 0 0 0.5rem 0;
-  color: #333;
+  color: var(--color-heading);
 }
 
 .subtitle {
-  color: #666;
+  color: var(--color-text-soft);
   font-size: 1rem;
   margin: 0;
 }
@@ -504,21 +554,21 @@ const bookingsPerDayOfWeekOptions = {
 
 /* Section Styles */
 .section {
-  background: white;
+  background: var(--color-card-bg);
   padding: 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-card);
 }
 
 .section h2 {
   margin: 0 0 1.5rem 0;
-  color: #333;
+  color: var(--color-heading);
   font-size: 1.5rem;
 }
 
 .no-data {
   text-align: center;
-  color: #999;
+  color: var(--color-text-soft);
   padding: 2rem;
   font-style: italic;
 }

@@ -22,19 +22,20 @@ defineProps<{
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: white;
-  border: 2px solid #e0e0e0;
+  background: var(--color-card-bg);
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   text-decoration: none;
-  color: #333;
+  color: var(--color-text);
   transition: all 0.3s ease;
   min-height: 180px;
 }
 
 .quick-link:hover {
-  border-color: #1976d2;
+  border-color: var(--color-primary);
   transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
+  box-shadow: var(--shadow-lg);
+  background: var(--color-card-hover);
 }
 
 .quick-link-icon {
@@ -46,11 +47,12 @@ defineProps<{
   font-size: 1.125rem;
   font-weight: 600;
   text-align: center;
+  color: var(--color-heading);
 }
 
 .quick-link-description {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--color-text-soft);
   text-align: center;
   margin-top: 0.75rem;
   line-height: 1.4;

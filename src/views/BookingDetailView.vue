@@ -303,6 +303,8 @@ onUnmounted(() => {
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
+  background: var(--color-background);
+  min-height: 100vh;
 }
 
 .booking-header {
@@ -311,12 +313,13 @@ onUnmounted(() => {
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 2rem;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .booking-header h1 {
   font-size: 2rem;
   margin: 0;
+  color: var(--color-heading);
 }
 
 .booking-status {
@@ -349,15 +352,16 @@ onUnmounted(() => {
 }
 
 section {
-  background: white;
+  background: var(--color-card-bg);
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 section h2 {
   font-size: 1.25rem;
   margin-bottom: 1rem;
+  color: var(--color-heading);
 }
 
 dl {
@@ -368,12 +372,12 @@ dl {
 
 dt {
   font-weight: 600;
-  color: #666;
+  color: var(--color-text-soft);
 }
 
 dd {
   margin: 0;
-  color: #333;
+  color: var(--color-text);
 }
 
 .timer {
@@ -387,7 +391,7 @@ dd {
 .timer-value {
   font-size: 3rem;
   font-weight: 700;
-  color: #1976d2;
+  color: var(--color-primary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -400,79 +404,106 @@ dd {
 
 .entry-confirmed {
   text-align: center;
-  background: #e8f5e9;
-}
-
-.window-closed {
-  background: #fff3e0;
-  border-left: 4px solid #ff9800;
+  background: var(--color-success-bg);
+  border-left: 4px solid var(--color-success);
   padding: 1.5rem;
   border-radius: 4px;
 }
 
+.entry-confirmed h2,
+.entry-confirmed p {
+  color: var(--color-text);
+}
+
+.window-closed {
+  background: var(--color-warning-bg);
+  border-left: 4px solid var(--color-warning);
+  padding: 1.5rem;
+  border-radius: 4px;
+}
+
+.window-closed h2,
+.window-closed p {
+  color: var(--color-text);
+}
+
 .window-closed h2 {
-  color: #e65100;
+  color: var(--color-warning);
   margin-top: 0;
 }
 
 .window-closed p {
-  color: #bf360c;
   margin: 0.5rem 0;
 }
 
 .time-info {
   font-weight: 600;
-  color: #ff6f00;
+  color: var(--color-warning);
 }
 
 .location-check {
-  background: #f3e5f5;
-  border-left: 4px solid #9c27b0;
+  background: var(--color-card-bg);
+  border-left: 4px solid var(--color-primary);
   padding: 1.5rem;
   border-radius: 4px;
 }
 
 .location-check h2 {
-  color: #6a1b9a;
+  color: var(--color-heading);
   margin-top: 0;
 }
 
 .location-check p {
-  color: #4a148c;
+  color: var(--color-text);
   margin: 0.5rem 0;
 }
 
 .entry-ready {
-  background: #e3f2fd;
-  border-left: 4px solid #2196f3;
+  background: var(--color-info-bg);
+  border-left: 4px solid var(--color-info);
   padding: 1.5rem;
   border-radius: 4px;
 }
 
+.entry-ready h2,
+.entry-ready p {
+  color: var(--color-text);
+}
+
 .qr-code-section {
   text-align: center;
-  background: #f5f5f5;
+  background: var(--color-surface-soft);
+  transition: background-color 0.3s ease;
+}
+
+.qr-code-section h2,
+.qr-code-section p {
+  color: var(--color-text);
 }
 
 .qr-code-container {
   display: flex;
   justify-content: center;
   padding: 2rem;
-  background: white;
+  background: #ffffff;
   border-radius: 8px;
   margin: 1.5rem auto;
   width: fit-content;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .qr-instructions {
   text-align: left;
-  background: #e3f2fd;
+  background: var(--color-info-bg);
   padding: 1rem;
   border-radius: 4px;
   margin-top: 1rem;
-  color: #0d47a1;
+  color: var(--color-info);
   line-height: 1.6;
+}
+
+.qr-instructions strong {
+  color: var(--color-info);
 }
 
 .booking-actions {
@@ -491,18 +522,26 @@ dd {
 }
 
 .btn--primary {
-  background: #1976d2;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.btn--primary:hover {
+  background: var(--color-primary-hover);
 }
 
 .btn--secondary {
   background: transparent;
-  color: #1976d2;
-  border: 1px solid #1976d2;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.btn--secondary:hover {
+  background: var(--color-primary-light);
 }
 
 .btn--danger {
-  background: #d32f2f;
+  background: var(--color-error);
   color: white;
 }
 </style>

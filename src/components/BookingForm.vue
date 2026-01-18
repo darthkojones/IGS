@@ -20,7 +20,7 @@
         type="text"
         class="form-control"
         :class="{ 'input--error': !form.title && form.touched }"
-        placeholder="Meeting Titel"
+        placeholder="Meeting Title"
         required
         aria-required="true"
         @blur="form.touched = true"
@@ -215,7 +215,7 @@ watch(
 .booking-form h2 {
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
-  color: #0f172a;
+  color: var(--color-heading);
 }
 
 .form-group {
@@ -240,7 +240,7 @@ watch(
 .form-label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--color-text);
 }
 
 .required-mark {
@@ -250,12 +250,12 @@ watch(
 .form-control {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 0.95rem;
-  color: #1e293b;
+  color: var(--color-text);
   transition: all 0.2s ease;
-  background-color: #ffffff;
+  background-color: var(--color-card-bg);
 }
 
 .form-control:focus {
@@ -273,11 +273,11 @@ watch(
   display: flex;
   gap: 0.75rem;
   padding: 0.75rem;
-  background: #f0f9ff;
-  border: 1px solid #e0f2fe;
+  background: var(--color-info-bg);
+  border: 1px solid var(--color-info-border);
   border-radius: 6px;
   font-size: 0.85rem;
-  color: #0369a1;
+  color: var(--color-info);
   line-height: 1.4;
 }
 
@@ -287,8 +287,8 @@ watch(
 
 .selected-room {
   padding: 0.75rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   display: flex;
   justify-content: space-between;
@@ -303,7 +303,7 @@ watch(
 }
 
 .capacity {
-  color: #64748b;
+  color: var(--color-text-soft);
   font-size: 0.8rem;
 }
 
@@ -340,11 +340,11 @@ watch(
 }
 
 .btn--primary {
-  background: #2563eb;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-primary-text);
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: var(--color-primary-hover);
 }
 </style>

@@ -342,6 +342,9 @@ onMounted(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;
+  background: var(--color-background);
+  color: var(--color-text);
+  min-height: 100vh;
 }
 
 .page-header {
@@ -351,6 +354,7 @@ onMounted(() => {
 .page-header h1 {
   font-size: 2rem;
   margin-bottom: 1rem;
+  color: var(--color-heading);
 }
 
 .header-actions {
@@ -363,9 +367,11 @@ onMounted(() => {
 .search-input,
 .filter-select {
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-input-border);
   border-radius: 4px;
   font-size: 1rem;
+  background: var(--color-input-bg);
+  color: var(--color-input-text);
 }
 
 .search-input {
@@ -397,7 +403,7 @@ onMounted(() => {
   flex-wrap: wrap;
   align-items: center;
   padding: 1rem;
-  background: #f5f5f5;
+  background: var(--color-surface-soft);
   border-radius: 4px;
   margin-top: 1rem;
 }
@@ -409,15 +415,16 @@ onMounted(() => {
   cursor: pointer;
   font-size: 0.95rem;
   padding: 0.5rem 0.75rem;
-  background: white;
+  background: var(--color-card-bg);
   border-radius: 4px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   transition: all 0.2s;
+  color: var(--color-text);
 }
 
 .equipment-filters label:hover {
-  border-color: #1976d2;
-  background: #e3f2fd;
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 .equipment-filters input[type="checkbox"] {
@@ -444,9 +451,11 @@ onMounted(() => {
 
 .filter-input {
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 1rem;
+  background: var(--color-input-bg);
+  color: var(--color-input-text);
 }
 
 /* Toggle label styling */
@@ -456,15 +465,16 @@ onMounted(() => {
   gap: 0.5rem;
   cursor: pointer;
   padding: 0.75rem 1rem;
-  background: #e3f2fd;
+  background: var(--color-primary-light);
   border-radius: 4px;
   font-weight: 500;
-  border: 1px solid #90caf9;
+  border: 1px solid var(--color-primary);
   transition: all 0.2s;
+  color: var(--color-text);
 }
 
 .toggle-label:hover {
-  background: #bbdefb;
+  background: var(--color-card-hover);
 }
 
 .toggle-label input[type="checkbox"] {
@@ -522,8 +532,8 @@ onMounted(() => {
 .location-warning {
   text-align: center;
   padding: 1rem;
-  background: #fff3cd;
-  color: #856404;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
   border-radius: 4px;
   margin-bottom: 1rem;
   font-size: 0.95rem;

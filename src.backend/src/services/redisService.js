@@ -24,7 +24,7 @@ function createDeviceKey(buildingId, floor, roomId, deviceName) {
  * @param {string} modifier
  * @param {Date} modified
  * @param {string} room
- * @param {*} device
+ * @param {string} device
  */
 async function setDeviceStatus(deviceKey, status, modifier, modified, room, device) {
   await redisClient.hSet(

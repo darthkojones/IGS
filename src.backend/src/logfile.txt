@@ -6851,3 +6851,247 @@
 2026-01-18T13:36:02.295Z	handleShutdowns >> mci/5/0/12/blinds is OK, no command to be sent.
 2026-01-18T13:36:20.005Z	cron >> Requesting device updates ...
 2026-01-18T13:36:40.006Z	cron >> Requesting device updates ...
+2026-01-18T14:21:40.009Z	cron >> Requesting device updates ...
+2026-01-18T14:22:00.019Z	cron >> Requesting device updates ...
+2026-01-18T14:22:00.041Z	cron >> Bumping rooms ...
+2026-01-18T14:22:00.020Z	cron >> Running check in handler ...
+2026-01-18T14:22:00.043Z	cron >> Running shutdown handler ...
+2026-01-18T14:22:00.256Z	bumpRooms >> No bookings bumped.
+2026-01-18T14:22:00.350Z	handleShutdowns >> mci/1/0/1/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.352Z	handleShutdowns >> mci/1/0/1/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.353Z	handleShutdowns >> mci/1/0/1/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.354Z	handleShutdowns >> mci/1/0/1/blinds is OK, no command to be sent.
+2026-01-18T14:22:00.411Z	handleShutdowns >> mci/2/0/2/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.412Z	handleShutdowns >> mci/2/0/2/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.413Z	handleShutdowns >> mci/2/0/2/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.414Z	handleShutdowns >> mci/2/0/2/blinds is OK, no command to be sent.
+2026-01-18T14:22:00.463Z	handleShutdowns >> mci/3/1/3/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.464Z	handleShutdowns >> mci/3/1/3/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.465Z	handleShutdowns >> mci/3/1/3/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.465Z	handleShutdowns >> mci/3/1/3/blinds is OK, no command to be sent.
+2026-01-18T14:22:00.510Z	handleShutdowns >> mci/4/1/4/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.511Z	handleShutdowns >> mci/4/1/4/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.511Z	handleShutdowns >> mci/4/1/4/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.512Z	handleShutdowns >> mci/4/1/4/blinds is OK, no command to be sent.
+2026-01-18T14:22:00.566Z	handleShutdowns >> mci/5/2/5/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.567Z	handleShutdowns >> mci/5/2/5/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.568Z	handleShutdowns >> mci/5/2/5/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.569Z	handleShutdowns >> mci/5/2/5/blinds is OK, no command to be sent.
+2026-01-18T14:22:00.624Z	handleShutdowns >> mci/6/2/6/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.624Z	handleShutdowns >> mci/6/2/6/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.625Z	handleShutdowns >> mci/6/2/6/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.626Z	handleShutdowns >> mci/6/2/6/blinds is OK, no command to be sent.
+2026-01-18T14:22:00.677Z	handleShutdowns >> mci/7/2/7/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.678Z	handleShutdowns >> mci/7/2/7/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.679Z	handleShutdowns >> mci/7/2/7/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.680Z	handleShutdowns >> mci/7/2/7/blinds is OK, no command to be sent.
+2026-01-18T14:22:00.734Z	handleShutdowns >> mci/1/2/8/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.734Z	handleShutdowns >> mci/1/2/8/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.735Z	handleShutdowns >> mci/1/2/8/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.736Z	handleShutdowns >> mci/1/2/8/blinds is OK, no command to be sent.
+2026-01-18T14:22:00.786Z	handleShutdowns >> mci/2/3/9/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.787Z	handleShutdowns >> mci/2/3/9/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.788Z	handleShutdowns >> mci/2/3/9/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.789Z	handleShutdowns >> mci/2/3/9/blinds is OK, no command to be sent.
+2026-01-18T14:22:00.836Z	handleShutdowns >> mci/3/3/10/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.837Z	handleShutdowns >> mci/3/3/10/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.838Z	handleShutdowns >> mci/3/3/10/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.839Z	handleShutdowns >> mci/3/3/10/blinds is OK, no command to be sent.
+2026-01-18T14:22:00.887Z	handleShutdowns >> mci/4/4/11/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.888Z	handleShutdowns >> mci/4/4/11/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.889Z	handleShutdowns >> mci/4/4/11/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.889Z	handleShutdowns >> mci/4/4/11/blinds is OK, no command to be sent.
+2026-01-18T14:22:00.939Z	handleShutdowns >> mci/6/1/13/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.941Z	handleShutdowns >> mci/6/1/13/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.942Z	handleShutdowns >> mci/6/1/13/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.943Z	handleShutdowns >> mci/6/1/13/blinds is OK, no command to be sent.
+2026-01-18T14:22:00.989Z	handleShutdowns >> mci/7/3/14/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:00.989Z	handleShutdowns >> mci/7/3/14/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:00.990Z	handleShutdowns >> mci/7/3/14/aircon is OK, no command to be sent.
+2026-01-18T14:22:00.991Z	handleShutdowns >> mci/7/3/14/blinds is OK, no command to be sent.
+2026-01-18T14:22:01.319Z	handleShutdowns >> mci/1/4/15/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:01.320Z	handleShutdowns >> mci/1/4/15/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:01.322Z	handleShutdowns >> mci/1/4/15/aircon is OK, no command to be sent.
+2026-01-18T14:22:01.323Z	handleShutdowns >> mci/1/4/15/blinds is OK, no command to be sent.
+2026-01-18T14:22:01.380Z	handleShutdowns >> mci/2/0/16/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:01.381Z	handleShutdowns >> mci/2/0/16/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:01.383Z	handleShutdowns >> mci/2/0/16/aircon is OK, no command to be sent.
+2026-01-18T14:22:01.384Z	handleShutdowns >> mci/2/0/16/blinds is OK, no command to be sent.
+2026-01-18T14:22:01.437Z	handleShutdowns >> mci/3/0/17/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:01.438Z	handleShutdowns >> mci/3/0/17/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:01.439Z	handleShutdowns >> mci/3/0/17/aircon is OK, no command to be sent.
+2026-01-18T14:22:01.440Z	handleShutdowns >> mci/3/0/17/blinds is OK, no command to be sent.
+2026-01-18T14:22:01.527Z	handleShutdowns >> mci/4/5/18/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:01.528Z	handleShutdowns >> mci/4/5/18/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:01.529Z	handleShutdowns >> mci/4/5/18/aircon is OK, no command to be sent.
+2026-01-18T14:22:01.530Z	handleShutdowns >> mci/4/5/18/blinds is OK, no command to be sent.
+2026-01-18T14:22:01.581Z	handleShutdowns >> mci/5/1/19/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:01.582Z	handleShutdowns >> mci/5/1/19/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:01.584Z	handleShutdowns >> mci/5/1/19/aircon is OK, no command to be sent.
+2026-01-18T14:22:01.585Z	handleShutdowns >> mci/5/1/19/blinds is OK, no command to be sent.
+2026-01-18T14:22:01.635Z	handleShutdowns >> mci/6/1/20/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:01.636Z	handleShutdowns >> mci/6/1/20/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:01.637Z	handleShutdowns >> mci/6/1/20/aircon is OK, no command to be sent.
+2026-01-18T14:22:01.638Z	handleShutdowns >> mci/6/1/20/blinds is OK, no command to be sent.
+2026-01-18T14:22:01.689Z	handleShutdowns >> mci/7/2/21/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:01.690Z	handleShutdowns >> mci/7/2/21/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:01.690Z	handleShutdowns >> mci/7/2/21/aircon is OK, no command to be sent.
+2026-01-18T14:22:01.691Z	handleShutdowns >> mci/7/2/21/blinds is OK, no command to be sent.
+2026-01-18T14:22:01.746Z	handleShutdowns >> mci/1/3/22/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:01.747Z	handleShutdowns >> mci/1/3/22/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:01.748Z	handleShutdowns >> mci/1/3/22/aircon is OK, no command to be sent.
+2026-01-18T14:22:01.749Z	handleShutdowns >> mci/1/3/22/blinds is OK, no command to be sent.
+2026-01-18T14:22:01.801Z	handleShutdowns >> mci/2/4/23/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:01.801Z	handleShutdowns >> mci/2/4/23/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:01.802Z	handleShutdowns >> mci/2/4/23/aircon is OK, no command to be sent.
+2026-01-18T14:22:01.803Z	handleShutdowns >> mci/2/4/23/blinds is OK, no command to be sent.
+2026-01-18T14:22:01.852Z	handleShutdowns >> mci/3/2/24/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:01.853Z	handleShutdowns >> mci/3/2/24/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:01.854Z	handleShutdowns >> mci/3/2/24/aircon is OK, no command to be sent.
+2026-01-18T14:22:01.855Z	handleShutdowns >> mci/3/2/24/blinds is OK, no command to be sent.
+2026-01-18T14:22:01.902Z	handleShutdowns >> mci/4/1/25/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:01.903Z	handleShutdowns >> mci/4/1/25/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:01.904Z	handleShutdowns >> mci/4/1/25/aircon is OK, no command to be sent.
+2026-01-18T14:22:01.904Z	handleShutdowns >> mci/4/1/25/blinds is OK, no command to be sent.
+2026-01-18T14:22:01.962Z	handleShutdowns >> mci/5/3/26/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:01.963Z	handleShutdowns >> mci/5/3/26/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:01.964Z	handleShutdowns >> mci/5/3/26/aircon is OK, no command to be sent.
+2026-01-18T14:22:01.965Z	handleShutdowns >> mci/5/3/26/blinds is OK, no command to be sent.
+2026-01-18T14:22:02.018Z	handleShutdowns >> mci/6/3/27/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:02.019Z	handleShutdowns >> mci/6/3/27/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:02.020Z	handleShutdowns >> mci/6/3/27/aircon is OK, no command to be sent.
+2026-01-18T14:22:02.021Z	handleShutdowns >> mci/6/3/27/blinds is OK, no command to be sent.
+2026-01-18T14:22:02.075Z	handleShutdowns >> mci/7/5/28/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:02.076Z	handleShutdowns >> mci/7/5/28/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:02.077Z	handleShutdowns >> mci/7/5/28/aircon is OK, no command to be sent.
+2026-01-18T14:22:02.078Z	handleShutdowns >> mci/7/5/28/blinds is OK, no command to be sent.
+2026-01-18T14:22:02.135Z	handleShutdowns >> mci/1/0/29/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:02.136Z	handleShutdowns >> mci/1/0/29/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:02.137Z	handleShutdowns >> mci/1/0/29/aircon is OK, no command to be sent.
+2026-01-18T14:22:02.139Z	handleShutdowns >> mci/1/0/29/blinds is OK, no command to be sent.
+2026-01-18T14:22:02.189Z	handleShutdowns >> mci/2/2/30/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:02.190Z	handleShutdowns >> mci/2/2/30/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:02.191Z	handleShutdowns >> mci/2/2/30/aircon is OK, no command to be sent.
+2026-01-18T14:22:02.192Z	handleShutdowns >> mci/2/2/30/blinds is OK, no command to be sent.
+2026-01-18T14:22:02.248Z	handleShutdowns >> mci/5/0/12/lights_binary is OK, no command to be sent.
+2026-01-18T14:22:02.249Z	handleShutdowns >> mci/5/0/12/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:22:02.250Z	handleShutdowns >> mci/5/0/12/aircon is OK, no command to be sent.
+2026-01-18T14:22:02.251Z	handleShutdowns >> mci/5/0/12/blinds is OK, no command to be sent.
+2026-01-18T14:22:20.007Z	cron >> Requesting device updates ...
+2026-01-18T14:22:40.009Z	cron >> Requesting device updates ...
+2026-01-18T14:23:00.017Z	cron >> Running check in handler ...
+2026-01-18T14:23:00.019Z	cron >> Bumping rooms ...
+2026-01-18T14:23:00.021Z	cron >> Running shutdown handler ...
+2026-01-18T14:23:00.022Z	cron >> Requesting device updates ...
+2026-01-18T14:23:00.165Z	bumpRooms >> No bookings bumped.
+2026-01-18T14:23:00.283Z	handleShutdowns >> mci/1/0/1/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:00.284Z	handleShutdowns >> mci/1/0/1/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:00.285Z	handleShutdowns >> mci/1/0/1/aircon is OK, no command to be sent.
+2026-01-18T14:23:00.286Z	handleShutdowns >> mci/1/0/1/blinds is OK, no command to be sent.
+2026-01-18T14:23:00.349Z	handleShutdowns >> mci/2/0/2/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:00.350Z	handleShutdowns >> mci/2/0/2/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:00.351Z	handleShutdowns >> mci/2/0/2/aircon is OK, no command to be sent.
+2026-01-18T14:23:00.352Z	handleShutdowns >> mci/2/0/2/blinds is OK, no command to be sent.
+2026-01-18T14:23:00.431Z	handleShutdowns >> mci/3/1/3/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:00.432Z	handleShutdowns >> mci/3/1/3/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:00.433Z	handleShutdowns >> mci/3/1/3/aircon is OK, no command to be sent.
+2026-01-18T14:23:00.434Z	handleShutdowns >> mci/3/1/3/blinds is OK, no command to be sent.
+2026-01-18T14:23:00.498Z	handleShutdowns >> mci/4/1/4/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:00.500Z	handleShutdowns >> mci/4/1/4/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:00.502Z	handleShutdowns >> mci/4/1/4/aircon is OK, no command to be sent.
+2026-01-18T14:23:00.503Z	handleShutdowns >> mci/4/1/4/blinds is OK, no command to be sent.
+2026-01-18T14:23:00.561Z	handleShutdowns >> mci/5/2/5/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:00.562Z	handleShutdowns >> mci/5/2/5/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:00.563Z	handleShutdowns >> mci/5/2/5/aircon is OK, no command to be sent.
+2026-01-18T14:23:00.563Z	handleShutdowns >> mci/5/2/5/blinds is OK, no command to be sent.
+2026-01-18T14:23:00.747Z	handleShutdowns >> mci/6/2/6/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:00.748Z	handleShutdowns >> mci/6/2/6/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:00.749Z	handleShutdowns >> mci/6/2/6/aircon is OK, no command to be sent.
+2026-01-18T14:23:00.749Z	handleShutdowns >> mci/6/2/6/blinds is OK, no command to be sent.
+2026-01-18T14:23:00.814Z	handleShutdowns >> mci/7/2/7/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:00.815Z	handleShutdowns >> mci/7/2/7/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:00.816Z	handleShutdowns >> mci/7/2/7/aircon is OK, no command to be sent.
+2026-01-18T14:23:00.817Z	handleShutdowns >> mci/7/2/7/blinds is OK, no command to be sent.
+2026-01-18T14:23:00.881Z	handleShutdowns >> mci/1/2/8/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:00.883Z	handleShutdowns >> mci/1/2/8/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:00.883Z	handleShutdowns >> mci/1/2/8/aircon is OK, no command to be sent.
+2026-01-18T14:23:00.884Z	handleShutdowns >> mci/1/2/8/blinds is OK, no command to be sent.
+2026-01-18T14:23:00.947Z	handleShutdowns >> mci/2/3/9/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:00.948Z	handleShutdowns >> mci/2/3/9/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:00.949Z	handleShutdowns >> mci/2/3/9/aircon is OK, no command to be sent.
+2026-01-18T14:23:00.950Z	handleShutdowns >> mci/2/3/9/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.007Z	handleShutdowns >> mci/3/3/10/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.008Z	handleShutdowns >> mci/3/3/10/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.009Z	handleShutdowns >> mci/3/3/10/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.010Z	handleShutdowns >> mci/3/3/10/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.082Z	handleShutdowns >> mci/4/4/11/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.083Z	handleShutdowns >> mci/4/4/11/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.084Z	handleShutdowns >> mci/4/4/11/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.085Z	handleShutdowns >> mci/4/4/11/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.163Z	handleShutdowns >> mci/6/1/13/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.164Z	handleShutdowns >> mci/6/1/13/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.165Z	handleShutdowns >> mci/6/1/13/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.165Z	handleShutdowns >> mci/6/1/13/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.231Z	handleShutdowns >> mci/7/3/14/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.232Z	handleShutdowns >> mci/7/3/14/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.232Z	handleShutdowns >> mci/7/3/14/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.233Z	handleShutdowns >> mci/7/3/14/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.300Z	handleShutdowns >> mci/1/4/15/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.301Z	handleShutdowns >> mci/1/4/15/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.302Z	handleShutdowns >> mci/1/4/15/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.303Z	handleShutdowns >> mci/1/4/15/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.365Z	handleShutdowns >> mci/2/0/16/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.366Z	handleShutdowns >> mci/2/0/16/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.366Z	handleShutdowns >> mci/2/0/16/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.367Z	handleShutdowns >> mci/2/0/16/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.429Z	handleShutdowns >> mci/3/0/17/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.430Z	handleShutdowns >> mci/3/0/17/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.431Z	handleShutdowns >> mci/3/0/17/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.431Z	handleShutdowns >> mci/3/0/17/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.492Z	handleShutdowns >> mci/4/5/18/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.493Z	handleShutdowns >> mci/4/5/18/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.494Z	handleShutdowns >> mci/4/5/18/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.495Z	handleShutdowns >> mci/4/5/18/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.556Z	handleShutdowns >> mci/5/1/19/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.557Z	handleShutdowns >> mci/5/1/19/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.558Z	handleShutdowns >> mci/5/1/19/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.559Z	handleShutdowns >> mci/5/1/19/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.620Z	handleShutdowns >> mci/6/1/20/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.621Z	handleShutdowns >> mci/6/1/20/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.621Z	handleShutdowns >> mci/6/1/20/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.622Z	handleShutdowns >> mci/6/1/20/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.681Z	handleShutdowns >> mci/7/2/21/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.682Z	handleShutdowns >> mci/7/2/21/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.684Z	handleShutdowns >> mci/7/2/21/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.685Z	handleShutdowns >> mci/7/2/21/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.743Z	handleShutdowns >> mci/1/3/22/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.744Z	handleShutdowns >> mci/1/3/22/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.745Z	handleShutdowns >> mci/1/3/22/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.746Z	handleShutdowns >> mci/1/3/22/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.805Z	handleShutdowns >> mci/2/4/23/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.806Z	handleShutdowns >> mci/2/4/23/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.807Z	handleShutdowns >> mci/2/4/23/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.808Z	handleShutdowns >> mci/2/4/23/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.867Z	handleShutdowns >> mci/3/2/24/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.868Z	handleShutdowns >> mci/3/2/24/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.869Z	handleShutdowns >> mci/3/2/24/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.870Z	handleShutdowns >> mci/3/2/24/blinds is OK, no command to be sent.
+2026-01-18T14:23:01.926Z	handleShutdowns >> mci/4/1/25/lights_binary is OK, no command to be sent.
+2026-01-18T14:23:01.927Z	handleShutdowns >> mci/4/1/25/lights_dimmable is OK, no command to be sent.
+2026-01-18T14:23:01.928Z	handleShutdowns >> mci/4/1/25/aircon is OK, no command to be sent.
+2026-01-18T14:23:01.928Z	handleShutdowns >> mci/4/1/25/blinds is OK, no command to be sent.
+2026-01-18T14:48:40.013Z	cron >> Requesting device updates ...
+2026-01-18T14:49:00.017Z	cron >> Running check in handler ...
+2026-01-18T14:49:00.037Z	cron >> Bumping rooms ...
+2026-01-18T14:49:00.038Z	cron >> Running shutdown handler ...
+2026-01-18T14:49:00.039Z	cron >> Requesting device updates ...
+2026-01-18T14:49:00.304Z	bumpRooms >> No bookings bumped.
+2026-01-18T14:49:20.008Z	cron >> Requesting device updates ...
+2026-01-18T14:49:40.012Z	cron >> Requesting device updates ...
+2026-01-18T14:50:00.015Z	cron >> Running check in handler ...
+2026-01-18T14:50:00.017Z	cron >> Bumping rooms ...
+2026-01-18T14:50:00.019Z	cron >> Running shutdown handler ...
+2026-01-18T14:50:00.020Z	cron >> Requesting device updates ...
+2026-01-18T14:50:00.186Z	bumpRooms >> No bookings bumped.
+2026-01-18T14:50:20.004Z	cron >> Requesting device updates ...
+2026-01-18T14:50:40.011Z	cron >> Requesting device updates ...

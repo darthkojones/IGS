@@ -34,8 +34,22 @@ function createDeviceKey(
   return String(`${baseTopic}/${buildingId}/${floor}/${roomId}/${deviceName}`);
 }
 
+/**
+ *
+ * @param {string} deviceKey Use createDeviceKey
+ * @param {number} status
+ */
+function publishCommandToDevice(deviceKey, status) {
+  mqttClient.publish(
+    `${deviceKey}/command`,
+    JSON.stringify({ modifier: 'sys', modified: new Date(), status: status}),
+    { qos: 1 }
+  )
+}
+
 module.exports = {
   subscribeToTopics,
   createDeviceKey,
+  publishCommandToDevice,
   mqttClient
 }

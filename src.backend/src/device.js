@@ -1,5 +1,10 @@
-const devices = require('./deviceConfig.json');
-const rooms = require('./roomlist.json')
+/**
+ * Author: wa7205@mci4me.at
+ * Modified: 18 Jan 2025
+ */
+
+const devices = require('./deviceConfig.json').devices;
+const rooms = require('./deviceConfig.json').rooms;
 
 class DeviceParameters {
   name;
@@ -107,8 +112,8 @@ class Device {
 }
 
 function main() {
-  mockRooms = rooms.rooms //.filter(r => r.roomId == 12 || r.roomId == 26)
-  mockDevices = devices.devices;
+  mockRooms = rooms;
+  mockDevices = devices;
 
   const deviceList = [];
   mockRooms.forEach(r => {

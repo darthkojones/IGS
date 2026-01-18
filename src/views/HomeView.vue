@@ -96,12 +96,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useBookingsStore } from '@/stores/bookings';
 import { useRoomsStore } from '@/stores/rooms';
 import QuickAccessTile from '@/components/QuickAccessTile.vue';
 import type { Booking } from '@/types';
 
+const router = useRouter();
 const authStore = useAuthStore();
 const bookingsStore = useBookingsStore();
 const roomsStore = useRoomsStore();
@@ -201,21 +203,25 @@ const getRoomName = (roomId: string): string => {
 };
 
 // Helper function to get user name from booking
-const getUserName = (booking: Booking): string => {
-  if (booking.user) {
-    return `${booking.user.firstName} ${booking.user.lastName}`;
-  }
-  return 'Unknown User';
-};
+// const getUserName = (booking: Booking): string => {
+//   if (booking.user) {
+//     return `${booking.user.firstName} ${booking.user.lastName}`;
+//   }
+//   // Fallback to current user if booking.user is not populated
+//   if (authStore.user) {
+//     return `${authStore.user.firstName} ${authStore.user.lastName}`;
+//   }
+//   return 'Unknown User';
+// };
 
-// Handle check-in (no functionality yet)
+// Handle check-in - navigate to booking detail page
 const handleCheckIn = () => {
-  console.log('Check-in clicked for booking:', activeBooking.value?.bookingId);
-  // Placeholder for future check-in functionality
+  if (!activeBooking.value) return;
+  router.push(`/bookings/${activeBooking.value.bookingId}`);
 };
 
 // Handle cancel booking with confirmation
-const handleCancelBooking = () => {
+const handleCancelBooking = async () => {
   if (!activeBooking.value) return;
 
   const confirmed = confirm(
@@ -223,8 +229,14 @@ const handleCancelBooking = () => {
   );
 
   if (confirmed) {
-    console.log('Booking cancelled:', activeBooking.value.bookingId);
-    // Placeholder for future cancel functionality
+    try {
+      await bookingsStore.cancelBooking(activeBooking.value.bookingId);
+      // Refresh bookings to update UI
+      await fetchTodaysBookings();
+    } catch (error) {
+      console.error('Failed to cancel booking:', error);
+      alert('Failed to cancel booking. Please try again.');
+    }
   }
 };
 
@@ -233,9 +245,9 @@ const formatBookingDisplay = (booking: Booking) => {
   const start = new Date(booking.startTime);
   const end = new Date(booking.endTime);
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    return date.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', hour12: false });
   };
-  return `${getRoomName(booking.roomId)} - Made by ${getUserName(booking)} - ${formatTime(start)} to ${formatTime(end)}`;
+  return `${getRoomName(booking.roomId)}  - ${formatTime(start)} to ${formatTime(end)}`;
 };
 
 // Format booking for display with date (upcoming bookings)
@@ -243,17 +255,18 @@ const formatBookingDisplayWithDate = (booking: Booking) => {
   const start = new Date(booking.startTime);
   const end = new Date(booking.endTime);
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    return date.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', hour12: false });
   };
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   };
-  return `${getRoomName(booking.roomId)} - Made by ${getUserName(booking)} - ${formatDate(start)} ${formatTime(start)} to ${formatTime(end)}`;
+  return `${getRoomName(booking.roomId)}  - ${formatDate(start)} ${formatTime(start)} to ${formatTime(end)}`;
 };
 
 // Get booking status class for styling
 const getBookingStatusClass = (booking: Booking) => {
   const now = new Date();
+  //const startTime = new Date(booking.startTime);
   const endTime = new Date(booking.endTime);
 
   // Expired: past end time or status is expired
@@ -277,6 +290,7 @@ const getBookingStatusClass = (booking: Booking) => {
 // Get booking status text for badge
 const getBookingStatusText = (booking: Booking) => {
   const now = new Date();
+  //const startTime = new Date(booking.startTime);
   const endTime = new Date(booking.endTime);
 
   if (now > endTime || booking.status === 'expired') {
@@ -406,6 +420,8 @@ onUnmounted(() => {
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 /* Confirm Booking Section */
@@ -481,7 +497,7 @@ onUnmounted(() => {
 .my-bookings h2 {
   font-size: 2rem;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: var(--color-heading);
 }
 
 .bookings-container {
@@ -508,32 +524,32 @@ onUnmounted(() => {
 }
 
 .group-header:hover {
-  background-color: #f5f5f5;
+  background-color: var(--color-card-hover);
 }
 
 .group-header:hover .group-title {
-  color: #1976d2;
+  color: var(--color-primary);
 }
 
 .group-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #555;
+  color: var(--color-text);
   margin: 0;
   padding-left: 0.5rem;
-  border-left: 4px solid #1976d2;
+  border-left: 4px solid var(--color-primary);
   transition: color 0.2s ease;
 }
 
 .group-toggle-icon {
   font-size: 1.125rem;
-  color: #666;
+  color: var(--color-text-soft);
   margin-right: 0.5rem;
   transition: color 0.2s ease;
 }
 
 .group-header:hover .group-toggle-icon {
-  color: #1976d2;
+  color: var(--color-primary);
 }
 
 .section-header {
@@ -574,8 +590,8 @@ onUnmounted(() => {
 
 .booking-item {
   display: block;
-  background: white;
-  border: 2px solid #e0e0e0;
+  background: var(--color-card-bg);
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   padding: 1.5rem;
   transition: all 0.3s ease;
@@ -588,21 +604,24 @@ onUnmounted(() => {
 .booking-item.status-expired {
   background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
   border-color: #ef5350;
+  color: #1a1a1a;
 }
 
 .booking-item.status-pending {
   background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
   border-color: #ffa726;
+  color: #1a1a1a;
 }
 
 .booking-item.status-confirmed {
   background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
   border-color: #66bb6a;
+  color: #1a1a1a;
 }
 
 .booking-item:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .booking-item.status-expired:hover {
@@ -627,8 +646,9 @@ onUnmounted(() => {
 .booking-text {
   margin: 0;
   font-size: 1.125rem;
-  color: #333;
+  color: inherit;
   flex: 1;
+  font-weight: 500;
 }
 
 .booking-status-badge {

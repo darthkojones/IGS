@@ -126,15 +126,16 @@
 
  <style scoped>
  .room-card {
-   border: 1px solid #ddd;
+   border: 1px solid var(--color-border);
    border-radius: 8px;
    padding: 1.5rem;
-   background: white;
-   transition: box-shadow 0.3s ease;
+   background: var(--color-card-bg);
+   transition: box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
  }
 
  .room-card:hover {
-   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+   box-shadow: var(--shadow-lg);
+   background: var(--color-card-hover);
  }
 
  .room-card__header {
@@ -147,6 +148,7 @@
  .room-card__title {
    font-size: 1.25rem;
    font-weight: 600;
+   color: var(--color-heading);
    margin: 0;
  }
 
@@ -223,10 +225,11 @@
  }
 
  .room-card__equipment li {
-   background: #f0f0f0;
+   background: var(--color-surface-soft);
    padding: 0.25rem 0.75rem;
    border-radius: 1rem;
    font-size: 0.8125rem;
+   color: var(--color-text);
  }
 
  .room-card__footer {
@@ -247,22 +250,21 @@
  }
 
  .btn--primary {
-   background: #1976d2;
-   color: white;
-
+   background: var(--color-primary);
+   color: var(--color-primary-text);
  }
 
  .btn--primary:hover {
-   background: #1565c0;
+   background: var(--color-primary-hover);
  }
 
  .btn--secondary {
    background: transparent;
-   color: #1976d2;
-   border: 1px solid #1976d2;
+   color: var(--color-primary);
+   border: 1px solid var(--color-primary);
  }
 
  .btn--secondary:hover {
-   background: #e3f2fd;
+   background: var(--color-primary-light);
  }
  </style>

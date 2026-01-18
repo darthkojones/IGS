@@ -59,9 +59,10 @@ export function formatLocalTime(utcDate: Date | string): string {
   const d = new Date(utcDate);
 
   // Use toLocaleTimeString which automatically handles timezone conversion
-  return d.toLocaleTimeString('en-US', {
+  return d.toLocaleTimeString('de-AT', {
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false,
   });
 }
 

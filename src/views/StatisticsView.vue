@@ -55,11 +55,14 @@ onMounted(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  background: var(--color-background);
+  min-height: 100vh;
 }
 
 .statistics-view h1 {
   font-size: 2rem;
   margin-bottom: 2rem;
+  color: var(--color-heading);
 }
 
 .stats-container {
@@ -69,16 +72,16 @@ onMounted(() => {
 }
 
 section {
-  background: white;
+  background: var(--color-card-bg);
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 section h2 {
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: var(--color-heading);
 }
 
 .stats-grid {

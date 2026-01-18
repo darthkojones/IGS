@@ -20,6 +20,9 @@
             <h1>{{ room.name }}</h1>
             <p class="room-location">
               Floor {{ room.floor }} • {{ getBuildingName(room.buildingId) }}
+              <span v-if="roomDistance" class="room-distance">
+                • {{ roomDistance.durationMinutes }} min walk
+              </span>
             </p>
           </div>
           <div class="status-container">
@@ -155,9 +158,11 @@ import BookingForm from '@/components/BookingForm.vue'
 import { useRoomsStore } from '@/stores/rooms'
 import { useBookingsStore } from '@/stores/bookings'
 import { useAuthStore } from '@/stores/auth'
+import { useLocation } from '@/composables/useLocation'
 import { bookingService } from '@/services/bookingService'
 import { formatLocalTime, formatLocalDate } from '@/utils/timezoneUtils'
 import { type Booking, type User, type Room, BookingStatus } from '@/types'
+import type { DistanceResult } from '@/services/distanceService'
 
 import meetingSmall from '@/assets/icons/meeting_small.png'
 import meetingMiddle from '@/assets/icons/meeting_midlle.png'
@@ -167,6 +172,10 @@ const route = useRoute()
 const roomsStore = useRoomsStore()
 const bookingsStore = useBookingsStore()
 const authStore = useAuthStore()
+
+// Location composable for distance calculation
+const { hasLocation, calculateDistanceToRoom } = useLocation()
+const roomDistance = ref<DistanceResult | null>(null)
 
 const roomImage = computed(() => {
   if (!room.value) return meetingBig
@@ -341,6 +350,15 @@ onMounted(async () => {
 })
 
 watch(formattedDate, fetchBookings)
+
+// Watch for room and location changes to calculate distance
+watch([room, hasLocation], async ([currentRoom]) => {
+  if (currentRoom && hasLocation.value) {
+    roomDistance.value = await calculateDistanceToRoom(currentRoom)
+  } else {
+    roomDistance.value = null
+  }
+}, { immediate: true })
 </script>
 
 ##############################################################
@@ -349,8 +367,8 @@ watch(formattedDate, fetchBookings)
 .room-detail-view {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1.5rem;
-}
+  padding: 1.5rem;  background: var(--color-background);
+  min-height: 100vh;}
 
 .back-btn {
   background: none;
@@ -381,10 +399,10 @@ watch(formattedDate, fetchBookings)
   display: flex;
   justify-content: space-between;
   align-items: stretch;
-  background: white;
+  background: var(--color-card-bg);
   padding: 0;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
 }
 
@@ -400,12 +418,17 @@ watch(formattedDate, fetchBookings)
 .header-main h1 {
   margin: 0;
   font-size: 1.85rem;
-  color: #0f172a;
+  color: var(--color-heading);
 }
 
 .room-location {
-  color: #64748b;
+  color: var(--color-text-soft);
   margin: 0.25rem 0 0;
+}
+
+.room-distance {
+  color: #059669;
+  font-weight: 500;
 }
 
 .status-container {
@@ -421,7 +444,7 @@ watch(formattedDate, fetchBookings)
   flex-direction: row;
   align-items: center;
   gap: 0.5rem;
-  background: #f1f5f9;
+  background: var(--color-surface-soft);
   border: none;
   text-align: left;
   min-width: fit-content;
@@ -482,7 +505,7 @@ watch(formattedDate, fetchBookings)
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
+  background: var(--color-surface-soft);
   padding: 1rem;
 }
 
@@ -557,22 +580,23 @@ watch(formattedDate, fetchBookings)
 }
 
 .card {
-  background: white;
+  background: var(--color-card-bg);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   padding: 1.5rem;
+  transition: background-color 0.3s ease;
 }
 
 h2 {
   font-size: 1.25rem;
   margin: 0 0 1.25rem;
-  color: #1e293b;
+  color: var(--color-heading);
 }
 
 .section-title {
   font-size: 1rem;
   margin: 1.5rem 0 0.75rem;
-  color: #475569;
+  color: var(--color-text-soft);
 }
 
 /* Info Card */
@@ -585,13 +609,13 @@ h2 {
   display: block;
   font-size: 0.8rem;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   letter-spacing: 0.025em;
   margin-bottom: 0.2rem;
 }
 
 .value {
-  color: #334155;
+  color: var(--color-text);
   font-weight: 500;
 }
 
@@ -605,8 +629,8 @@ h2 {
 }
 
 .equipment-pill {
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--color-surface-soft);
+  color: var(--color-text);
   padding: 0.4rem 0.8rem;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -625,7 +649,7 @@ h2 {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: #f8fafc;
+  background: var(--color-surface-soft);
   padding: 0.4rem 0.8rem;
   border-radius: 8px;
 }
@@ -634,6 +658,7 @@ h2 {
   font-weight: 600;
   min-width: 100px;
   text-align: center;
+  color: var(--color-text);
 }
 
 .icon-btn {
@@ -645,7 +670,7 @@ h2 {
 }
 
 .icon-btn:hover {
-  background: #e2e8f0;
+  background: var(--color-card-hover);
 }
 
 .icon-btn.is-disabled {
@@ -665,13 +690,13 @@ h2 {
   gap: 1.5rem;
   padding: 1rem;
   border-radius: 8px;
-  background: #f8fafc;
-  border-left: 4px solid #cbd5e1;
+  background: var(--color-surface-soft);
+  border-left: 4px solid var(--color-border);
 }
 
 .timeline-item.is-own {
-  background: #eff6ff;
-  border-left-color: #3b82f6;
+  background: var(--color-primary-light);
+  border-left-color: var(--color-primary);
 }
 
 .time-col {
@@ -683,12 +708,12 @@ h2 {
 
 .time-start {
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-heading);
 }
 
 .time-end {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--color-text-soft);
 }
 
 .content-col {
@@ -742,20 +767,29 @@ h2 {
 }
 
 .btn--primary {
-  background: #2563eb;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.btn--primary:hover {
+  background: var(--color-primary-hover);
 }
 
 .btn--danger-outline {
-  background: white;
-  color: #dc2626;
-  border: 1px solid #fca5a5;
+  background: var(--color-card-bg);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
 }
 
 .loading-state,
 .error-state {
   text-align: center;
   padding: 4rem 1rem;
+  color: var(--color-text);
+}
+
+.error-state {
+  color: var(--color-error);
 }
 
 @media (max-width: 1024px) {

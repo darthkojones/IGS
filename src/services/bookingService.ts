@@ -53,9 +53,10 @@ export const bookingService = {
 
       const mappedBookings = (data || []).map(mapBookingData);
 
+      //  implemented using backend, so no need for the below part
       // Auto-expire bookings: only RESERVED bookings can expire (not confirmed)
       // Expire if: reserved status, start_time has passed, and not yet entered
-      const now = new Date();
+      /* const now = new Date();
       const toExpire = mappedBookings.filter(
         (booking) =>
           booking.status === 'reserved' &&
@@ -81,7 +82,7 @@ export const bookingService = {
             booking.status = 'expired' as BookingStatus;
           }
         });
-      }
+      }*/
 
       return mappedBookings;
     } catch (err) {
@@ -205,9 +206,6 @@ export const bookingService = {
     }
   },
 
-  /**
-   * Get all bookings in the system (no time filter) - for statistics
-   */
   async getAllBookings(): Promise<Booking[]> {
     try {
       const { data, error } = await supabase
@@ -233,7 +231,6 @@ export const bookingService = {
       throw err;
     }
   },
-
   /**
    * Create a new booking
    */
@@ -245,6 +242,9 @@ export const bookingService = {
         throw new Error('Room is not available for the requested time slot');
       }
 
+      // Generate access token for QR code
+      const accessToken = this.generateAccessToken(booking.userId);
+
       const { data, error } = await supabase
         .from('booking')
         .insert({
@@ -255,6 +255,7 @@ export const bookingService = {
           title: booking.title,
           status: booking.status || 'reserved',
           entry_method: booking.entryMethod,
+          access_token: accessToken,
         })
         .select()
         .single();
@@ -269,6 +270,16 @@ export const bookingService = {
       console.error('bookingService.createBooking error:', err);
       throw err;
     }
+  },
+
+  /**
+   * Generate a secure access token for booking
+   */
+  generateAccessToken(userId: string): string {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    const data = `${userId}:${timestamp}:${random}`;
+    return btoa(data);
   },
 
   // update booking
@@ -499,4 +510,5 @@ export const bookingService = {
       return null;
     }
   },
+
 };

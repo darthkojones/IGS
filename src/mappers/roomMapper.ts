@@ -30,6 +30,8 @@ function mapBuildingData(data: Record<string, unknown>): Building {
     buildingId: String(data.id ?? ''),
     name: String(data.name ?? ''),
     address: String(data.address ?? ''),
+    latitude: data.latitude ? Number(data.latitude) : undefined,
+    longitude: data.longitude ? Number(data.longitude) : undefined,
     floorCount: data.floor_count ? Number(data.floor_count) : undefined,
     roomCount: data.room_count ? Number(data.room_count) : undefined,
     institutionId: String(data.institution_id ?? ''),

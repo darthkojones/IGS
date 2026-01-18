@@ -53,9 +53,10 @@ export const bookingService = {
 
       const mappedBookings = (data || []).map(mapBookingData);
 
+      //  implemented using backend, so no need for the below part
       // Auto-expire bookings: only RESERVED bookings can expire (not confirmed)
       // Expire if: reserved status, start_time has passed, and not yet entered
-      const now = new Date();
+      /* const now = new Date();
       const toExpire = mappedBookings.filter(
         (booking) =>
           booking.status === 'reserved' &&
@@ -81,7 +82,7 @@ export const bookingService = {
             booking.status = 'expired' as BookingStatus;
           }
         });
-      }
+      }*/
 
       return mappedBookings;
     } catch (err) {
@@ -507,6 +508,31 @@ export const bookingService = {
     } catch (err) {
       console.error('bookingService.getBuildingById error:', err);
       return null;
+    }
+  },
+  async getAllBookings(): Promise<Booking[]> {
+    try {
+      const { data, error } = await supabase
+        .from('booking')
+        .select(`${ROOM_SELECT},
+          user:user_id (
+            id,
+            first_name,
+            last_name,
+            email,
+            role
+          )`)
+        .order('start_time', { ascending: true });
+
+      if (error) {
+        console.error('Supabase error fetching all bookings:', error);
+        throw error;
+      }
+
+      return (data || []).map(mapBookingData);
+    } catch (err) {
+      console.error('bookingService.getAllBookings error:', err);
+      throw err;
     }
   },
 };

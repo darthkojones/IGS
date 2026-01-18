@@ -24,7 +24,7 @@ export const roomService = {
     try {
       const { data, error } = await supabase
         .from('room')
-        .select('*')
+        .select('*, building(*)')
         .order('name');
 
       if (error) {
@@ -46,7 +46,7 @@ export const roomService = {
     try {
       const { data, error } = await supabase
         .from('room')
-        .select('*')
+        .select('*, building(*)')
         .eq('room_id', roomId)
         .single();
 

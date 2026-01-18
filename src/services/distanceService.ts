@@ -46,55 +46,54 @@ function calculateHaversineDistance(
 
 /**
  * Calculate distance and travel time using Google Maps Distance Matrix API
+ * Calls our backend API endpoint to avoid CORS issues
  */
 async function calculateDistanceWithGoogle(
   origin: Coordinates,
   destination: Coordinates
 ): Promise<DistanceResult> {
-  const apiKey = GOOGLE_MAPS_CONFIG.apiKey;
-  const mode = GOOGLE_MAPS_CONFIG.travelMode;
+  // Call our backend API instead of Google directly (avoids CORS issues)
+  const response = await fetch('/api/distance/calculate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      origin: { latitude: origin.latitude, longitude: origin.longitude },
+      destination: { latitude: destination.latitude, longitude: destination.longitude }
+    })
+  });
 
-  const url = new URL(
-    'https://maps.googleapis.com/maps/api/distancematrix/json'
-  );
-  url.searchParams.append('origins', `${origin.latitude},${origin.longitude}`);
-  url.searchParams.append(
-    'destinations',
-    `${destination.latitude},${destination.longitude}`
-  );
-  url.searchParams.append('mode', mode);
-  url.searchParams.append('key', apiKey);
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || 'Distance calculation failed');
+  }
 
-  const response = await fetch(url.toString());
   const data = await response.json();
 
-  if (data.status !== 'OK') {
-    throw new Error(`Google Maps API error: ${data.status}`);
-  }
-
-  const element = data.rows[0]?.elements[0];
-
-  if (!element || element.status !== 'OK') {
-    throw new Error('No route found');
-  }
-
   return {
-    distanceMeters: element.distance.value,
-    durationMinutes: Math.ceil(element.duration.value / 60),
-    distanceText: element.distance.text,
-    durationText: element.duration.text,
+    distanceMeters: data.distanceMeters,
+    durationMinutes: data.durationMinutes,
+    distanceText: data.distanceText,
+    durationText: data.durationText,
   };
 }
 
 /**
  * Calculate distance using simple Haversine formula (fallback method)
  * Estimates walking time based on average walking speed
+ * Applies a 1.3x multiplier to account for roads/paths (not straight line)
  */
 function calculateDistanceFallback(
   origin: Coordinates,
   destination: Coordinates
 ): DistanceResult {
-  const distanceMeters = calculateHaversineDistance(origin, destination);
+  const straightLineDistance = calculateHaversineDistance(origin, destination);
+
+  // Apply 1.3x multiplier to account for actual walking paths (not straight line)
+  // Real walking routes are typically 20-40% longer than straight-line distance
+  const distanceMeters = straightLineDistance * 1.3;
+
   const durationMinutes = Math.ceil(
     distanceMeters / GOOGLE_MAPS_CONFIG.fallbackWalkingSpeed
   );

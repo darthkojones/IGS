@@ -275,7 +275,7 @@ const peakHoursOptions = computed(() => ({
       position: 'top' as const,
       labels: {
         color: textColor.value
-      }
+      },
       onClick: () => {} // Disable toggling dataset visibility on legend click
     },
     title: {
@@ -317,7 +317,7 @@ const popularRoomsOptions = computed(() => ({
       position: 'top' as const,
       labels: {
         color: textColor.value
-      }
+      },
       onClick: () => {} // Disable toggling dataset visibility on legend click
     },
     title: {
@@ -371,7 +371,7 @@ const bookingsPerDayOptions = computed(() => ({
       position: 'top' as const,
       labels: {
         color: textColor.value
-      }
+      },
       onClick: () => {} // Disable toggling dataset visibility on legend click
     },
     title: {
@@ -443,7 +443,7 @@ const bookingsPerDayOfWeekOptions = computed(() => ({
       position: 'top' as const,
       labels: {
         color: textColor.value
-      }
+      },
       onClick: () => {} // Disable toggling dataset visibility on legend click
     },
     title: {

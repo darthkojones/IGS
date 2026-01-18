@@ -24,6 +24,7 @@ const router = createRouter({
     path: '/room-editor',
     name: 'room-editor',
     component: () => import('@/views/RoomEditorView.vue'),
+     meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
       path: '/rooms/:id',

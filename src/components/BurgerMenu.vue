@@ -62,9 +62,10 @@ interface MenuItem {
 const allMenuItems: MenuItem[] = [
   { path: '/', label: 'Home', icon: '🏠' },
   { path: '/rooms', label: 'Rooms', icon: '🚪' },
-   { path: '/room-editor', label: 'Room Editor', icon: '🗂️' },
+  { path: '/room-editor', label: 'Room Editor', icon: '🗂️',requiresAuth: true},
   { path: '/bookings', label: 'Bookings', icon: '📋', requiresAuth: true },
   { path: '/statistics', label: 'Statistics', icon: '📊', requiresAuth: true },
+  { path: '/admin/panel', label: 'Admin Panel', icon: '📈', requiresAuth: true /*, requiresAdmin: true */},
   { path: '/accessibility', label: 'Accessibility', icon: '⚙️' },
   { path: '/profile', label: 'Profile', icon: '👤', requiresAuth: true },
   { path: '/about', label: 'About', icon: 'ℹ️' }
@@ -121,7 +122,7 @@ const closeMenu = () => {
 .burger-line {
   width: 100%;
   height: 3px;
-  background: #333;
+  background: var(--color-text);
   border-radius: 10px;
   transition: all 0.3s ease;
   transform-origin: center;
@@ -147,7 +148,7 @@ const closeMenu = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--color-background-overlay);
   z-index: 999;
 }
 
@@ -155,16 +156,17 @@ const closeMenu = () => {
 .menu-panel {
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0;
   bottom: 0;
   width: 280px;
   max-width: 80vw;
-  background: white;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  background: var(--color-card-bg);
+  box-shadow: var(--shadow-xl);
   z-index: 1000;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  transition: background-color 0.3s ease;
 }
 
 .menu-header {
@@ -172,13 +174,13 @@ const closeMenu = () => {
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .menu-header h2 {
   margin: 0;
   font-size: 1.5rem;
-  color: #333;
+  color: var(--color-heading);
 }
 
 .close-button {
@@ -186,7 +188,7 @@ const closeMenu = () => {
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #666;
+  color: var(--color-text-soft);
   width: 2rem;
   height: 2rem;
   display: flex;
@@ -197,8 +199,8 @@ const closeMenu = () => {
 }
 
 .close-button:hover {
-  background: #f5f5f5;
-  color: #333;
+  background: var(--color-card-hover);
+  color: var(--color-text);
 }
 
 /* Menu Items */
@@ -213,20 +215,20 @@ const closeMenu = () => {
   gap: 1rem;
   padding: 1rem 1.5rem;
   text-decoration: none;
-  color: #333;
+  color: var(--color-text);
   transition: all 0.2s ease;
   border-left: 4px solid transparent;
 }
 
 .menu-item:hover {
-  background: #f5f5f5;
-  border-left-color: #1976d2;
+  background: var(--color-card-hover);
+  border-left-color: var(--color-primary);
 }
 
 .menu-item.router-link-active {
-  background: #e3f2fd;
-  border-left-color: #1976d2;
-  color: #1976d2;
+  background: var(--color-primary-light);
+  border-left-color: var(--color-primary);
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -258,7 +260,7 @@ const closeMenu = () => {
 
 .slide-enter-from,
 .slide-leave-to {
-  transform: translateX(-100%);
+  transform: translateX(100%);
 }
 
 /* Responsive */

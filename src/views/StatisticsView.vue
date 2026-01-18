@@ -25,24 +25,6 @@
         </div>
       </section>
 
-      <section class="popular-rooms">
-        <h2>Most Popular Rooms</h2>
-        <div v-if="popularRooms.length === 0" class="no-data">
-          No data available yet
-        </div>
-        <div v-else class="rooms-list">
-          <div
-            v-for="(room, index) in popularRooms"
-            :key="room.roomId"
-            class="room-stat"
-          >
-            <span class="rank">{{ index + 1 }}</span>
-            <span class="room-name">Room {{ room.roomId }}</span>
-            <span class="usage">{{ room.usageFrequency }} bookings</span>
-          </div>
-        </div>
-      </section>
-
       <section class="peak-hours">
         <h2>Peak Booking Hours</h2>
         <div class="chart-placeholder">
@@ -61,8 +43,7 @@ import { useStatisticsStore } from '@/stores/statistics';
 const statisticsStore = useStatisticsStore();
 
 const overallStats = computed(() => statisticsStore.overallStatistics);
-const popularRooms = computed(() => statisticsStore.getMostPopularRooms);
-const loading = computed(() => statisticsStore.loading);
+//const loading = computed(() => statisticsStore.loading);
 
 onMounted(() => {
   statisticsStore.fetchOverallStatistics();
@@ -74,11 +55,14 @@ onMounted(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  background: var(--color-background);
+  min-height: 100vh;
 }
 
 .statistics-view h1 {
   font-size: 2rem;
   margin-bottom: 2rem;
+  color: var(--color-heading);
 }
 
 .stats-container {
@@ -88,16 +72,16 @@ onMounted(() => {
 }
 
 section {
-  background: white;
+  background: var(--color-card-bg);
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 section h2 {
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: var(--color-heading);
 }
 
 .stats-grid {

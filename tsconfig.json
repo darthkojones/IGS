@@ -11,8 +11,9 @@
       "path": "./tsconfig.vitest.json"
     }
   ],
-    "compilerOptions": {
+  "compilerOptions": {
     "baseUrl": ".",
+    "moduleResolution": "nodenext",
     "paths": {
       "@/*": ["src/*"]
     }

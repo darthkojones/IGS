@@ -1,11 +1,11 @@
 <template>
   <div class="accessibility-view">
     <h1>Accessibility Settings</h1>
-    
+
     <div class="settings-container">
       <section class="setting-section">
         <h2>Visual Settings</h2>
-        
+
         <div class="setting-item">
           <label>
             <input
@@ -54,7 +54,7 @@
 
       <section class="setting-section">
         <h2>Screen Reader</h2>
-        
+
         <div class="setting-item">
           <label>
             <input
@@ -131,10 +131,13 @@ onMounted(() => {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
+  background: var(--color-background);
+  min-height: 100vh;
 }
 
 .accessibility-view h1 {
   margin-bottom: 2rem;
+  color: var(--color-heading);
 }
 
 .settings-container {
@@ -144,16 +147,16 @@ onMounted(() => {
 }
 
 .setting-section {
-  background: white;
+  background: var(--color-card-bg);
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .setting-section h2 {
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: var(--color-heading);
 }
 
 .setting-item {
@@ -177,17 +180,19 @@ onMounted(() => {
 .setting-description {
   margin-top: 0.5rem;
   margin-left: 2rem;
-  color: #666;
+  color: var(--color-text-soft);
   font-size: 0.875rem;
 }
 
 .setting-select {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 1rem;
   margin-top: 0.5rem;
+  background: var(--color-card-bg);
+  color: var(--color-text);
 }
 
 .keyboard-shortcuts {
@@ -198,17 +203,19 @@ onMounted(() => {
 .keyboard-shortcuts li {
   padding: 0.75rem;
   margin-bottom: 0.5rem;
-  background: #f5f5f5;
+  background: var(--color-surface-soft);
   border-radius: 4px;
+  color: var(--color-text);
 }
 
 kbd {
   padding: 0.25rem 0.5rem;
-  background: #333;
-  color: white;
+  background: var(--color-text);
+  color: var(--color-background);
   border-radius: 3px;
   font-family: monospace;
   font-size: 0.875rem;
+  font-weight: 600;
 }
 
 /* Screen reader only class */

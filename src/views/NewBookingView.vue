@@ -111,18 +111,19 @@ onMounted(() => {
 .new-booking-view h1 {
   text-align: center;
   margin-bottom: 2rem;
+  color: var(--color-heading);
 }
 
 .room-selection h2 {
   text-align: center;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: var(--color-heading);
 }
 
 .loading {
   text-align: center;
   padding: 2rem;
-  color: #666;
+  color: var(--color-text-soft);
 }
 
 .rooms-grid {
@@ -132,8 +133,8 @@ onMounted(() => {
 }
 
 .room-card {
-  background: white;
-  border: 2px solid #e0e0e0;
+  background: var(--color-card-bg);
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   padding: 1.5rem;
   cursor: pointer;
@@ -141,8 +142,8 @@ onMounted(() => {
 }
 
 .room-card:hover {
-  border-color: #1976d2;
-  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
 }
 
@@ -155,7 +156,7 @@ onMounted(() => {
 
 .room-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--color-heading);
 }
 
 .room-status {

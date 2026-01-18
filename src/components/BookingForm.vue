@@ -1,6 +1,6 @@
 <template>
   <div class="booking-form" role="form" aria-label="Room booking form">
-    <h2>Book a Room</h2>
+    <h2>Book this Room</h2>
 
     <div v-if="selectedRoom" class="form-group">
       <label class="form-label">Selected Room</label>
@@ -11,16 +11,21 @@
     </div>
 
     <div class="form-group">
-      <label for="booking-title" class="form-label">Title</label>
+      <label for="booking-title" class="form-label">
+        Title <span class="required-mark">*</span>
+      </label>
       <input
         id="booking-title"
         v-model="form.title"
         type="text"
         class="form-control"
-        placeholder="Meeting title"
+        :class="{ 'input--error': !form.title && form.touched }"
+        placeholder="Meeting Title"
         required
         aria-required="true"
+        @blur="form.touched = true"
       />
+      <span v-if="!form.title && form.touched" class="field-error">Please enter a meeting title</span>
     </div>
 
     <div class="form-row">
@@ -58,34 +63,36 @@
           required
           aria-required="true"
         >
-          <option value="30">30 minutes</option>
-          <option value="60">1 hour</option>
-          <option value="90">1.5 hours</option>
-          <option value="120">2 hours</option>
-          <option value="180">3 hours</option>
+          <option :value="30">30 minutes</option>
+          <option :value="60">1 hour</option>
+          <option :value="90">1.5 hours</option>
+          <option :value="120">2 hours</option>
+          <option :value="150">2.5 hours</option>
+          <option :value="180">3 hours</option>
+          <option :value="210">3.5 hours</option>
+          <option :value="240">4 hours</option>
+          <option :value="480">8 hours</option>
         </select>
       </div>
     </div>
 
-    <div v-if="error" class="error-message" role="alert">
-      {{ error }}
+    <div v-if="error || availabilityError" class="error-message" role="alert">
+      {{ error || availabilityError }}
     </div>
 
-    <div v-if="availabilityError" class="error-message availability-error" role="alert">
-      {{ availabilityError }}
+    <div class="booking-policy">
+      <span class="policy-icon">ℹ️</span>
+      <p>
+        Please check in via this Website or QR code within 10 minutes of the start time.
+        Otherwise, your booking will be automatically cancelled.
+      </p>
     </div>
+
 
     <div class="form-actions">
       <button
-        type="button"
-        class="btn btn--secondary"
-        @click="$emit('cancel')"
-      >
-        Cancel
-      </button>
-      <button
         type="submit"
-        class="btn btn--primary"
+        class="btn btn--primary btn--block"
         @click="handleSubmit"
         :disabled="loading || !isFormValid"
         :aria-busy="loading"
@@ -97,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue';
+import { ref, computed, reactive, watch } from 'vue';
 import type { Room, Booking } from '@/types';
 import { bookingService } from '@/services/bookingService';
 import { localTimeToUTC } from '@/utils/timezoneUtils';
@@ -106,12 +113,16 @@ interface Props {
   selectedRoom?: Room | null;
   loading?: boolean;
   error?: string | null;
+  initialDate?: string;
+  initialTime?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   selectedRoom: null,
   loading: false,
   error: null,
+  initialDate: '',
+  initialTime: '',
 });
 
 const emit = defineEmits<{
@@ -124,6 +135,7 @@ const form = reactive({
   date: '',
   startTime: '',
   duration: 60,
+  touched: false,
 });
 
 const availabilityError = ref('');
@@ -174,110 +186,165 @@ const handleSubmit = async () => {
     availabilityError.value = 'Failed to check availability. Please try again.';
   }
 };
+
+watch(
+  () => props.initialDate,
+  (d) => {
+    if (d) form.date = d;
+  },
+  { immediate: true }
+);
+
+watch(
+  () => props.initialTime,
+  (t) => {
+    if (t) form.startTime = t;
+  },
+  { immediate: true }
+);
+
 </script>
 
 <style scoped>
 .booking-form {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .booking-form h2 {
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  color: var(--color-heading);
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr; /* Stacked by default for sidebar */
   gap: 1rem;
 }
 
+/* Wenn genug Platz da ist (z.B. in der Desktop-Ansicht außerhalb der Sidebar) */
+@media (min-width: 500px) {
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.required-mark {
+  color: #dc2626;
 }
 
 .form-control {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.2s ease;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  transition: all 0.2s ease;
+  background-color: var(--color-card-bg);
 }
 
 .form-control:focus {
   outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-control.input--error {
+  border-color: #dc2626;
+  background-color: #fffafb;
+}
+
+.booking-policy {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-info-bg);
+  border: 1px solid var(--color-info-border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--color-info);
+  line-height: 1.4;
+}
+
+.policy-icon {
+  font-size: 1.1rem;
 }
 
 .selected-room {
-  padding: 1rem;
-  background: #f5f5f5;
-  border-radius: 4px;
+  padding: 0.75rem;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 0.9rem;
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 0.25rem;
+}
+
+.capacity {
+  color: var(--color-text-soft);
+  font-size: 0.8rem;
 }
 
 .error-message {
   padding: 0.75rem;
-  background: #ffebee;
-  color: #c62828;
-  border-radius: 4px;
-  margin-bottom: 1rem;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fee2e2;
+  border-radius: 6px;
+  font-size: 0.85rem;
 }
 
 .form-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 2rem;
+  margin-top: 0.5rem;
 }
 
 .btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
   border: none;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
+.btn--block {
+  width: 100%;
+}
+
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .btn--primary {
-  background: #1976d2;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-primary-text);
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: #1565c0;
-}
-
-.btn--secondary {
-  background: transparent;
-  color: #1976d2;
-  border: 1px solid #1976d2;
-}
-
-.btn--secondary:hover {
-  background: #e3f2fd;
+  background: var(--color-primary-hover);
 }
 </style>

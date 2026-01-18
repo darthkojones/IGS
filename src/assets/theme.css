@@ -1,0 +1,189 @@
+/* Global theme styles that apply to all components and views */
+
+/* Common card styles */
+.card {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  background: var(--color-card-hover);
+}
+
+/* Common button styles */
+button,
+.btn {
+  transition: all 0.3s ease;
+}
+
+.btn-primary,
+button.primary {
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  border: none;
+}
+
+.btn-primary:hover,
+button.primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn-secondary,
+button.secondary {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.btn-secondary:hover,
+button.secondary:hover {
+  background: var(--color-primary-light);
+}
+
+/* Form inputs */
+input,
+textarea,
+select {
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-input-border);
+  color: var(--color-input-text);
+  transition: all 0.3s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Tables */
+table {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+}
+
+th {
+  background: var(--color-surface-soft);
+  color: var(--color-heading);
+  border-bottom: 2px solid var(--color-border);
+}
+
+td {
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+tr:hover {
+  background: var(--color-card-hover);
+}
+
+/* Modals and dialogs */
+.modal,
+.dialog {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xl);
+}
+
+.modal-overlay,
+.dialog-overlay {
+  background: var(--color-background-overlay);
+}
+
+/* Status badges */
+.badge {
+  border-radius: 12px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.badge-warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.badge-error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.badge-info {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+/* Links */
+a {
+  color: var(--color-primary);
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* Section headings */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-heading);
+}
+
+/* Dividers */
+hr {
+  border-color: var(--color-border);
+}
+
+/* Code blocks */
+code,
+pre {
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+/* Scrollbars (Webkit browsers) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background-soft);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-hover);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Selection */
+::selection {
+  background: var(--color-primary-light);
+  color: var(--color-text);
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

@@ -510,29 +510,5 @@ export const bookingService = {
       return null;
     }
   },
-  async getAllBookings(): Promise<Booking[]> {
-    try {
-      const { data, error } = await supabase
-        .from('booking')
-        .select(`${ROOM_SELECT},
-          user:user_id (
-            id,
-            first_name,
-            last_name,
-            email,
-            role
-          )`)
-        .order('start_time', { ascending: true });
 
-      if (error) {
-        console.error('Supabase error fetching all bookings:', error);
-        throw error;
-      }
-
-      return (data || []).map(mapBookingData);
-    } catch (err) {
-      console.error('bookingService.getAllBookings error:', err);
-      throw err;
-    }
-  },
 };

@@ -203,16 +203,16 @@ const getRoomName = (roomId: string): string => {
 };
 
 // Helper function to get user name from booking
-const getUserName = (booking: Booking): string => {
-  if (booking.user) {
-    return `${booking.user.firstName} ${booking.user.lastName}`;
-  }
-  // Fallback to current user if booking.user is not populated
-  if (authStore.user) {
-    return `${authStore.user.firstName} ${authStore.user.lastName}`;
-  }
-  return 'Unknown User';
-};
+// const getUserName = (booking: Booking): string => {
+//   if (booking.user) {
+//     return `${booking.user.firstName} ${booking.user.lastName}`;
+//   }
+//   // Fallback to current user if booking.user is not populated
+//   if (authStore.user) {
+//     return `${authStore.user.firstName} ${authStore.user.lastName}`;
+//   }
+//   return 'Unknown User';
+// };
 
 // Handle check-in - navigate to booking detail page
 const handleCheckIn = () => {
@@ -232,7 +232,7 @@ const handleCancelBooking = async () => {
     try {
       await bookingsStore.cancelBooking(activeBooking.value.bookingId);
       // Refresh bookings to update UI
-      await fetchBookings();
+      await fetchTodaysBookings();
     } catch (error) {
       console.error('Failed to cancel booking:', error);
       alert('Failed to cancel booking. Please try again.');
@@ -266,7 +266,7 @@ const formatBookingDisplayWithDate = (booking: Booking) => {
 // Get booking status class for styling
 const getBookingStatusClass = (booking: Booking) => {
   const now = new Date();
-  const startTime = new Date(booking.startTime);
+  //const startTime = new Date(booking.startTime);
   const endTime = new Date(booking.endTime);
 
   // Expired: past end time or status is expired
@@ -290,7 +290,7 @@ const getBookingStatusClass = (booking: Booking) => {
 // Get booking status text for badge
 const getBookingStatusText = (booking: Booking) => {
   const now = new Date();
-  const startTime = new Date(booking.startTime);
+  //const startTime = new Date(booking.startTime);
   const endTime = new Date(booking.endTime);
 
   if (now > endTime || booking.status === 'expired') {

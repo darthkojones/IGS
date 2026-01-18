@@ -42,3 +42,4 @@ playwright-report/
 .env.backend
 logfile.txt
 src.backend/src/logfile.txt
+*logfile.txt

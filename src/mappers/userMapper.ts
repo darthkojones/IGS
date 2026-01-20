@@ -9,13 +9,14 @@ export function mapSupabaseUserToUser(userData: Record<string, unknown>): User |
 
   const firstName = (userData.first_name ?? '') as string;
   const lastName = (userData.last_name ?? '') as string;
-  //const email = (userData.email ?? '') as string;
+  const email = (userData.email ?? '') as string;
   //const name = (`${firstName} ${lastName}`.trim() || email || '');
 
   const user: User = {
     userId: String(userData.id),
     firstName,
     lastName,
+    email,
     //name,
     role: (userData.role as UserRole) ?? UserRole.STUDENT,
     institutionId: userData.institution_id != null ? String(userData.institution_id) : undefined,

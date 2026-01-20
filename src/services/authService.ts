@@ -140,6 +140,10 @@ export const authService = {
       if (userError) throw userError
       if (!userData) throw new Error('User profile not found')
 
+      if (!userData.email && authUser.email) {
+        userData.email = authUser.email;
+      }
+
       const user = mapSupabaseUserToUser(userData)
       if (!user) throw new Error('Failed to map user data')
 

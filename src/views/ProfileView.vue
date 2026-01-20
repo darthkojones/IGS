@@ -10,6 +10,8 @@
           <dd>{{ user.firstName }}</dd>
           <dt>Last Name:</dt>
           <dd>{{ user.lastName }}</dd>
+          <dt>Email Address:</dt>
+          <dd>{{ user.email }}</dd>
           <dt>Role:</dt>
           <dd class="role-badge">{{ user.role }}</dd>
           <dt>Institution:</dt>
@@ -59,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed,onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useBookingsStore } from '@/stores/bookings';
@@ -71,6 +73,16 @@ const bookingsStore = useBookingsStore();
 const user = computed(() => authStore.currentUser);
 const upcomingBookings = computed(() => bookingsStore.upcomingBookings);
 const pastBookings = computed(() => bookingsStore.pastBookings);
+
+onMounted(async () => {
+
+  const fetchedUser = await authStore.fetchCurrentUser();
+
+  const userId = fetchedUser?.userId || user.value?.userId;
+  if (userId) {
+    await bookingsStore.fetchUserBookings(userId);
+  }
+});
 
 const handleLogout = async () => {
   await authStore.logout();

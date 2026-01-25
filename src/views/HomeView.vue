@@ -72,8 +72,12 @@
         </div>
 
         <!-- No Bookings Message -->
-        <div v-if="todayBookings.length === 0 && upcomingBookings.length === 0" class="booking-item">
+        <div v-if="authStore.isAuthenticated &&todayBookings.length === 0 && upcomingBookings.length === 0" class="booking-item">
           <p>No upcoming bookings</p>
+        </div>
+        <!-- If user isn't logged in, tell'em to sign in or register -->
+        <div v-if="!authStore.isAuthenticated" class="booking-item">
+          <p>Sign in or register to see your upcoming bookings</p>
         </div>
       </div>
     </section>

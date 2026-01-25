@@ -64,7 +64,8 @@ const allMenuItems: MenuItem[] = [
   { path: '/rooms', label: 'Rooms', icon: '🚪' },
   { path: '/room-editor', label: 'Room Editor', icon: '🗂️',requiresAuth: true, requiresAdmin: true},
   { path: '/bookings', label: 'Bookings', icon: '📋', requiresAuth: true },
-  { path: '/statistics', label: 'Statistics', icon: '📊', requiresAuth: true },
+  // removed statistics, because data was already being shown on profile page
+  //{ path: '/statistics', label: 'Statistics', icon: '📊', requiresAuth: true },
   { path: '/admin/panel', label: 'Admin Panel', icon: '📈', requiresAuth: true , requiresAdmin: true },
   { path: '/accessibility', label: 'Accessibility', icon: '⚙️' },
   { path: '/profile', label: 'Profile', icon: '👤', requiresAuth: true },

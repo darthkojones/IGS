@@ -24,7 +24,7 @@
         <div class="stats-grid">
           <div class="stat-card">
             <h3>Total Bookings</h3>
-            <p class="stat-value">{{ upcomingBookings.length + pastBookings.length }}</p>
+            <p class="stat-value">{{ totalBookings.length }}</p>
           </div>
           <div class="stat-card">
             <h3>Upcoming</h3>
@@ -71,8 +71,17 @@ const authStore = useAuthStore();
 const bookingsStore = useBookingsStore();
 
 const user = computed(() => authStore.currentUser);
-const upcomingBookings = computed(() => bookingsStore.upcomingBookings);
-const pastBookings = computed(() => bookingsStore.pastBookings);
+const totalBookings = computed(() => bookingsStore.userBookings);
+const upcomingBookings = computed(() => bookingsStore.userBookings.filter(booking => {
+  const startTime = new Date(booking.startTime);
+  const now = new Date();
+  return startTime > now && booking.status === 'reserved';
+}));
+const pastBookings = computed(() => bookingsStore.userBookings.filter(booking => {
+  const endTime = new Date(booking.endTime);
+  const now = new Date();
+  return endTime < now;
+}));
 
 onMounted(async () => {
 

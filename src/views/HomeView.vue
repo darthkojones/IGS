@@ -129,6 +129,8 @@ const todayBookings = computed(() => {
     .slice(0, 5); // Limit to 5 latest bookings for today
 });
 
+// changes done also here,
+// upcoming bookings should only be reserved ones. even cancelled were showing up
 const upcomingBookings = computed(() => {
   const now = new Date();
   const startOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
@@ -139,6 +141,7 @@ const upcomingBookings = computed(() => {
       return bookingDate >= startOfTomorrow;
     })
     .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+    .filter(booking => booking.status === 'reserved')
     .slice(0, 5); // Limit to next 5 upcoming bookings
 });
 

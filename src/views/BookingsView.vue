@@ -96,12 +96,18 @@ const displayedBookings = computed(() => {
     // Show reserved/confirmed bookings with future start times
     return bookingsStore.userBookings.filter((booking: Booking) => {
       const startTime = new Date(booking.startTime);
-      return (booking.status === 'reserved' || booking.status === 'confirmed') && startTime > now;
+      return (booking.status === 'reserved') && startTime > now;
     });
   } else if (activeTab.value === 'ongoing') {
     // Show active bookings (currently happening)
     return bookingsStore.userBookings.filter((booking: Booking) => {
-      return booking.status === 'active';
+      // time now should be between start and end time
+      const startTime = new Date(booking.startTime);
+      const endTime = new Date(booking.endTime);
+      const isOngoing = startTime <= now && endTime >= now;
+
+      //TODO: we have to fix this to include active and confirmed bookings only
+      return (booking.status === 'active' || booking.status === 'confirmed') && isOngoing;
     });
   } else {
     // Show past and completed bookings (any that are not upcoming)

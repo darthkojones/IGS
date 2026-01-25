@@ -109,6 +109,8 @@ import {
   Legend,
   Filler
 } from 'chart.js';
+import type { Booking } from '@/types';
+import type { N } from 'vue-router/dist/router-CWoNjPRp.mjs';
 
 // Register ChartJS components
 ChartJS.register(

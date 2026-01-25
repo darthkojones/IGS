@@ -72,7 +72,7 @@ const router = createRouter({
       path: '/admin/panel',
       name: 'admin-panel',
       component: () => import('../views/AdminPanelView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true,requiresAdmin: true },
     },
     {
       path: '/login',

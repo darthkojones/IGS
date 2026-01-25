@@ -53,37 +53,6 @@ export const bookingService = {
 
       const mappedBookings = (data || []).map(mapBookingData);
 
-      //  implemented using backend, so no need for the below part
-      // Auto-expire bookings: only RESERVED bookings can expire (not confirmed)
-      // Expire if: reserved status, start_time has passed, and not yet entered
-      /* const now = new Date();
-      const toExpire = mappedBookings.filter(
-        (booking) =>
-          booking.status === 'reserved' &&
-          !booking.enteredAt &&
-          !booking.entryMethod &&
-          new Date(booking.startTime) < now
-      );
-
-      if (toExpire.length > 0) {
-        const expiredIds = new Set(toExpire.map(b => b.bookingId));
-        // Update these bookings in the database
-        await Promise.all(
-          toExpire.map((booking) =>
-            supabase
-              .from('booking')
-              .update({ status: 'expired' })
-              .eq('id', toNumericId(booking.bookingId))
-          )
-        );
-        // Update the local status
-        mappedBookings.forEach((booking) => {
-          if (expiredIds.has(booking.bookingId)) {
-            booking.status = 'expired' as BookingStatus;
-          }
-        });
-      }*/
-
       return mappedBookings;
     } catch (err) {
       console.error('bookingService.getBookingsByUser error:', err);
@@ -424,7 +393,7 @@ export const bookingService = {
    * - expired → remains expired (no change)
    * - completed → remains completed (no change)
    */
-  async updateExpiredBookings(bookings: Booking[]): Promise<Booking[]> {
+  /*async updateExpiredBookings(bookings: Booking[]): Promise<Booking[]> {
     try {
       const now = new Date();
       const updatesToMake: Array<{ booking: Booking; newStatus: string }> = [];
@@ -486,7 +455,7 @@ export const bookingService = {
       console.error('bookingService.updateExpiredBookings error:', err);
       throw err;
     }
-  },
+  },*/
 
   /**
    * Fetch building data by ID

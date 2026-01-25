@@ -248,7 +248,7 @@ const formatBookingDisplay = (booking: Booking) => {
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', hour12: false });
   };
-  return `${getRoomName(booking.roomId)}  - ${formatTime(start)} to ${formatTime(end)}`;
+  return `${capitaliseFirstLetter(booking.title)} at ${getRoomName(booking.roomId)}  - ${formatTime(start)} to ${formatTime(end)}`;
 };
 
 // Format booking for display with date (upcoming bookings)
@@ -261,7 +261,7 @@ const formatBookingDisplayWithDate = (booking: Booking) => {
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   };
-  return `${getRoomName(booking.roomId)}  - ${formatDate(start)} ${formatTime(start)} to ${formatTime(end)}`;
+  return `${capitaliseFirstLetter(booking.title)} at ${getRoomName(booking.roomId)}  - ${formatDate(start)} ${formatTime(start)} to ${formatTime(end)}`;
 };
 
 // Get booking status class for styling
@@ -323,6 +323,12 @@ const formatBookingTime = (booking: Booking) => {
   return `${formatTime(start)} - ${formatTime(end)}`;
 };
 
+// a helper function to capitalise first letter
+// we want it to capitalise booking title
+function capitaliseFirstLetter(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 // Check if booking is within active window (-10 minutes to +9 minutes from start)
 const checkActiveBooking = () => {
   if (!authStore.user) return;
@@ -379,10 +385,10 @@ const fetchTodaysBookings = async () => {
   if (!authStore.user) return;
 
   try {
-    await bookingsStore.fetchAllBookings();
+    await bookingsStore.fetchUserBookings(authStore.user.userId);
 
     // Store all bookings (computed properties will filter them)
-    allBookings.value = bookingsStore.bookings;
+    allBookings.value = bookingsStore.userBookings;
 
     console.log('=== Fetching User Bookings ===');
     console.log('Total user bookings:', allBookings.value.length);

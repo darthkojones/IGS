@@ -62,10 +62,10 @@ interface MenuItem {
 const allMenuItems: MenuItem[] = [
   { path: '/', label: 'Home', icon: '🏠' },
   { path: '/rooms', label: 'Rooms', icon: '🚪' },
-  { path: '/room-editor', label: 'Room Editor', icon: '🗂️',requiresAuth: true},
+  { path: '/room-editor', label: 'Room Editor', icon: '🗂️',requiresAuth: true, requiresAdmin: true},
   { path: '/bookings', label: 'Bookings', icon: '📋', requiresAuth: true },
   { path: '/statistics', label: 'Statistics', icon: '📊', requiresAuth: true },
-  { path: '/admin/panel', label: 'Admin Panel', icon: '📈', requiresAuth: true /*, requiresAdmin: true */},
+  { path: '/admin/panel', label: 'Admin Panel', icon: '📈', requiresAuth: true , requiresAdmin: true },
   { path: '/accessibility', label: 'Accessibility', icon: '⚙️' },
   { path: '/profile', label: 'Profile', icon: '👤', requiresAuth: true },
   { path: '/about', label: 'About', icon: 'ℹ️' }

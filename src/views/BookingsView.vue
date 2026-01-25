@@ -78,7 +78,6 @@
 import { ref, computed, onMounted } from 'vue';
 import { useBookingsStore } from '@/stores/bookings';
 import { useAuthStore } from '@/stores/auth';
-import { bookingService } from '@/services/bookingService';
 import { useBookingRealtime } from '@/composables/useBookingRealtime';
 import { formatLocalDate, formatLocalTime } from '@/utils/timezoneUtils';
 import type { Booking } from '@/types';
@@ -120,26 +119,11 @@ const cancelBooking = async (bookingId: string) => {
   }
 };
 
-// Update expired bookings when bookings are loaded
-const updateExpiredBookings = async () => {
-  try {
-    if (bookingsStore.userBookings.length > 0) {
-      await bookingService.updateExpiredBookings(bookingsStore.userBookings);
-      // Refresh the bookings to reflect the updated statuses
-      if (authStore.currentUser) {
-        await bookingsStore.fetchUserBookings(authStore.currentUser.userId);
-      }
-    }
-  } catch (err) {
-    console.error('Error updating expired bookings:', err);
-  }
-};
 
 // Setup realtime subscription for live updates
 const refreshBookings = async () => {
   if (authStore.currentUser) {
     await bookingsStore.fetchUserBookings(authStore.currentUser.userId);
-    await updateExpiredBookings();
   }
 };
 
@@ -152,7 +136,6 @@ onMounted(async () => {
   // If user is already loaded, fetch bookings immediately
   if (authStore.currentUser) {
     await bookingsStore.fetchUserBookings(authStore.currentUser.userId);
-    await updateExpiredBookings();
   }
 });
 </script>

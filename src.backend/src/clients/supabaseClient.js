@@ -6,7 +6,6 @@
 const clientPath = __dirname.split('/');
 const envPath = clientPath.slice(0, clientPath.length - 3).join('/') + '/.env.local';
 
-console.log(envPath)
 require('dotenv').config({ path: envPath });
 
 const { createClient } = require('@supabase/supabase-js');

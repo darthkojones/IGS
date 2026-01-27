@@ -3,9 +3,15 @@
  * Modified: 18 Jan 2025
  */
 
+const clientPath = __dirname.split('/');
+const envPath = clientPath.slice(0, clientPath.length - 3).join('/') + '/.env.local';
+
+require('dotenv').config({ path: envPath });
+
 const mqtt = require('mqtt');
 
-const mqttClient = mqtt.connect('mqtt://localhost:1883', {
+const mqttClient = mqtt.connect(
+  process.env.MQTT_URL, {
   clientId: 'mci_' + Math.random().toString(16).substring(2, 8),
   clean: true,
 });

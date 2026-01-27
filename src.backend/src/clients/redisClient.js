@@ -3,10 +3,15 @@
  * Modified: 18 Jan 2025
  */
 
+const clientPath = __dirname.split('/');
+const envPath = clientPath.slice(0, clientPath.length - 3).join('/') + '/.env.local';
+
+require('dotenv').config({ path: envPath });
+
 const { createClient } = require('redis');
 
 const redisClient = createClient({
-  url: 'redis://localhost:6379'
+  url: process.env.REDIS_URL
 });
 
 redisClient.on('error', (err) => {

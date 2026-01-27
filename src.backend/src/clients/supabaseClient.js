@@ -3,13 +3,17 @@
  * Modified: 18 Jan 2025
  */
 
-require('dotenv').config({ path: '../.env.backend'});
+const clientPath = __dirname.split('/');
+const envPath = clientPath.slice(0, clientPath.length - 3).join('/') + '/.env.local';
+
+console.log(envPath)
+require('dotenv').config({ path: envPath });
 
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseClient = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_PUBLISHABLE_KEY
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SUPABASE_PUBLISHABLE_SERVICE_KEY
 );
 
 module.exports = supabaseClient;

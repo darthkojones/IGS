@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./src/jobRunner.js",
-    "start_demo": "node ./src/jobRunner.js; ./src/device.js"
+    "start_demo": "docker compose up -d; node ./src/jobRunner.js; ./src/device.js"
   },
   "keywords": [],
   "author": "",

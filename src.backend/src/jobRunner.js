@@ -11,6 +11,9 @@ const fs = require('fs');
 const deviceConfig = require('./deviceConfig.json');
 const devices = deviceConfig.devices;
 
+const jobRunnerPath = __dirname.split('/');
+const logFile = jobRunnerPath.slice(0, jobRunnerPath.length - 1).join('/') + '/logFile.txt';
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 UTILITY FUNCTIONS
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -47,7 +50,7 @@ function isRoomOccupied(bookings, dateTimeNow) {
 function findNextBooking(bookings, dateTimeNow) {
   const now = dateTimeNow.getTime();
   return bookings
-    .filter(b => b.startTime.getTime() > now && (b.status === BookingStatus.CONFIRMED))
+    .filter(b => b.startTime.getTime() > now && (b.status === supabaseService.BookingStatus.CONFIRMED))
     .sort((a, b) => (a.startTime.getTime() > b.startTime.getTime() ? 1 : a.startTime.getTime() < b.startTime.getTime() ? -1 : 0))
     .at(0) ?? null;
 }
@@ -62,7 +65,7 @@ function findNextBooking(bookings, dateTimeNow) {
 function findPreviousBooking(bookings, dateTimeNow) {
   const now = dateTimeNow.getTime();
   return bookings
-    .filter(b => b.endTime.getTime() < now && b.status === BookingStatus.COMPLETED)
+    .filter(b => b.endTime.getTime() < now && b.status === supabaseService.BookingStatus.COMPLETED)
     .sort((a, b) => (a.endTime.getTime() > b.endTime.getTime() ? -1 : a.endTime.getTime() < b.endTime.getTime() ? 1 : 0))
     .at(0) ?? null;
 }
@@ -113,9 +116,9 @@ async function bumpRooms(lastCheckNMinutesAgo) {
     const bookingsToExpire = await supabaseService.getExpiredBookings(nowMinus);
     if (bookingsToExpire.length) {
       supabaseService.setBookingsToExpired(bookingsToExpire)
-      log('logfile.txt', 'bumpRooms', `${bookingsToExpire.length} Bookings bumped.`)
+      log(logFile, 'bumpRooms', `${bookingsToExpire.length} Bookings bumped.`)
     } else {
-      log('logfile.txt', 'bumpRooms', `No bookings bumped.`)
+      log(logFile, 'bumpRooms', `No bookings bumped.`)
     }
   } catch(error) {
     console.error('Supabase error', error)
@@ -169,7 +172,7 @@ async function handleCheckIns(lastCheckNMinutesAgo) {
       );
 
       if (!redisStatus) {
-        log('logfile.txt', 'handleCheckIns', `${mqttDeviceKey} has no status, starting device ...`)
+        log(logFile, 'handleCheckIns', `${mqttDeviceKey} has no status, starting device ...`)
         mqttService.publishCommandToDevice(mqttDeviceKey, d.onStart);
 
       } else {
@@ -177,10 +180,10 @@ async function handleCheckIns(lastCheckNMinutesAgo) {
         const isDeviceStatusOn = d.statusOn.includes(deviceStatus);
 
         if (isDeviceStatusOn)  {
-          log('logfile.txt', 'handleCheckIns', `${mqttDeviceKey} is already running ...`)
+          log(logFile, 'handleCheckIns', `${mqttDeviceKey} is already running ...`)
 
         } else {
-          log('logfile.txt', 'handleCheckIns', `${mqttDeviceKey} is not running, starting device ...`)
+          log(logFile, 'handleCheckIns', `${mqttDeviceKey} is not running, starting device ...`)
           mqttService.publishCommandToDevice(mqttDeviceKey, d.onStart);
         }
       }
@@ -242,7 +245,7 @@ async function handleShutdowns() {
           nextOff: Enough time to next activity to turn it off (e.g. aircon takes up more energy if it has to restart often vs. if it idles)
           statusWasOn: If it was already off, we don't turn it off again
         */
-          log('logfile.txt', 'handleShutdowns', `${mqttDeviceKey} can be turned off, sending command ...`)
+          log(logFile, 'handleShutdowns', `${mqttDeviceKey} can be turned off, sending command ...`)
           mqttService.publishCommandToDevice(mqttDeviceKey, d.onOff);
 
       } else if (prevStandby && statusWasOn) {
@@ -252,13 +255,13 @@ async function handleShutdowns() {
         */
         if (d.onStandby) { // Stand by can be null if a device has no stand by mode
           mqttService.publishCommandToDevice(mqttDeviceKey, d.onStandby)
-          log('logfile.txt', 'handleShutdowns', `${mqttDeviceKey} can be set on stand by mode, sending command ...`)
+          log(logFile, 'handleShutdowns', `${mqttDeviceKey} can be set on stand by mode, sending command ...`)
         } else {
-          log('logfile.txt', 'handleShutdowns', `${mqttDeviceKey} has no stand by mode, no command can be sent.`)
+          log(logFile, 'handleShutdowns', `${mqttDeviceKey} has no stand by mode, no command can be sent.`)
         }
 
       } else {
-        // log('logfile.txt', 'handleShutdowns', `${mqttDeviceKey} is OK, no command to be sent.`)
+        // log(logF, 'handleShutdowns', `${mqttDeviceKey} is OK, no command to be sent.`)
       }
     }
   }
@@ -272,24 +275,24 @@ RUNNING CRON FUNCTIONS
 
 // Runs every 20 seconds
 cron.schedule('0,20,40 * * * * *', async () => {
-  log('logfile.txt', 'cron', 'Requesting device updates ...');
+  log(logFile, 'cron', 'Requesting device updates ...');
   requestMqttUpdatesFromDevices();
 });
 
 // Runs every minute of every hour
 cron.schedule('0-59 * * * *', async () => {
-  log('logfile.txt', 'cron', 'Running check in handler ...');
+  log(logFile, 'cron', 'Running check in handler ...');
   handleCheckIns(1);
 });
 
 // Runs every minute of every hour
 cron.schedule('0-59 * * * *', async () => {
-  log('logfile.txt', 'cron', 'Bumping rooms ...');
+  log(logFile, 'cron', 'Bumping rooms ...');
   bumpRooms(1)
 });
 
 // Runs every minute of every hour
 cron.schedule('0-59 * * * *', async () => {
-  log('logfile.txt', 'cron', 'Running shutdown handler ...');
+  log(logFile, 'cron', 'Running shutdown handler ...');
   handleShutdowns()
 });

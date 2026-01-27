@@ -5,7 +5,8 @@
   "main": "jobRunner.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node jobRunner.js"
+    "start": "node ./src/jobRunner.js",
+    "start_demo": "node ./src/jobRunner.js; ./src/device.js"
   },
   "keywords": [],
   "author": "",

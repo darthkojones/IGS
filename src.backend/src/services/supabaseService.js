@@ -241,6 +241,7 @@ class Room {
 
 module.exports = {
   supabase,
+  BookingStatus,
   Booking,
   Room,
   getAllRooms,
